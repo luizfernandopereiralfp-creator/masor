@@ -1,0 +1,22 @@
+services:
+  masor:
+    build: .
+    container_name: masor
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOST=0.0.0.0
+    networks:
+      - root_default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.masor.rule=Host(`masor.g41one.com.br`)"
+      - "traefik.http.routers.masor.entrypoints=web,websecure"
+      - "traefik.http.routers.masor.tls=true"
+      - "traefik.http.routers.masor.tls.certresolver=mytlschallenge"
+      - "traefik.http.services.masor.loadbalancer.server.port=3000"
+
+networks:
+  root_default:
+    external: true

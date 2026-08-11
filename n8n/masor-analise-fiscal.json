@@ -1,0 +1,83 @@
+{
+  "name": "Masor — Análise Fiscal de Produto (IA)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "masor-analise-fiscal",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wh-entrada",
+      "name": "Webhook — Entrada do Masor",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-620, 0],
+      "credentials": {
+        "httpHeaderAuth": { "name": "Masor Webhook Token" }
+      },
+      "notesInFlow": true,
+      "notes": "Auth = Header Auth (credential 'Masor Webhook Token': Name x-masor-token, Value = um token aleatório forte). O MESMO valor vai no app em MASOR_WEBHOOK_TOKEN. Recebe { system, user, idioma, meta } do app Masor."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "anthropic-version", "value": "2023-06-01" },
+            { "name": "content-type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: 'claude-sonnet-4-6',\n  max_tokens: 4096,\n  tools: [{ type: 'web_search_20250305', name: 'web_search' }],\n  system: $json.body.system,\n  messages: [{ role: 'user', content: $json.body.user }]\n}) }}",
+        "options": { "timeout": 180000 }
+      },
+      "id": "http-claude",
+      "name": "Claude — Especialista Fiscal (web search)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-360, 0],
+      "credentials": {
+        "httpHeaderAuth": { "name": "Anthropic API (Masor)" }
+      },
+      "notesInFlow": true,
+      "notes": "Credential Header Auth 'Anthropic API (Masor)': Name x-api-key, Value = sk-ant-... (a chave NUNCA fica no workflow). system+user vêm prontos do app (prompt-especialista.ts)."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Concatena os blocos de texto do Claude (ignora blocos de web_search).\nconst blocos = $json.content || [];\nconst texto = blocos.filter(b => b.type === 'text').map(b => b.text).join('\\n');\n// O app (contrato.ts -> parseAnalise) faz o parse/validação estrita com zod.\nconst meta = $('Webhook — Entrada do Masor').first().json.body?.meta || {};\nreturn [{ json: { analise_bruta: texto, meta } }];"
+      },
+      "id": "code-extrair",
+      "name": "Extrair texto do parecer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-100, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, analise_bruta: $json.analise_bruta, meta: $json.meta }) }}",
+        "options": {}
+      },
+      "id": "respond-ok",
+      "name": "Responder ao app",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [160, 0]
+    }
+  ],
+  "connections": {
+    "Webhook — Entrada do Masor": { "main": [[{ "node": "Claude — Especialista Fiscal (web search)", "type": "main", "index": 0 }]] },
+    "Claude — Especialista Fiscal (web search)": { "main": [[{ "node": "Extrair texto do parecer", "type": "main", "index": 0 }]] },
+    "Extrair texto do parecer": { "main": [[{ "node": "Responder ao app", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {},
+  "meta": { "instanceId": "importar-em-n8n.ferpereira.com" }
+}

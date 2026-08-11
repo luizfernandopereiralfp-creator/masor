@@ -1,0 +1,141 @@
+{
+  "name": "G41 — Validação Fiscal de Produto (IA)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "valida-produto-g41",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wh-entrada",
+      "name": "Webhook — Entrada do Simulador",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-620, 0],
+      "notesInFlow": true,
+      "notes": "Recebe o payload do Simulador Tributário (Lovable). Proteger com header X-Webhook-Token validado no node seguinte, mesmo padrão do onboarding."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "anthropic-version", "value": "2023-06-01" },
+            { "name": "content-type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: 'claude-sonnet-4-6',\n  max_tokens: 1200,\n  tools: [{ type: 'web_search_20250305', name: 'web_search' }],\n  messages: [{\n    role: 'user',\n    content: `Você é o validador fiscal automático da G41 Inteligência Contábil (Brasil). Analise o cadastro de produto abaixo e, SE NECESSÁRIO, use busca na web para confirmar legislação vigente (NCM, ST na UF de destino, PIS/COFINS monofásico Lei 10.147/2000, alíquota zero cesta básica, alíquota interna).\\n\\nDADOS: ${JSON.stringify($json.body)}\\n\\nVerifique: (1) NCM existe e é plausível para a descrição; (2) enquadramento PIS/COFINS compatível com o NCM; (3) sujeição a ST na UF de destino vs. o que foi marcado; (4) alíquota interna plausível; (5) campos ausentes ou contraditórios.\\n\\nRESPONDA APENAS com JSON válido, sem markdown, no formato: {\\\"status\\\":\\\"aprovado\\\"|\\\"aprovado_com_ressalvas\\\"|\\\"pendente\\\",\\\"resumo\\\":\\\"1 frase\\\",\\\"achados\\\":[{\\\"campo\\\":\\\"...\\\",\\\"nivel\\\":\\\"info\\\"|\\\"atencao\\\",\\\"mensagem\\\":\\\"pt-BR, para empresário leigo\\\"}]}`\n  }]\n}) }}",
+        "options": { "timeout": 90000 }
+      },
+      "id": "http-claude",
+      "name": "Claude — Análise Fiscal (web search)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-360, 0],
+      "notesInFlow": true,
+      "notes": "Credencial Header Auth: x-api-key = ANTHROPIC_API_KEY (criar em Credentials; a chave nunca fica no workflow)."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extrai o JSON do parecer entre os blocos de conteúdo da API\nconst blocos = $json.content || [];\nconst texto = blocos.filter(b => b.type === 'text').map(b => b.text).join('\\n');\nconst limpo = texto.replace(/```json|```/g, '').trim();\nconst ini = limpo.indexOf('{');\nconst fim = limpo.lastIndexOf('}');\nlet parecer;\ntry {\n  parecer = JSON.parse(limpo.slice(ini, fim + 1));\n} catch (e) {\n  parecer = { status: 'pendente', resumo: 'A IA não retornou um parecer estruturado — validação manual necessária.', achados: [{ campo: 'sistema', nivel: 'atencao', mensagem: 'Falha ao interpretar a resposta da IA.' }] };\n}\nconst entrada = $('Webhook — Entrada do Simulador').first().json.body || {};\nreturn [{ json: { parecer, entrada } }];"
+      },
+      "id": "code-parse",
+      "name": "Extrair Parecer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-100, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "strict", "version": 2 },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.parecer.status }}",
+              "rightValue": "aprovado",
+              "operator": { "type": "string", "operation": "notEquals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-pendencia",
+      "name": "Há pendência?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [140, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://tarefas.g41.com.br/api/public/tasks",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Idempotency-Key", "value": "=valida-produto-{{ $execution.id }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  title: `Validar cadastro fiscal: ${$json.entrada.produto || 'produto sem nome'} (${$json.entrada.uf_destino || 'UF?'})`,\n  description: `Parecer IA: ${$json.parecer.status}. ${$json.parecer.resumo}\\n\\nAchados: ${($json.parecer.achados||[]).map(a => `[${a.nivel}] ${a.campo}: ${a.mensagem}`).join(' | ')}\\n\\nDados enviados pelo cliente: ${JSON.stringify($json.entrada)}`,\n  sector: 'contabil_fiscal',\n  service_line: 'contabilidade',\n  priority: $json.parecer.status === 'pendente' ? 'alta' : 'media',\n  tags: ['simulador-tributario','validacao-ia'],\n  origin: 'Simulador Tributário — Área do Cliente'\n}) }}",
+        "options": { "timeout": 30000 }
+      },
+      "id": "http-kanban",
+      "name": "Criar tarefa no Kanban G41",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [400, -110],
+      "notesInFlow": true,
+      "notes": "Credencial Header Auth: X-API-Key = N8N_TASK_INTAKE_API_KEY (mesma do endpoint público do Kanban). Idempotência via $execution.id evita duplicar tarefa em reexecução."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($('Extrair Parecer').first().json.parecer) }}",
+        "options": {}
+      },
+      "id": "respond-pendente",
+      "name": "Responder ao app (com tarefa)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [660, -110]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json.parecer) }}",
+        "options": {}
+      },
+      "id": "respond-ok",
+      "name": "Responder ao app (aprovado)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [400, 110]
+    }
+  ],
+  "connections": {
+    "Webhook — Entrada do Simulador": { "main": [[{ "node": "Claude — Análise Fiscal (web search)", "type": "main", "index": 0 }]] },
+    "Claude — Análise Fiscal (web search)": { "main": [[{ "node": "Extrair Parecer", "type": "main", "index": 0 }]] },
+    "Extrair Parecer": { "main": [[{ "node": "Há pendência?", "type": "main", "index": 0 }]] },
+    "Há pendência?": {
+      "main": [
+        [{ "node": "Criar tarefa no Kanban G41", "type": "main", "index": 0 }],
+        [{ "node": "Responder ao app (aprovado)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Criar tarefa no Kanban G41": { "main": [[{ "node": "Responder ao app (com tarefa)", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {},
+  "meta": { "instanceId": "importar-em-n8n.ferpereira.com" }
+}

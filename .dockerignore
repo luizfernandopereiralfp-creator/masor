@@ -1,0 +1,17 @@
+node_modules
+.output
+.git
+.github
+.wrangler
+.tanstack
+.nitro
+.vinxi
+dist
+dist-ssr
+brand-kit
+.env
+.env.local
+.env.lior.local
+.cloudflare.local
+npm-debug.log*
+*.log
