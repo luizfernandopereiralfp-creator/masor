@@ -69,6 +69,8 @@ function ConsultaConteudo() {
 
   const [markup, setMarkup] = useState("20");
   const [tipoMargem, setTipoMargem] = useState("venda");
+  const [infoAdicional, setInfoAdicional] = useState("");
+  const [contribuido, setContribuido] = useState(false);
 
   // ---- estado da análise ----
   const [status, setStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
@@ -116,6 +118,26 @@ function ConsultaConteudo() {
     );
   }
 
+  // Aprendizado: envia a análise + info do usuário como proposta de regra (fila de revisão).
+  async function contribuir() {
+    if (!supabase || !perfil?.tenant_id || !analise) return;
+    await supabase.from("rule_change_requests").insert({
+      tenant_id: perfil.tenant_id,
+      proposto_por: perfil.user_id,
+      alvo: `ncm_rules:${ncm.replace(/\D/g, "")}:${ufSuper}`,
+      proposta: {
+        ncm: ncm.replace(/\D/g, ""),
+        uf: ufSuper,
+        regime: regimeEmpresa,
+        parametros_aplicados: analise.parametros_aplicados,
+        informacao_adicional: infoAdicional || null,
+      },
+      justificativa: infoAdicional || null,
+      fontes: analise.fontes_oficiais,
+    });
+    setContribuido(true);
+  }
+
   const podeAnalisar = useMemo(
     () => descricao.trim() !== "" && ncm.replace(/\D/g, "").length >= 8 && Number(custo.replace(",", ".")) > 0,
     [descricao, ncm, custo],
@@ -149,6 +171,7 @@ function ConsultaConteudo() {
       pis_cofins: pisCofins,
       markup_percent: markup,
       tipo_margem: tipoMargem,
+      informacao_adicional: infoAdicional || null,
     };
     try {
       const tok = supabase ? (await supabase.auth.getSession()).data.session?.access_token : null;
@@ -369,6 +392,24 @@ function ConsultaConteudo() {
             </div>
           </Bloco>
 
+          <Bloco
+            n="05"
+            titulo={tx("Informação adicional (opcional)", "Доп. информация (необязательно)")}
+            sub={tx(
+              "A IA considera e VERIFICA em fonte oficial — não aceita cega. Ajuda o sistema a aprender.",
+              "ИИ учитывает и ПРОВЕРЯЕТ по официальному источнику.",
+            )}
+          >
+            <textarea
+              value={infoAdicional}
+              onChange={(e) => setInfoAdicional(e.target.value)}
+              rows={2}
+              className="w-full rounded-md border px-3 py-2 text-sm outline-none"
+              style={{ borderColor: "var(--border,#e2e8f0)", color: NAVY }}
+              placeholder={tx("ex.: benefício estadual, regra específica, correção…", "напр.: льгота, правило, поправка…")}
+            />
+          </Bloco>
+
           <button
             type="button"
             onClick={analisar}
@@ -427,7 +468,22 @@ function ConsultaConteudo() {
               {tx("Não foi possível concluir a análise:", "Не удалось завершить анализ:")} {erro}
             </Alerta>
           )}
-          {status === "ok" && analise && <Relatorio a={analise} avisos={avisos} tx={tx} />}
+          {status === "ok" && analise && (
+            <>
+              <Relatorio a={analise} avisos={avisos} tx={tx} />
+              <button
+                type="button"
+                onClick={contribuir}
+                disabled={contribuido}
+                className="mt-3 w-full rounded-lg border px-4 py-2 text-xs font-semibold disabled:opacity-60"
+                style={{ borderColor: NAVY, color: NAVY }}
+              >
+                {contribuido
+                  ? tx("Enviado à revisão da equipe fiscal ✓", "Отправлено на проверку ✓")
+                  : tx("Contribuir com a base fiscal (enviar à revisão)", "Внести в базу (на проверку)")}
+              </button>
+            </>
+          )}
         </aside>
       </main>
     </div>

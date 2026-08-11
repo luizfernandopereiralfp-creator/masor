@@ -15,6 +15,7 @@ import { Route as EmpresaRouteImport } from './routes/empresa'
 import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as HistoricoRouteImport } from './routes/historico'
 import { Route as ImportarRouteImport } from './routes/importar'
+import { Route as PendenciasRouteImport } from './routes/pendencias'
 import { Route as ApiAnalisarRouteImport } from './routes/api/analisar'
 
 const IndexRoute = IndexRouteImport.update({
@@ -47,6 +48,11 @@ const ImportarRoute = ImportarRouteImport.update({
   path: '/importar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PendenciasRoute = PendenciasRouteImport.update({
+  id: '/pendencias',
+  path: '/pendencias',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAnalisarRoute = ApiAnalisarRouteImport.update({
   id: '/api/analisar',
   path: '/api/analisar',
@@ -60,6 +66,7 @@ export interface FileRoutesByFullPath {
   '/entrar': typeof EntrarRoute
   '/historico': typeof HistoricoRoute
   '/importar': typeof ImportarRoute
+  '/pendencias': typeof PendenciasRoute
   '/api/analisar': typeof ApiAnalisarRoute
 }
 export interface FileRoutesByTo {
@@ -69,6 +76,7 @@ export interface FileRoutesByTo {
   '/entrar': typeof EntrarRoute
   '/historico': typeof HistoricoRoute
   '/importar': typeof ImportarRoute
+  '/pendencias': typeof PendenciasRoute
   '/api/analisar': typeof ApiAnalisarRoute
 }
 export interface FileRoutesById {
@@ -79,6 +87,7 @@ export interface FileRoutesById {
   '/entrar': typeof EntrarRoute
   '/historico': typeof HistoricoRoute
   '/importar': typeof ImportarRoute
+  '/pendencias': typeof PendenciasRoute
   '/api/analisar': typeof ApiAnalisarRoute
 }
 export interface FileRouteTypes {
@@ -90,6 +99,7 @@ export interface FileRouteTypes {
     | '/entrar'
     | '/historico'
     | '/importar'
+    | '/pendencias'
     | '/api/analisar'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -99,6 +109,7 @@ export interface FileRouteTypes {
     | '/entrar'
     | '/historico'
     | '/importar'
+    | '/pendencias'
     | '/api/analisar'
   id:
     | '__root__'
@@ -108,6 +119,7 @@ export interface FileRouteTypes {
     | '/entrar'
     | '/historico'
     | '/importar'
+    | '/pendencias'
     | '/api/analisar'
   fileRoutesById: FileRoutesById
 }
@@ -118,6 +130,7 @@ export interface RootRouteChildren {
   EntrarRoute: typeof EntrarRoute
   HistoricoRoute: typeof HistoricoRoute
   ImportarRoute: typeof ImportarRoute
+  PendenciasRoute: typeof PendenciasRoute
   ApiAnalisarRoute: typeof ApiAnalisarRoute
 }
 
@@ -165,6 +178,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ImportarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pendencias': {
+      id: '/pendencias'
+      path: '/pendencias'
+      fullPath: '/pendencias'
+      preLoaderRoute: typeof PendenciasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/analisar': {
       id: '/api/analisar'
       path: '/api/analisar'
@@ -182,6 +202,7 @@ const rootRouteChildren: RootRouteChildren = {
   EntrarRoute: EntrarRoute,
   HistoricoRoute: HistoricoRoute,
   ImportarRoute: ImportarRoute,
+  PendenciasRoute: PendenciasRoute,
   ApiAnalisarRoute: ApiAnalisarRoute,
 }
 export const routeTree = rootRouteImport

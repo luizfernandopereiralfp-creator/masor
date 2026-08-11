@@ -47,7 +47,8 @@ function Home() {
 
 function HomeConteudo() {
   const { t } = useI18n();
-  const { sair, user } = useAuth();
+  const { sair, user, perfil } = useAuth();
+  const staff = perfil?.role === "admin" || perfil?.role === "staff";
 
   return (
     <div className="min-h-screen" style={{ background: "var(--app-bg, #eef1f6)" }}>
@@ -123,6 +124,11 @@ function HomeConteudo() {
           <Link to="/historico" className="text-xs font-semibold underline" style={{ color: "var(--navy)" }}>
             {t("home.historico")}
           </Link>
+          {staff && (
+            <Link to="/pendencias" className="text-xs font-semibold underline" style={{ color: "var(--navy)" }}>
+              {t("home.pendencias")}
+            </Link>
+          )}
         </div>
 
         {/* Confiança / anti-invenção */}
