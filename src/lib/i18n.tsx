@@ -36,6 +36,7 @@ const pt: Dict = {
   "home.empresa": "⚙ Cadastro da empresa (preencha 1x)",
   "home.historico": "Histórico de análises",
   "home.pendencias": "Pendências fiscais",
+  "home.admin": "⚙ Configuração tributária",
   "home.trust.title": "Nada é inventado",
   "home.trust.desc":
     "Quando a lei de um ponto não é confirmada por uma fonte oficial, o resultado sai marcado como provisório e a equipe é avisada — nunca um chute.",
@@ -75,6 +76,7 @@ const ru: Dict = {
   "home.empresa": "⚙ Данные компании (заполнить 1 раз)",
   "home.historico": "История анализов",
   "home.pendencias": "Ожидают проверки",
+  "home.admin": "⚙ Налоговые настройки",
   "home.trust.title": "Ничего не выдумывается",
   "home.trust.desc":
     "Если норма не подтверждена официальным источником, результат помечается как предварительный, и команда получает уведомление — никаких догадок.",

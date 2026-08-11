@@ -214,14 +214,9 @@ function ConsultaConteudo() {
           <Link to="/" className="text-white/80 hover:text-white">
             <ArrowLeft size={18} />
           </Link>
-          <div
-            className="flex h-8 w-8 items-center justify-center rounded font-black text-sm"
-            style={{ background: AMBER, color: NAVY }}
-          >
-            G41
-          </div>
+          <img src="/masor-logo.png" alt="Masor" className="h-6 w-auto brightness-0 invert" />
           <h1 className="text-sm font-bold tracking-wide text-white">
-            Masor · {tx("Analisar um produto", "Анализ товара")}
+            · {tx("Analisar um produto", "Анализ товара")}
           </h1>
         </div>
       </header>

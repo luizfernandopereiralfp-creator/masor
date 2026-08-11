@@ -58,14 +58,8 @@ function HomeConteudo() {
         style={{ background: "var(--navy)" }}
       >
         <div className="flex items-center gap-3">
-          <div
-            className="flex h-9 w-9 items-center justify-center rounded font-black"
-            style={{ background: "var(--amber)", color: "var(--navy)" }}
-          >
-            G41
-          </div>
+          <img src="/masor-logo.png" alt="Masor" className="h-8 w-auto brightness-0 invert" />
           <div>
-            <h1 className="text-sm font-bold tracking-wide text-white">{t("app.name")}</h1>
             <p className="text-[11px]" style={{ color: "var(--amber)" }}>
               {t("app.tagline")}
             </p>
@@ -125,9 +119,14 @@ function HomeConteudo() {
             {t("home.historico")}
           </Link>
           {staff && (
-            <Link to="/pendencias" className="text-xs font-semibold underline" style={{ color: "var(--navy)" }}>
-              {t("home.pendencias")}
-            </Link>
+            <>
+              <Link to="/pendencias" className="text-xs font-semibold underline" style={{ color: "var(--navy)" }}>
+                {t("home.pendencias")}
+              </Link>
+              <Link to="/admin" className="text-xs font-semibold underline" style={{ color: "var(--navy)" }}>
+                {t("home.admin")}
+              </Link>
+            </>
           )}
         </div>
 
