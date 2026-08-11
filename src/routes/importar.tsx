@@ -3,6 +3,9 @@ import { useState, type ReactNode } from "react";
 import { ArrowLeft, Upload, Loader2, TriangleAlert, FileSpreadsheet, FileText } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth";
+import { Protegido } from "@/components/Protegido";
+import { supabase } from "@/integrations/supabase/client";
 import { parseNFe, itemParaOperacao, type NFeParsed, type NFeItem } from "@/lib/nfe/parse-nfe";
 import type { AnaliseFiscal } from "@/lib/ia/contrato";
 
@@ -25,7 +28,16 @@ type LinhaResultado = {
 };
 
 function Importar() {
+  return (
+    <Protegido>
+      <ImportarConteudo />
+    </Protegido>
+  );
+}
+
+function ImportarConteudo() {
   const { lang } = useI18n();
+  const { perfil } = useAuth();
   const tx = (pt: string, ru: string) => (lang === "ru" ? ru : pt);
 
   const [nfe, setNfe] = useState<NFeParsed | null>(null);
@@ -81,6 +93,11 @@ function Importar() {
           pendencias: a.pendencias.length,
         },
       }));
+      if (supabase && perfil?.tenant_id) {
+        void supabase
+          .from("product_simulations")
+          .insert({ tenant_id: perfil.tenant_id, origem: "importacao", payload: operacao, analise: a });
+      }
     } catch (err) {
       setResultados((r) => ({ ...r, [item.nItem]: { estado: "error", erro: (err as Error).message } }));
     }

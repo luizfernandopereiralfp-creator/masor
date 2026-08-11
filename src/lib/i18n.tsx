@@ -19,6 +19,7 @@ const pt: Dict = {
   "lang.pt": "Português",
   "lang.ru": "Русский",
   "lang.switch": "Idioma",
+  "nav.sair": "Sair",
 
   "home.title": "Inteligência tributária para o seu supermercado",
   "home.subtitle":
@@ -54,6 +55,7 @@ const ru: Dict = {
   "lang.pt": "Português",
   "lang.ru": "Русский",
   "lang.switch": "Язык",
+  "nav.sair": "Выход",
 
   "home.title": "Налоговый интеллект для вашего супермаркета",
   "home.subtitle":

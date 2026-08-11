@@ -3,6 +3,9 @@ import { useMemo, useState, type ReactNode } from "react";
 import { ArrowLeft, Loader2, ShieldCheck, TriangleAlert, ExternalLink } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth";
+import { Protegido } from "@/components/Protegido";
+import { supabase } from "@/integrations/supabase/client";
 import type { AnaliseFiscal } from "@/lib/ia/contrato";
 
 export const Route = createFileRoute("/consulta")({
@@ -24,7 +27,16 @@ const pctFmt = (v: number | null | undefined) =>
 type Operacao = Record<string, unknown>;
 
 function Consulta() {
+  return (
+    <Protegido>
+      <ConsultaConteudo />
+    </Protegido>
+  );
+}
+
+function ConsultaConteudo() {
   const { lang } = useI18n();
+  const { perfil } = useAuth();
   const tx = (pt: string, ru: string) => (lang === "ru" ? ru : pt);
 
   // ---- estado do formulário ----
@@ -110,6 +122,12 @@ function Consulta() {
       setAnalise(data.analise as AnaliseFiscal);
       setAvisos((data.avisos_sanidade as string[]) ?? []);
       setStatus("ok");
+      // Persiste no histórico (RLS garante o tenant). Fire-and-forget.
+      if (supabase && perfil?.tenant_id) {
+        void supabase
+          .from("product_simulations")
+          .insert({ tenant_id: perfil.tenant_id, origem: "consulta", payload: operacao, analise: data.analise });
+      }
     } catch (e) {
       setErro((e as Error).message);
       setStatus("error");

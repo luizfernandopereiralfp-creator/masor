@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { FileSpreadsheet, PackageSearch, ShieldCheck } from "lucide-react";
 
 import { useI18n, type Lang } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth";
+import { Protegido } from "@/components/Protegido";
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -36,7 +38,16 @@ function LangSwitch() {
 }
 
 function Home() {
+  return (
+    <Protegido>
+      <HomeConteudo />
+    </Protegido>
+  );
+}
+
+function HomeConteudo() {
   const { t } = useI18n();
+  const { sair, user } = useAuth();
 
   return (
     <div className="min-h-screen" style={{ background: "var(--app-bg, #eef1f6)" }}>
@@ -59,7 +70,18 @@ function Home() {
             </p>
           </div>
         </div>
-        <LangSwitch />
+        <div className="flex items-center gap-3">
+          {user?.email && <span className="hidden text-[11px] text-white/70 sm:inline">{user.email}</span>}
+          <button
+            type="button"
+            onClick={() => sair()}
+            className="rounded-full border px-3 py-1 text-xs font-semibold text-white"
+            style={{ borderColor: "rgba(255,255,255,0.25)" }}
+          >
+            {t("nav.sair")}
+          </button>
+          <LangSwitch />
+        </div>
       </header>
 
       <main className="mx-auto max-w-5xl px-4 py-10 md:px-6">
