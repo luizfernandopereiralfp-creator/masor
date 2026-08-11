@@ -116,9 +116,12 @@ function HomeConteudo() {
           />
         </section>
 
-        <div className="mt-4 text-center">
+        <div className="mt-4 flex items-center justify-center gap-4 text-center">
           <Link to="/empresa" className="text-xs font-semibold underline" style={{ color: "var(--navy)" }}>
             {t("home.empresa")}
+          </Link>
+          <Link to="/historico" className="text-xs font-semibold underline" style={{ color: "var(--navy)" }}>
+            {t("home.historico")}
           </Link>
         </div>
 

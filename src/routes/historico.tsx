@@ -1,0 +1,125 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { ArrowLeft, Loader2, PackageSearch } from "lucide-react";
+
+import { useI18n } from "@/lib/i18n";
+import { Protegido } from "@/components/Protegido";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+
+export const Route = createFileRoute("/historico")({
+  component: () => (
+    <Protegido>
+      <Historico />
+    </Protegido>
+  ),
+});
+
+const NAVY = "var(--navy)";
+const AMBER = "var(--amber)";
+const MONO = "var(--font-mono)";
+
+type Registro = {
+  id: string;
+  origem: string;
+  created_at: string;
+  payload: Record<string, unknown> | null;
+  analise: {
+    status?: string;
+    formacao_preco?: { preco_venda_sugerido?: number | null; custo_tributario_liquido?: number | null };
+    pendencias?: unknown[];
+  } | null;
+};
+
+const brl = (v: number | null | undefined) =>
+  v == null ? "—" : v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 });
+
+function Historico() {
+  const { lang } = useI18n();
+  const tx = (pt: string, ru: string) => (lang === "ru" ? ru : pt);
+  const { perfil } = useAuth();
+  const [regs, setRegs] = useState<Registro[] | null>(null);
+
+  useEffect(() => {
+    void (async () => {
+      if (!supabase || !perfil?.tenant_id) {
+        setRegs([]);
+        return;
+      }
+      const { data } = await supabase
+        .from("product_simulations")
+        .select("id,origem,created_at,payload,analise")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      setRegs((data as Registro[]) ?? []);
+    })();
+  }, [perfil?.tenant_id]);
+
+  return (
+    <div className="min-h-screen" style={{ background: "var(--app-bg,#eef1f6)" }}>
+      <header className="flex items-center gap-3 px-5 py-3" style={{ background: NAVY }}>
+        <Link to="/" className="text-white/80 hover:text-white">
+          <ArrowLeft size={18} />
+        </Link>
+        <img src="/masor-logo.png" alt="Masor" className="h-6 w-auto brightness-0 invert" />
+        <span className="text-sm font-bold text-white">· {tx("Histórico", "История")}</span>
+      </header>
+
+      <main className="mx-auto max-w-5xl p-4 md:p-6">
+        {regs === null ? (
+          <div className="flex justify-center py-16">
+            <Loader2 className="animate-spin" style={{ color: AMBER }} />
+          </div>
+        ) : regs.length === 0 ? (
+          <div className="rounded-2xl border bg-white p-10 text-center" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+            <PackageSearch size={30} className="mx-auto" style={{ color: AMBER }} />
+            <p className="mt-3 text-sm font-semibold" style={{ color: NAVY }}>
+              {tx("Nenhuma análise ainda", "Пока нет анализов")}
+            </p>
+            <Link to="/consulta" className="mt-3 inline-block text-sm font-semibold underline" style={{ color: NAVY }}>
+              {tx("Analisar um produto →", "Анализ товара →")}
+            </Link>
+          </div>
+        ) : (
+          <div className="overflow-x-auto rounded-2xl border bg-white" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+            <table className="w-full text-xs" style={{ color: NAVY }}>
+              <thead>
+                <tr className="text-left" style={{ borderBottom: "2px solid var(--border,#e2e8f0)" }}>
+                  {[tx("Data", "Дата"), tx("Produto", "Товар"), tx("NCM", "NCM"), tx("Origem", "Источник"), tx("Status", "Статус"), tx("Custo líq.", "Себест."), tx("Preço mín.", "Мин. цена")].map((h) => (
+                    <th key={h} className="whitespace-nowrap px-3 py-2 text-[10px] font-bold uppercase tracking-wider">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {regs.map((r) => {
+                  const p = (r.payload ?? {}) as Record<string, unknown>;
+                  const st = r.analise?.status ?? "—";
+                  return (
+                    <tr key={r.id} style={{ borderBottom: "1px solid var(--border,#e2e8f0)" }}>
+                      <td className="whitespace-nowrap px-3 py-2" style={{ color: "#8892A4" }}>
+                        {new Date(r.created_at).toLocaleDateString("pt-BR")}
+                      </td>
+                      <td className="px-3 py-2">{String(p.produto_descricao ?? "—")}</td>
+                      <td className="px-3 py-2" style={{ fontFamily: MONO }}>{String(p.ncm ?? "—")}</td>
+                      <td className="px-3 py-2">{r.origem === "importacao" ? tx("NF-e", "NF-e") : tx("Consulta", "Запрос")}</td>
+                      <td className="px-3 py-2">
+                        <span
+                          className="rounded px-1.5 py-0.5 text-[10px] font-bold"
+                          style={st === "aprovado" ? { background: NAVY, color: "#fff" } : { background: "var(--amber-soft)", color: NAVY }}
+                        >
+                          {st}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2" style={{ fontFamily: MONO }}>{brl(r.analise?.formacao_preco?.custo_tributario_liquido)}</td>
+                      <td className="px-3 py-2 font-bold" style={{ fontFamily: MONO }}>{brl(r.analise?.formacao_preco?.preco_venda_sugerido)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
