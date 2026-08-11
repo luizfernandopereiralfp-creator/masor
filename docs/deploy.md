@@ -8,12 +8,18 @@ automático. Só muda o Host (`masor.g41one.com.br`) e a porta interna (3000).
 - Docker + Docker Compose.
 - Traefik rodando, conectado à rede externa `root_default`, com o resolver ACME
   `mytlschallenge` configurado (é o mesmo que o `lior` usa — não precisa criar nada).
-- DNS: `masor.g41one.com.br` → **A record** apontando para o IP da VPS. Confirme:
+- DNS: `masor.g41one.com.br` → **A record** apontando para o IP da VPS.
+
+  > **PENDÊNCIA (verificado neste run):** `masor.g41one.com.br` ainda **NÃO resolve**
+  > (domínio inexistente). O `lior.g41one.com.br` — mesmo padrão, já em produção — aponta
+  > para **`103.199.186.202`** (o IP da VPS). **Ação do Fernando:** criar no DNS do
+  > `g41one.com.br` um registro **A `masor` → `103.199.186.202`** (mesmo IP do `lior`).
+  > O deploy só emite o certificado TLS depois que isso propagar.
+
+  Confirme antes de subir:
   ```bash
-  dig +short masor.g41one.com.br
+  dig +short masor.g41one.com.br    # precisa devolver 103.199.186.202
   ```
-  Precisa devolver o IP da VPS antes de subir (o Traefik só emite o certificado
-  Let's Encrypt quando o DNS já resolve).
 
 ## Passo a passo
 
