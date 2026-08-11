@@ -151,9 +151,13 @@ function ConsultaConteudo() {
       tipo_margem: tipoMargem,
     };
     try {
+      const tok = supabase ? (await supabase.auth.getSession()).data.session?.access_token : null;
       const r = await fetch("/api/analisar", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: {
+          "content-type": "application/json",
+          ...(tok ? { authorization: `Bearer ${tok}` } : {}),
+        },
         body: JSON.stringify({ operacao, idioma: lang }),
       });
       const data = await r.json();

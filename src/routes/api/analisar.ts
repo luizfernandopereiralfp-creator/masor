@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
-import { IDIOMAS, parseParecer } from "@/lib/ia/contrato";
+import { IDIOMAS, parseParecer, ParecerIA } from "@/lib/ia/contrato";
 import type { AnaliseFiscal } from "@/lib/ia/contrato";
+import { supabaseComUsuario } from "@/integrations/supabase/client.server";
 import {
   systemEspecialista,
   userEspecialista,
@@ -75,40 +76,74 @@ export const Route = createFileRoute("/api/analisar")({
           hoje,
         };
 
-        // 1) chama o n8n (que chama o Claude)
-        let respostaN8n: Response;
-        try {
-          respostaN8n = await fetch(WEBHOOK_URL, {
-            method: "POST",
-            headers: { "content-type": "application/json", "x-masor-token": TOKEN },
-            body: JSON.stringify({
-              system: systemEspecialista(entrada),
-              user: userEspecialista(entrada),
-              idioma: entrada.idioma,
-              meta: { hoje },
-            }),
-            signal: AbortSignal.timeout(190_000),
-          });
-        } catch (e) {
-          return Response.json({ ok: false, erro: `Falha ao contatar a IA: ${(e as Error).message}` }, { status: 502 });
-        }
-        if (!respostaN8n.ok) {
-          return Response.json({ ok: false, erro: `IA retornou status ${respostaN8n.status}.` }, { status: 502 });
+        // Chave de cache: NCM + UF de destino + regime da empresa.
+        const ncmKey = String(op.ncm ?? "").replace(/\D/g, "");
+        const ufKey = str(op.uf_supermercado);
+        const regimeKey = str(op.regime_empresa);
+        const authToken = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? null;
+        const sb = authToken ? supabaseComUsuario(authToken) : null;
+
+        let parecer: ParecerIA | null = null;
+        let origemParecer: "cache" | "ia" = "ia";
+
+        // 1a) Cache: reusa parecer < 30 dias p/ o mesmo NCM+UF+regime (corta custo/tempo da IA).
+        if (sb && ncmKey.length >= 8 && ufKey) {
+          const limite = new Date(Date.now() - 30 * 864e5).toISOString();
+          const { data } = await sb
+            .from("ai_reviews")
+            .select("parecer")
+            .eq("ncm", ncmKey)
+            .eq("uf", ufKey)
+            .eq("regime", regimeKey ?? "")
+            .gte("created_at", limite)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          const r = data?.parecer ? ParecerIA.safeParse(data.parecer) : null;
+          if (r?.success) {
+            parecer = r.data;
+            origemParecer = "cache";
+          }
         }
 
-        const dadosN8n = (await respostaN8n.json()) as { analise_bruta?: string };
-        const parsed = parseParecer(dadosN8n.analise_bruta ?? "");
-        if (!parsed.ok) {
-          return Response.json(
-            {
-              ok: false,
-              erro: "A IA não retornou os parâmetros no formato esperado — validação manual necessária.",
-              detalhe: parsed.erro,
-            },
-            { status: 422 },
-          );
+        // 1b) Sem cache → chama o n8n (que chama o Claude) e grava o parecer no cache.
+        if (!parecer) {
+          let respostaN8n: Response;
+          try {
+            respostaN8n = await fetch(WEBHOOK_URL, {
+              method: "POST",
+              headers: { "content-type": "application/json", "x-masor-token": TOKEN },
+              body: JSON.stringify({
+                system: systemEspecialista(entrada),
+                user: userEspecialista(entrada),
+                idioma: entrada.idioma,
+                meta: { hoje },
+              }),
+              signal: AbortSignal.timeout(190_000),
+            });
+          } catch (e) {
+            return Response.json({ ok: false, erro: `Falha ao contatar a IA: ${(e as Error).message}` }, { status: 502 });
+          }
+          if (!respostaN8n.ok) {
+            return Response.json({ ok: false, erro: `IA retornou status ${respostaN8n.status}.` }, { status: 502 });
+          }
+          const dadosN8n = (await respostaN8n.json()) as { analise_bruta?: string };
+          const parsed = parseParecer(dadosN8n.analise_bruta ?? "");
+          if (!parsed.ok) {
+            return Response.json(
+              {
+                ok: false,
+                erro: "A IA não retornou os parâmetros no formato esperado — validação manual necessária.",
+                detalhe: parsed.erro,
+              },
+              { status: 422 },
+            );
+          }
+          parecer = parsed.data;
+          if (sb && ncmKey.length >= 8 && ufKey) {
+            void sb.from("ai_reviews").insert({ ncm: ncmKey, uf: ufKey, regime: regimeKey, parecer });
+          }
         }
-        const parecer = parsed.data;
         const pf = parecer.parametros_fiscais;
 
         // 2) a IA pode CORRIGIR o enquadramento PIS/COFINS informado pelo usuário
@@ -237,7 +272,7 @@ export const Route = createFileRoute("/api/analisar")({
         };
 
         const avisos_sanidade = m.alertas.filter((a) => a.nivel === "atencao").map((a) => a.texto);
-        return Response.json({ ok: true, analise, avisos_sanidade });
+        return Response.json({ ok: true, analise, avisos_sanidade, origem_parecer: origemParecer });
       },
     },
   },

@@ -73,9 +73,13 @@ function ImportarConteudo() {
       municipio: municipio || undefined,
     });
     try {
+      const tok = supabase ? (await supabase.auth.getSession()).data.session?.access_token : null;
       const resp = await fetch("/api/analisar", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: {
+          "content-type": "application/json",
+          ...(tok ? { authorization: `Bearer ${tok}` } : {}),
+        },
         body: JSON.stringify({ operacao, idioma: lang }),
       });
       const data = await resp.json();
