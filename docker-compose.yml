@@ -1,12 +1,23 @@
 services:
   masor:
-    build: .
+    build:
+      context: .
+      args:
+        # públicas — assadas no bundle do cliente no build (ver Dockerfile)
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
     container_name: masor
     restart: unless-stopped
     environment:
       - NODE_ENV=production
       - PORT=3000
       - HOST=0.0.0.0
+      # servidor (runtime) — lidas de um .env ao lado deste compose na VPS
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_PUBLISHABLE_KEY=${SUPABASE_PUBLISHABLE_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - MASOR_ANALISE_WEBHOOK_URL=${MASOR_ANALISE_WEBHOOK_URL}
+      - MASOR_WEBHOOK_TOKEN=${MASOR_WEBHOOK_TOKEN}
     networks:
       - root_default
     labels:
