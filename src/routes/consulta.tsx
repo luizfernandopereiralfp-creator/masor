@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState, type ReactNode } from "react";
-import { ArrowLeft, Loader2, ShieldCheck, TriangleAlert, ExternalLink } from "lucide-react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { ArrowLeft, Loader2, ShieldCheck, TriangleAlert, ExternalLink, Upload } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { Protegido } from "@/components/Protegido";
 import { supabase } from "@/integrations/supabase/client";
+import { useEmpresa } from "@/lib/empresa";
+import { parseNFe } from "@/lib/nfe/parse-nfe";
 import type { AnaliseFiscal } from "@/lib/ia/contrato";
 
 export const Route = createFileRoute("/consulta")({
@@ -37,6 +39,7 @@ function Consulta() {
 function ConsultaConteudo() {
   const { lang } = useI18n();
   const { perfil } = useAuth();
+  const { empresa } = useEmpresa();
   const tx = (pt: string, ru: string) => (lang === "ru" ? ru : pt);
 
   // ---- estado do formulário ----
@@ -72,6 +75,46 @@ function ConsultaConteudo() {
   const [analise, setAnalise] = useState<AnaliseFiscal | null>(null);
   const [avisos, setAvisos] = useState<string[]>([]);
   const [erro, setErro] = useState<string | null>(null);
+  const [nfInfo, setNfInfo] = useState<string | null>(null);
+
+  // Pré-preenche os dados fixos vindos do cadastro da empresa.
+  useEffect(() => {
+    if (!empresa) return;
+    if (empresa.regime_tributario) setRegimeEmpresa(empresa.regime_tributario);
+    if (empresa.uf) setUfSuper(empresa.uf);
+    if (empresa.municipio) setMunicipio(empresa.municipio);
+    if (empresa.markup_padrao != null) setMarkup(String(empresa.markup_padrao).replace(".", ","));
+  }, [empresa]);
+
+  // Importa uma NF-e (XML) e preenche os campos do produto (1º item).
+  async function onNF(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const parsed = parseNFe(await f.text());
+    if (!parsed.ok || !parsed.itens.length) {
+      setNfInfo(tx("Não consegui ler o XML.", "Не удалось прочитать XML."));
+      return;
+    }
+    const it = parsed.itens[0];
+    setDescricao(it.xProd ?? "");
+    setGtin(it.cEAN && it.cEAN !== "SEM GTIN" ? it.cEAN : "");
+    setNcm(it.ncm ?? "");
+    setCest(it.cest ?? "");
+    setUnidade(it.uCom ?? "UN");
+    if (it.vUnCom != null) setCusto(String(it.vUnCom).replace(".", ","));
+    if (parsed.emit_uf) setUfForn(parsed.emit_uf);
+    const imp = ["1", "2", "3", "8"].includes(it.orig ?? "");
+    setOrigem(imp ? "importado" : parsed.emit_uf && parsed.emit_uf === parsed.dest_uf ? "interna" : "sul_sudeste");
+    const cst = it.cst_icms ?? "";
+    setStRetida(cst === "60" || cst === "500" ? "S" : "N");
+    const pis = it.cst_pis ?? "";
+    setPisCofins(["04", "05"].includes(pis) ? "monofasico" : ["06", "07", "08", "09"].includes(pis) ? "zero" : "normal");
+    setNfInfo(
+      parsed.itens.length > 1
+        ? tx(`NF com ${parsed.itens.length} itens — carreguei o 1º. Vários? use Importar em lote.`, `${parsed.itens.length} позиций — загрузил 1-ю.`)
+        : tx("Dados do produto carregados da NF.", "Данные загружены из NF."),
+    );
+  }
 
   const podeAnalisar = useMemo(
     () => descricao.trim() !== "" && ncm.replace(/\D/g, "").length >= 8 && Number(custo.replace(",", ".")) > 0,
@@ -159,39 +202,31 @@ function ConsultaConteudo() {
       <main className="mx-auto grid max-w-6xl gap-6 p-4 md:p-6 lg:grid-cols-[1fr_420px]">
         {/* ---------- formulário guiado ---------- */}
         <div className="grid gap-4">
-          <Bloco n="01" titulo={tx("Sua empresa e a operação", "Ваша компания и операция")}>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Campo label={tx("Regime da sua empresa", "Налоговый режим компании")}>
-                <Sel
-                  value={regimeEmpresa}
-                  onChange={setRegimeEmpresa}
-                  opts={[
-                    ["lucro_real", tx("Lucro Real", "Lucro Real (общий)")],
-                    ["presumido", tx("Lucro Presumido", "Lucro Presumido")],
-                    ["simples", tx("Simples Nacional", "Simples Nacional")],
-                  ]}
-                />
-              </Campo>
-              <Campo label={tx("UF do supermercado (destino)", "Штат супермаркета")}>
-                <Texto value={ufSuper} onChange={(v) => setUfSuper(v.toUpperCase().slice(0, 2))} mono />
-              </Campo>
-              <Campo label={tx("Município", "Город")}>
-                <Texto value={municipio} onChange={setMunicipio} placeholder={tx("ex.: Campinas", "напр.: Кампинас")} />
-              </Campo>
-              <Campo
-                label={tx("Finalidade da compra", "Цель покупки")}
-                hint={tx("DIFAL só existe em uso/consumo/ativo.", "DIFAL только для потребления/актива.")}
-              >
-                <Alternar
-                  value={finalidade}
-                  onChange={setFinalidade}
-                  opts={[
-                    ["revenda", tx("Revenda", "Перепродажа")],
-                    ["uso_consumo", tx("Uso / consumo / ativo", "Потребление / актив")],
-                  ]}
-                />
-              </Campo>
+          <Bloco n="01" titulo={tx("Operação", "Операция")}>
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg px-3 py-2" style={{ background: "#f1f3f8" }}>
+              <span className="text-xs" style={{ color: NAVY }}>
+                {tx("Empresa", "Компания")}:{" "}
+                <b>{regimeEmpresa === "lucro_real" ? "Lucro Real" : regimeEmpresa === "presumido" ? "Presumido" : "Simples"}</b>
+                {ufSuper ? ` · ${ufSuper}` : ""}
+                {municipio ? ` · ${municipio}` : ""}
+              </span>
+              <Link to="/empresa" className="text-[11px] font-semibold underline" style={{ color: NAVY }}>
+                {tx("editar cadastro", "изменить")}
+              </Link>
             </div>
+            <Campo
+              label={tx("Finalidade da compra", "Цель покупки")}
+              hint={tx("DIFAL só existe em uso/consumo/ativo.", "DIFAL только для потребления/актива.")}
+            >
+              <Alternar
+                value={finalidade}
+                onChange={setFinalidade}
+                opts={[
+                  ["revenda", tx("Revenda", "Перепродажа")],
+                  ["uso_consumo", tx("Uso / consumo / ativo", "Потребление / актив")],
+                ]}
+              />
+            </Campo>
           </Bloco>
 
           <Bloco n="02" titulo={tx("Fornecedor", "Поставщик")}>
@@ -240,6 +275,15 @@ function ConsultaConteudo() {
               "Начните со штрихкода (EAN) — NCM обычно из него.",
             )}
           >
+            <label
+              className="flex cursor-pointer items-center gap-2 rounded-lg border border-dashed px-3 py-2 text-xs font-semibold"
+              style={{ borderColor: AMBER, color: NAVY }}
+            >
+              <Upload size={14} />
+              {tx("Preencher a partir de uma NF-e (XML)", "Заполнить из NF-e (XML)")}
+              <input type="file" accept=".xml,text/xml,application/xml" className="hidden" onChange={onNF} />
+              {nfInfo && <span className="ml-1 font-normal" style={{ color: "#8892A4" }}>· {nfInfo}</span>}
+            </label>
             <div className="grid gap-4 sm:grid-cols-2">
               <Campo label={tx("Descrição do produto", "Описание товара")}>
                 <Texto value={descricao} onChange={setDescricao} placeholder={tx("ex.: Shampoo 1 L", "напр.: Шампунь 1 л")} />

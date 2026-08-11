@@ -33,6 +33,7 @@ const pt: Dict = {
     "Envie uma nota fiscal (XML ou PDF) ou uma planilha de produtos. O sistema analisa e critica linha por linha.",
   "home.importar.cta": "Enviar arquivo",
 
+  "home.empresa": "⚙ Cadastro da empresa (preencha 1x)",
   "home.trust.title": "Nada é inventado",
   "home.trust.desc":
     "Quando a lei de um ponto não é confirmada por uma fonte oficial, o resultado sai marcado como provisório e a equipe é avisada — nunca um chute.",
@@ -69,6 +70,7 @@ const ru: Dict = {
     "Загрузите налоговую накладную (XML или PDF) или таблицу товаров. Система проверит и оценит каждую строку.",
   "home.importar.cta": "Загрузить файл",
 
+  "home.empresa": "⚙ Данные компании (заполнить 1 раз)",
   "home.trust.title": "Ничего не выдумывается",
   "home.trust.desc":
     "Если норма не подтверждена официальным источником, результат помечается как предварительный, и команда получает уведомление — никаких догадок.",

@@ -116,6 +116,12 @@ function HomeConteudo() {
           />
         </section>
 
+        <div className="mt-4 text-center">
+          <Link to="/empresa" className="text-xs font-semibold underline" style={{ color: "var(--navy)" }}>
+            {t("home.empresa")}
+          </Link>
+        </div>
+
         {/* Confiança / anti-invenção */}
         <section
           className="mt-8 flex items-start gap-3 rounded-xl border bg-white p-5"
