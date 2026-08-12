@@ -93,15 +93,19 @@ export function calcularFiscal(e: EntradaMotor): ResultadoMotor {
   const alertas: ResultadoMotor["alertas"] = [];
   const pendencias: ResultadoMotor["pendencias"] = [];
 
-  // alíquota interestadual destacada na entrada
+  // Alíquota interestadual destacada na entrada.
+  // Res. Senado 22/1989: 7% SÓ na saída de Sul/Sudeste (exceto ES) para
+  // N/NE/CO/ES. Todo o resto é 12% (inclusive N/NE → N/NE). Importado: 4%
+  // (Res. Senado 13/2012). Se a região do destino não foi confirmada e a
+  // origem é Sul/Sudeste, assume-se o caso CONSERVADOR (7% = menos crédito).
   const taxaDestaque =
     e.origem === "interna"
       ? interna
       : e.origem === "importado"
         ? 0.04
-        : p.regiao_destino === "n_ne_co_es"
+        : e.origem === "sul_sudeste" && p.regiao_destino !== "sul_sudeste"
           ? 0.07
-          : 0.12; // regiao null → assume 12% e sinaliza pendência
+          : 0.12;
 
   const interestadual = e.origem !== "interna";
   const temST = e.st_retida || p.sujeito_st === true;
@@ -192,8 +196,11 @@ export function calcularFiscal(e: EntradaMotor): ResultadoMotor {
 
   // --- pendências: parâmetros não confirmados que afetam a conta ---
   if (p.aliq_interna_destino === null) pendencias.push({ campo: "alíquota interna", motivo: "não confirmada pela pesquisa" });
-  if (interestadual && p.regiao_destino === null)
-    pendencias.push({ campo: "região do destino", motivo: "não confirmada — alíquota interestadual assumida em 12%" });
+  if (interestadual && e.origem === "sul_sudeste" && p.regiao_destino === null)
+    pendencias.push({
+      campo: "região do destino",
+      motivo: "não confirmada — assumida a hipótese conservadora de 7% (menor crédito) na entrada interestadual",
+    });
   if (empresaSimples && interestadual && !e.st_retida && p.equalizacao_simples === null)
     pendencias.push({ campo: "equalização do Simples", motivo: "não confirmada no destino" });
   if (e.consta_lista_st && !e.st_retida && p.antecipacao_st === null)
