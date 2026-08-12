@@ -76,7 +76,7 @@ export function exportarAnaliseXlsx(a: AnaliseFiscal, meta?: MetaProduto) {
     ["Frete e despesas", fp.frete_despesas],
     ["Créditos tributários (−)", fp.creditos_tributarios],
     ["Custo tributário líquido", fp.custo_tributario_liquido],
-    ["Markup aplicado (%)", fp.markup_percent],
+    ["Markup aplicado (%)", pct(fp.markup_percent)],
     ["Margem estimada (%)", pct(fp.margem_estimada_percent)],
     ["Carga de saída (%)", pct(fp.debitos_saida_percent)],
     ["PREÇO MÍNIMO DE VENDA", fp.preco_venda_sugerido],

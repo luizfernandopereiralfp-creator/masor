@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { jsonrepair } from "jsonrepair";
 
+import { supabaseComUsuario } from "@/integrations/supabase/client.server";
+
 /* ============================================================
    POST /api/chat — diálogo com a IA sobre a análise atual.
    A IA pode (1) responder em texto, (2) devolver uma diretriz de
@@ -39,6 +41,13 @@ export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // Fail-closed: só usuário autenticado usa a IA (evita proxy aberto p/ o n8n).
+        const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? null;
+        const sb = token ? supabaseComUsuario(token) : null;
+        if (!sb) return Response.json({ ok: false, erro: "Não autenticado." }, { status: 401 });
+        const { data: userData, error: authErr } = await sb.auth.getUser();
+        if (authErr || !userData?.user) return Response.json({ ok: false, erro: "Sessão inválida." }, { status: 401 });
+
         let corpo: z.infer<typeof Corpo>;
         try {
           corpo = Corpo.parse(await request.json());

@@ -53,24 +53,51 @@ function Pendencias() {
 
   async function decidir(s: Solicitacao, aprovar: boolean) {
     if (!supabase) return;
-    await supabase
+    const hoje = new Date().toISOString().slice(0, 10);
+    const [tipo, chave, ufAlvo] = s.alvo.split(":");
+    const p = s.proposta as Record<string, unknown>;
+
+    // Gate humano visível: mostra exatamente o que será gravado antes de aplicar.
+    if (aprovar) {
+      const preview = `${s.alvo}\n\n${JSON.stringify(s.proposta, null, 2).slice(0, 900)}`;
+      const ok = window.confirm(
+        tx("Aplicar esta mudança na base fiscal? Ela passa a valer para as próximas análises.\n\n", "Применить это изменение в базе?\n\n") + preview,
+      );
+      if (!ok) return;
+    }
+
+    const { error: upErr } = await supabase
       .from("rule_change_requests")
       .update({ status: aprovar ? "aprovado" : "rejeitado", revisado_por: perfil?.user_id ?? null })
       .eq("id", s.id);
-    // Ao aprovar, grava a regra na base (ncm_rules) para reuso — origem auditada.
-    if (aprovar && s.proposta?.ncm) {
-      await supabase.from("ncm_rules").upsert(
-        {
-          ncm: String(s.proposta.ncm),
-          uf: s.proposta.uf ?? null,
-          parametros: s.proposta as Record<string, unknown>,
-          fontes: s.fontes ?? [],
-          origem: "usuario+verificado",
-          status: "ativo",
-          pesquisado_em: new Date().toISOString().slice(0, 10),
-        },
-        { onConflict: "ncm,uf" },
-      );
+    if (upErr) {
+      window.alert(tx("Não consegui atualizar a solicitação.", "Не удалось обновить запрос."));
+      return;
+    }
+
+    if (aprovar) {
+      if (tipo === "ncm_rules" && /^\d{8}$/.test(chave ?? "")) {
+        await supabase.from("ncm_rules").upsert(
+          {
+            ncm: chave,
+            uf: ufAlvo ?? (typeof p.uf === "string" ? p.uf : null),
+            parametros: (p.parametros_aplicados ?? p.parametros ?? p) as Record<string, unknown>,
+            fontes: s.fontes ?? [],
+            origem: "usuario+verificado",
+            status: "ativo",
+            pesquisado_em: hoje,
+          },
+          { onConflict: "ncm,uf" },
+        );
+      } else if (tipo === "tax_states" && /^[A-Z]{2}$/.test(chave ?? "")) {
+        // Só campos conhecidos de tax_states — nunca o blob inteiro da IA.
+        const campos: Record<string, unknown> = { origem_dados: "usuario+verificado", updated_at: new Date().toISOString() };
+        for (const k of ["nome", "regiao", "aliq_interna", "equalizacao_simples", "antecipacao_st", "base_legal"])
+          if (p[k] !== undefined) campos[k] = p[k];
+        await supabase.from("tax_states").update(campos).eq("sigla", chave);
+      } else {
+        window.alert(tx("Alvo não reconhecido — solicitação marcada, mas nada aplicado automaticamente.", "Цель не распознана — ничего не применено."));
+      }
     }
     await carregar();
   }

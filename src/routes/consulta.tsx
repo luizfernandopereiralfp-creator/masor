@@ -8,7 +8,7 @@ import { Protegido } from "@/components/Protegido";
 import { supabase } from "@/integrations/supabase/client";
 import { useEmpresa } from "@/lib/empresa";
 import { parseNFe } from "@/lib/nfe/parse-nfe";
-import type { AnaliseFiscal } from "@/lib/ia/contrato";
+import { AnaliseFiscal } from "@/lib/ia/contrato";
 import { ChatDock } from "@/components/ChatDock";
 import { exportarAnaliseXlsx } from "@/lib/export/planilha";
 import {
@@ -148,7 +148,7 @@ function ConsultaConteudo() {
   // Aprendizado: envia a análise + info do usuário como proposta de regra (fila de revisão).
   async function contribuir() {
     if (!supabase || !perfil?.tenant_id || !analise) return;
-    await supabase.from("rule_change_requests").insert({
+    const { error } = await supabase.from("rule_change_requests").insert({
       tenant_id: perfil.tenant_id,
       proposto_por: perfil.user_id,
       alvo: `ncm_rules:${ncm.replace(/\D/g, "")}:${ufSuper}`,
@@ -162,7 +162,8 @@ function ConsultaConteudo() {
       justificativa: infoAdicional || null,
       fontes: analise.fontes_oficiais,
     });
-    setContribuido(true);
+    if (error) setErro(tx("Não consegui enviar à revisão agora.", "Не удалось отправить на проверку."));
+    else setContribuido(true);
   }
 
   const podeAnalisar = useMemo(
@@ -174,6 +175,7 @@ function ConsultaConteudo() {
     setStatus("loading");
     setErro(null);
     setAnalise(null);
+    setContribuido(false);
     const operacao: Operacao = {
       uf_supermercado: ufSuper,
       municipio_supermercado: municipio || null,
@@ -216,7 +218,8 @@ function ConsultaConteudo() {
         setStatus("error");
         return;
       }
-      setAnalise(data.analise as AnaliseFiscal);
+      const parsed = AnaliseFiscal.safeParse(data.analise);
+      setAnalise(parsed.success ? parsed.data : (data.analise as AnaliseFiscal));
       setAvisos((data.avisos_sanidade as string[]) ?? []);
       setStatus("ok");
       // Persiste no histórico (RLS garante o tenant). Fire-and-forget.
@@ -550,7 +553,6 @@ function Relatorio({
   onExport: () => void;
 }) {
   const fp = a.formacao_preco;
-  const enxuto = view.densidade === "enxuto";
   const statusLabel =
     a.status === "aprovado"
       ? tx("Aprovado", "Одобрено")
@@ -559,10 +561,17 @@ function Relatorio({
         : tx("Provisório", "Предварительно");
   const statusCor = a.status === "aprovado" ? "var(--success,#1f9d55)" : AMBER;
 
-  // frase didática (linguagem simples quando view.leigo)
+  // Frase didática. Só afirma o número quando a análise está APROVADA e os
+  // valores existem — senão mostra o resumo da IA (com as ressalvas), nunca
+  // apresenta um preço provisório como fato (anti-invenção).
   const margem = fp.margem_estimada_percent != null ? Math.round(fp.margem_estimada_percent * 100) : null;
-  const frase = view.leigo
-    ? `Depois de impostos e créditos, cada unidade custa de fato ${brl(fp.custo_tributario_liquido)}. Para ter cerca de ${margem ?? "—"}% de margem, venda por no mínimo ${brl(fp.preco_venda_sugerido)}.`
+  const podeTemplate =
+    view.leigo && a.status === "aprovado" && fp.preco_venda_sugerido != null && fp.custo_tributario_liquido != null;
+  const frase = podeTemplate
+    ? tx(
+        `Depois de impostos e créditos, cada unidade custa ${brl(fp.custo_tributario_liquido)}. Para ter cerca de ${margem ?? "—"}% de margem, venda por no mínimo ${brl(fp.preco_venda_sugerido)}.`,
+        `После налогов и кредитов единица стоит ${brl(fp.custo_tributario_liquido)}. Для маржи около ${margem ?? "—"}% продавайте минимум за ${brl(fp.preco_venda_sugerido)}.`,
+      )
     : a.resumo_executivo;
 
   const estaAberta = (s: SecaoId) => view.abertas.includes(s);
@@ -642,19 +651,20 @@ function Relatorio({
         </div>
       )}
 
-      {/* mini-explicação da formação do preço (compacta) */}
-      {!enxuto || estaAberta("memoria") ? null : (
-        <div className="rounded-xl border bg-white px-4 py-3" style={{ borderColor: "var(--border,#e2e8f0)" }}>
-          <MiniLinha label={tx("Custo de aquisição", "Себестоимость")} valor={brl(fp.custo_aquisicao)} />
-          {fp.frete_despesas != null && fp.frete_despesas > 0 && (
-            <MiniLinha label={tx("+ Frete e despesas", "+ Доставка")} valor={brl(fp.frete_despesas)} />
-          )}
-          {fp.creditos_tributarios != null && fp.creditos_tributarios > 0 && (
-            <MiniLinha label={tx("− Créditos", "− Кредиты")} valor={brl(fp.creditos_tributarios)} />
-          )}
-          <MiniLinha label={tx("= Custo líquido", "= Чистая себест.")} valor={brl(fp.custo_tributario_liquido)} forte />
-        </div>
-      )}
+      {/* formação do preço (decomposição) — sempre visível, enxuta ou completa */}
+      <div className="rounded-xl border bg-white px-4 py-3" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+        <p className="mb-1 text-[10px] font-bold uppercase tracking-widest" style={{ color: "#8892A4" }}>
+          {tx("Como se forma o preço", "Как формируется цена")}
+        </p>
+        <MiniLinha label={tx("Custo de aquisição", "Себестоимость")} valor={brl(fp.custo_aquisicao)} />
+        {fp.frete_despesas != null && fp.frete_despesas > 0 && (
+          <MiniLinha label={tx("+ Frete e despesas", "+ Доставка")} valor={brl(fp.frete_despesas)} />
+        )}
+        {fp.creditos_tributarios != null && fp.creditos_tributarios > 0 && (
+          <MiniLinha label={tx("− Créditos", "− Кредиты")} valor={brl(fp.creditos_tributarios)} />
+        )}
+        <MiniLinha label={tx("= Custo líquido", "= Чистая себест.")} valor={brl(fp.custo_tributario_liquido)} forte />
+      </div>
 
       {/* ---- seções colapsáveis ---- */}
       <Colapsavel

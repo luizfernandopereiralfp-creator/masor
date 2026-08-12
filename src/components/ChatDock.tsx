@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { MessageSquare, X, Send, Loader2, Sparkles } from "lucide-react";
+import { X, Send, Loader2, Sparkles } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { CHIPS, type DiretrizView } from "@/lib/ia/apresentacao";
+import type { DiretrizView } from "@/lib/ia/apresentacao";
 
 /* ============================================================
    Masor — caixa de IA sempre disponível.
@@ -11,17 +11,29 @@ import { CHIPS, type DiretrizView } from "@/lib/ia/apresentacao";
      "deixa mais enxuto", "mostra a base legal", "exporta planilha".
    - Perguntas livres vão para /api/chat (n8n).
    - Mudanças na base fiscal viram PROPOSTA -> aprovação (/pendencias).
+     O alvo é VALIDADO antes de gravar (nada de blob arbitrário do LLM).
    ============================================================ */
 
 const NAVY = "var(--navy)";
 const AMBER = "var(--amber)";
 
+/** Alvos aceitos: tax_states:UF | ncm_rules:NCM(8) [:UF]. */
+const ALVO_VALIDO = /^(tax_states:[A-Z]{2}|ncm_rules:\d{8}(:[A-Z]{2})?)$/;
+
 type Msg = { papel: "user" | "assistant"; texto: string };
 
+type Eco = [pt: string, ru: string];
 type IntentResult =
-  | { tipo: "view"; diretriz: DiretrizView; eco: string }
+  | { tipo: "view"; diretriz: DiretrizView; eco: Eco }
   | { tipo: "export" }
   | null;
+
+const CHIPS_LOCAIS: { pt: string; ru: string; diretriz: DiretrizView }[] = [
+  { pt: "Mais enxuto", ru: "Кратко", diretriz: { densidade: "enxuto", leigo: true, fechar: "todas" } },
+  { pt: "Ver tudo", ru: "Показать всё", diretriz: { densidade: "completo", abrir: "todas" } },
+  { pt: "Base legal", ru: "Правовая база", diretriz: { abrir: ["fundamentacao", "fontes"] } },
+  { pt: "Memória", ru: "Расчёт", diretriz: { abrir: ["memoria"] } },
+];
 
 /** Interpreta comandos de apresentação sem gastar IA. */
 function intentLocal(texto: string): IntentResult {
@@ -31,21 +43,21 @@ function intentLocal(texto: string): IntentResult {
     .replace(/[̀-ͯ]/g, "");
   if (/export|planilha|excel|baixar|download|xlsx/.test(t)) return { tipo: "export" };
   if (/(mais )?(enxut|resum|curt|simplific|menos deta)/.test(t))
-    return { tipo: "view", diretriz: { densidade: "enxuto", leigo: true, fechar: "todas" }, eco: "Deixei o relatório mais enxuto." };
+    return { tipo: "view", diretriz: { densidade: "enxuto", leigo: true, fechar: "todas" }, eco: ["Deixei o relatório mais enxuto.", "Сделал отчёт короче."] };
   if (/(ver|mostrar?) tudo|completo|expandir|todos os detalh|detalhad/.test(t))
-    return { tipo: "view", diretriz: { densidade: "completo", abrir: "todas" }, eco: "Abri o relatório completo." };
-  if (/t[eé]cnic/.test(t)) return { tipo: "view", diretriz: { leigo: false }, eco: "Modo técnico ativado." };
+    return { tipo: "view", diretriz: { densidade: "completo", abrir: "todas" }, eco: ["Abri o relatório completo.", "Открыл полный отчёт."] };
+  if (/t[eé]cnic/.test(t)) return { tipo: "view", diretriz: { leigo: false }, eco: ["Modo técnico ativado.", "Технический режим включён."] };
   if (/(simpl|leig|f[aá]cil|explica|como se|para (um )?leig)/.test(t))
-    return { tipo: "view", diretriz: { leigo: true }, eco: "Explicando de forma simples." };
+    return { tipo: "view", diretriz: { leigo: true }, eco: ["Explicando de forma simples.", "Объясняю простыми словами."] };
   if (/(base )?legal|lei\b|norma|fundament|artigo/.test(t))
-    return { tipo: "view", diretriz: { abrir: ["fundamentacao", "fontes"] }, eco: "Mostrei a fundamentação legal e as fontes." };
+    return { tipo: "view", diretriz: { abrir: ["fundamentacao", "fontes"] }, eco: ["Mostrei a fundamentação legal e as fontes.", "Показал правовую базу и источники."] };
   if (/mem[oó]ria|c[aá]lculo|as contas|memoria/.test(t))
-    return { tipo: "view", diretriz: { abrir: ["memoria"] }, eco: "Abri a memória de cálculo." };
+    return { tipo: "view", diretriz: { abrir: ["memoria"] }, eco: ["Abri a memória de cálculo.", "Открыл расчёт."] };
   if (/reforma|ibs|cbs|iva/.test(t))
-    return { tipo: "view", diretriz: { abrir: ["reforma", "cenarios"] }, eco: "Mostrei os impactos da Reforma e os cenários." };
-  if (/fonte/.test(t)) return { tipo: "view", diretriz: { abrir: ["fontes"] }, eco: "Mostrei as fontes oficiais." };
+    return { tipo: "view", diretriz: { abrir: ["reforma", "cenarios"] }, eco: ["Mostrei os impactos da Reforma e os cenários.", "Показал влияние реформы и сценарии."] };
+  if (/fonte/.test(t)) return { tipo: "view", diretriz: { abrir: ["fontes"] }, eco: ["Mostrei as fontes oficiais.", "Показал официальные источники."] };
   if (/risco|aten[cç][aã]o/.test(t))
-    return { tipo: "view", diretriz: { abrir: ["riscos"] }, eco: "Mostrei os riscos e pontos de atenção." };
+    return { tipo: "view", diretriz: { abrir: ["riscos"] }, eco: ["Mostrei os riscos e pontos de atenção.", "Показал риски."] };
   return null;
 }
 
@@ -61,6 +73,7 @@ export function ChatDock({
   idioma?: "pt" | "ru";
 }) {
   const { perfil } = useAuth();
+  const tx = (pt: string, ru: string) => (idioma === "ru" ? ru : pt);
   const [aberto, setAberto] = useState(false);
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [texto, setTexto] = useState("");
@@ -71,9 +84,11 @@ export function ChatDock({
     fimRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [msgs, aberto]);
 
+  const responder = (texto: string) => setMsgs((m) => [...m, { papel: "assistant", texto }]);
+
   function dispararDiretriz(d: DiretrizView, eco: string) {
     onDiretriz(d);
-    setMsgs((m) => [...m, { papel: "assistant", texto: eco }]);
+    responder(eco);
   }
 
   async function enviar(txt: string) {
@@ -87,14 +102,14 @@ export function ChatDock({
     if (intent?.tipo === "export") {
       if (onExport) {
         onExport();
-        setMsgs((m) => [...m, { papel: "assistant", texto: "Gerando a planilha…" }]);
+        responder(tx("Gerando a planilha…", "Создаю таблицу…"));
       } else {
-        setMsgs((m) => [...m, { papel: "assistant", texto: "A exportação só está disponível quando há uma análise na tela." }]);
+        responder(tx("A exportação só está disponível quando há uma análise na tela.", "Экспорт доступен только при наличии анализа."));
       }
       return;
     }
     if (intent?.tipo === "view") {
-      dispararDiretriz(intent.diretriz, intent.eco);
+      dispararDiretriz(intent.diretriz, tx(intent.eco[0], intent.eco[1]));
       return;
     }
 
@@ -113,26 +128,35 @@ export function ChatDock({
         }),
       });
       const data = await r.json();
-      if (data.diretriz_view) onDiretriz(data.diretriz_view as DiretrizView);
-      if (data.proposta && supabase && perfil?.tenant_id) {
-        const p = data.proposta as { alvo?: string; proposta?: unknown; justificativa?: string; fontes?: unknown };
-        if (p.alvo) {
-          await supabase.from("rule_change_requests").insert({
-            tenant_id: perfil.tenant_id,
-            proposto_por: perfil.user_id,
-            alvo: p.alvo,
-            proposta: p.proposta ?? {},
-            justificativa: p.justificativa ?? mensagem,
-            fontes: p.fontes ?? [],
-          });
-        }
+      if (!r.ok || data.ok === false) {
+        responder(tx("Não consegui responder agora: ", "Не удалось ответить: ") + (data.erro ?? r.status));
+        return;
       }
-      const sufixo = data.proposta?.alvo
-        ? "\n\n📋 Registrei isso como proposta de mudança na base fiscal — vai para aprovação do administrador em Pendências."
+      if (data.diretriz_view) onDiretriz(data.diretriz_view as DiretrizView);
+
+      // proposta de mudança na base fiscal -> valida o alvo e enfileira p/ aprovação
+      let enfileirada = false;
+      const p = data.proposta as { alvo?: string; proposta?: unknown; justificativa?: string; fontes?: unknown } | null;
+      if (p?.alvo && ALVO_VALIDO.test(p.alvo) && supabase && perfil?.tenant_id) {
+        const { error } = await supabase.from("rule_change_requests").insert({
+          tenant_id: perfil.tenant_id,
+          proposto_por: perfil.user_id,
+          alvo: p.alvo,
+          proposta: p.proposta && typeof p.proposta === "object" ? p.proposta : {},
+          justificativa: p.justificativa ?? mensagem,
+          fontes: Array.isArray(p.fontes) ? p.fontes : [],
+        });
+        enfileirada = !error;
+      }
+      const sufixo = enfileirada
+        ? tx(
+            "\n\n📋 Registrei como proposta de mudança na base fiscal — vai para aprovação do administrador em Pendências.",
+            "\n\n📋 Отправил как предложение об изменении базы — на одобрение администратора.",
+          )
         : "";
-      setMsgs((m) => [...m, { papel: "assistant", texto: (data.resposta ?? "—") + sufixo }]);
+      responder((data.resposta ?? "—") + sufixo);
     } catch (e) {
-      setMsgs((m) => [...m, { papel: "assistant", texto: `Não consegui responder agora: ${(e as Error).message}` }]);
+      responder(tx("Não consegui responder agora: ", "Не удалось ответить: ") + (e as Error).message);
     } finally {
       setEnviando(false);
     }
@@ -147,7 +171,7 @@ export function ChatDock({
         style={{ background: NAVY, color: "#fff" }}
       >
         <Sparkles size={16} style={{ color: AMBER }} />
-        {idioma === "ru" ? "Спросить ИИ" : "Falar com a IA"}
+        {tx("Falar com a IA", "Спросить ИИ")}
       </button>
     );
 
@@ -158,7 +182,7 @@ export function ChatDock({
     >
       <header className="flex items-center justify-between px-4 py-3" style={{ background: NAVY }}>
         <span className="flex items-center gap-2 text-sm font-bold text-white">
-          <Sparkles size={15} style={{ color: AMBER }} /> {idioma === "ru" ? "ИИ Masor" : "IA Masor"}
+          <Sparkles size={15} style={{ color: AMBER }} /> {tx("IA Masor", "ИИ Masor")}
         </span>
         <button type="button" onClick={() => setAberto(false)} className="text-white/70 hover:text-white">
           <X size={17} />
@@ -168,9 +192,10 @@ export function ChatDock({
       <div className="flex-1 space-y-2 overflow-y-auto px-3 py-3" style={{ background: "#f7f8fb" }}>
         {msgs.length === 0 && (
           <div className="rounded-lg bg-white p-3 text-xs leading-relaxed" style={{ color: "#4a5568", border: "1px solid var(--border,#e2e8f0)" }}>
-            {idioma === "ru"
-              ? "Спросите об анализе или измените вид отчёта."
-              : "Pergunte sobre a análise, ou peça para mudar o relatório — ex.: “deixa mais enxuto”, “mostra a base legal”, “exporta planilha”."}
+            {tx(
+              "Pergunte sobre a análise, ou peça para mudar o relatório — ex.: “deixa mais enxuto”, “mostra a base legal”, “exporta planilha”.",
+              "Спросите об анализе или измените вид отчёта — напр.: «короче», «покажи правовую базу», «экспорт».",
+            )}
           </div>
         )}
         {msgs.map((m, i) => (
@@ -188,7 +213,7 @@ export function ChatDock({
         ))}
         {enviando && (
           <div className="flex items-center gap-2 text-xs" style={{ color: "#8892A4" }}>
-            <Loader2 size={13} className="animate-spin" /> {idioma === "ru" ? "думаю…" : "pensando…"}
+            <Loader2 size={13} className="animate-spin" /> {tx("pensando…", "думаю…")}
           </div>
         )}
         <div ref={fimRef} />
@@ -196,15 +221,15 @@ export function ChatDock({
 
       {/* chips de apresentação */}
       <div className="flex flex-wrap gap-1.5 border-t px-3 py-2" style={{ borderColor: "var(--border,#e2e8f0)" }}>
-        {CHIPS.slice(0, 4).map((c) => (
+        {CHIPS_LOCAIS.map((c) => (
           <button
-            key={c.rotulo}
+            key={c.pt}
             type="button"
-            onClick={() => dispararDiretriz(c.diretriz, `✓ ${c.rotulo}`)}
+            onClick={() => dispararDiretriz(c.diretriz, `✓ ${tx(c.pt, c.ru)}`)}
             className="rounded-full border px-2.5 py-1 text-[11px] font-semibold"
             style={{ borderColor: "var(--border,#e2e8f0)", color: NAVY }}
           >
-            {c.rotulo}
+            {tx(c.pt, c.ru)}
           </button>
         ))}
       </div>
@@ -214,7 +239,7 @@ export function ChatDock({
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && enviar(texto)}
-          placeholder={idioma === "ru" ? "Напишите сообщение…" : "Escreva uma mensagem…"}
+          placeholder={tx("Escreva uma mensagem…", "Напишите сообщение…")}
           className="flex-1 rounded-full border px-3 py-2 text-xs outline-none"
           style={{ borderColor: "var(--border,#e2e8f0)", color: NAVY }}
         />
