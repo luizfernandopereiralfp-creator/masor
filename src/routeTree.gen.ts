@@ -14,11 +14,14 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ConsultaRouteImport } from './routes/consulta'
 import { Route as EmpresaRouteImport } from './routes/empresa'
 import { Route as EntrarRouteImport } from './routes/entrar'
+import { Route as FiscalRouteImport } from './routes/fiscal'
 import { Route as HistoricoRouteImport } from './routes/historico'
 import { Route as ImportarRouteImport } from './routes/importar'
 import { Route as PendenciasRouteImport } from './routes/pendencias'
 import { Route as ApiAnalisarRouteImport } from './routes/api/analisar'
+import { Route as ApiCertificadoRouteImport } from './routes/api/certificado'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiDfeBuscarRouteImport } from './routes/api/dfe.buscar'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -45,6 +48,11 @@ const EntrarRoute = EntrarRouteImport.update({
   path: '/entrar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FiscalRoute = FiscalRouteImport.update({
+  id: '/fiscal',
+  path: '/fiscal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HistoricoRoute = HistoricoRouteImport.update({
   id: '/historico',
   path: '/historico',
@@ -65,9 +73,19 @@ const ApiAnalisarRoute = ApiAnalisarRouteImport.update({
   path: '/api/analisar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCertificadoRoute = ApiCertificadoRouteImport.update({
+  id: '/api/certificado',
+  path: '/api/certificado',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDfeBuscarRoute = ApiDfeBuscarRouteImport.update({
+  id: '/api/dfe/buscar',
+  path: '/api/dfe/buscar',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -77,11 +95,14 @@ export interface FileRoutesByFullPath {
   '/consulta': typeof ConsultaRoute
   '/empresa': typeof EmpresaRoute
   '/entrar': typeof EntrarRoute
+  '/fiscal': typeof FiscalRoute
   '/historico': typeof HistoricoRoute
   '/importar': typeof ImportarRoute
   '/pendencias': typeof PendenciasRoute
   '/api/analisar': typeof ApiAnalisarRoute
+  '/api/certificado': typeof ApiCertificadoRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/dfe/buscar': typeof ApiDfeBuscarRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -89,11 +110,14 @@ export interface FileRoutesByTo {
   '/consulta': typeof ConsultaRoute
   '/empresa': typeof EmpresaRoute
   '/entrar': typeof EntrarRoute
+  '/fiscal': typeof FiscalRoute
   '/historico': typeof HistoricoRoute
   '/importar': typeof ImportarRoute
   '/pendencias': typeof PendenciasRoute
   '/api/analisar': typeof ApiAnalisarRoute
+  '/api/certificado': typeof ApiCertificadoRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/dfe/buscar': typeof ApiDfeBuscarRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -102,11 +126,14 @@ export interface FileRoutesById {
   '/consulta': typeof ConsultaRoute
   '/empresa': typeof EmpresaRoute
   '/entrar': typeof EntrarRoute
+  '/fiscal': typeof FiscalRoute
   '/historico': typeof HistoricoRoute
   '/importar': typeof ImportarRoute
   '/pendencias': typeof PendenciasRoute
   '/api/analisar': typeof ApiAnalisarRoute
+  '/api/certificado': typeof ApiCertificadoRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/dfe/buscar': typeof ApiDfeBuscarRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -116,11 +143,14 @@ export interface FileRouteTypes {
     | '/consulta'
     | '/empresa'
     | '/entrar'
+    | '/fiscal'
     | '/historico'
     | '/importar'
     | '/pendencias'
     | '/api/analisar'
+    | '/api/certificado'
     | '/api/chat'
+    | '/api/dfe/buscar'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -128,11 +158,14 @@ export interface FileRouteTypes {
     | '/consulta'
     | '/empresa'
     | '/entrar'
+    | '/fiscal'
     | '/historico'
     | '/importar'
     | '/pendencias'
     | '/api/analisar'
+    | '/api/certificado'
     | '/api/chat'
+    | '/api/dfe/buscar'
   id:
     | '__root__'
     | '/'
@@ -140,11 +173,14 @@ export interface FileRouteTypes {
     | '/consulta'
     | '/empresa'
     | '/entrar'
+    | '/fiscal'
     | '/historico'
     | '/importar'
     | '/pendencias'
     | '/api/analisar'
+    | '/api/certificado'
     | '/api/chat'
+    | '/api/dfe/buscar'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -153,11 +189,14 @@ export interface RootRouteChildren {
   ConsultaRoute: typeof ConsultaRoute
   EmpresaRoute: typeof EmpresaRoute
   EntrarRoute: typeof EntrarRoute
+  FiscalRoute: typeof FiscalRoute
   HistoricoRoute: typeof HistoricoRoute
   ImportarRoute: typeof ImportarRoute
   PendenciasRoute: typeof PendenciasRoute
   ApiAnalisarRoute: typeof ApiAnalisarRoute
+  ApiCertificadoRoute: typeof ApiCertificadoRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiDfeBuscarRoute: typeof ApiDfeBuscarRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -197,6 +236,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EntrarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/fiscal': {
+      id: '/fiscal'
+      path: '/fiscal'
+      fullPath: '/fiscal'
+      preLoaderRoute: typeof FiscalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/historico': {
       id: '/historico'
       path: '/historico'
@@ -225,11 +271,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAnalisarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/certificado': {
+      id: '/api/certificado'
+      path: '/api/certificado'
+      fullPath: '/api/certificado'
+      preLoaderRoute: typeof ApiCertificadoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
       fullPath: '/api/chat'
       preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/dfe/buscar': {
+      id: '/api/dfe/buscar'
+      path: '/api/dfe/buscar'
+      fullPath: '/api/dfe/buscar'
+      preLoaderRoute: typeof ApiDfeBuscarRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -241,11 +301,14 @@ const rootRouteChildren: RootRouteChildren = {
   ConsultaRoute: ConsultaRoute,
   EmpresaRoute: EmpresaRoute,
   EntrarRoute: EntrarRoute,
+  FiscalRoute: FiscalRoute,
   HistoricoRoute: HistoricoRoute,
   ImportarRoute: ImportarRoute,
   PendenciasRoute: PendenciasRoute,
   ApiAnalisarRoute: ApiAnalisarRoute,
+  ApiCertificadoRoute: ApiCertificadoRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiDfeBuscarRoute: ApiDfeBuscarRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

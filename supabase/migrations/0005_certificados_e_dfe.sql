@@ -3,8 +3,8 @@
 -- ADITIVA. Reusa tenant_fiscal_config (modo_captura, cert_ref, ult_nsu)
 -- já criada em 0001. O certificado (.pfx) e a senha são guardados
 -- CIFRADOS (AES-256-GCM na aplicação, chave em MASOR_CERT_ENC_KEY) —
--- um dump do banco sozinho não revela o certificado. As colunas bytea
--- guardam ciphertext (iv||authTag||dados), seguro até para staff.
+-- um dump do banco sozinho não revela o certificado. As colunas guardam
+-- ciphertext em base64 (iv||authTag||dados), seguro até para staff.
 -- ============================================================
 
 -- ---------- Certificado digital A1 por tenant ----------
@@ -13,8 +13,10 @@ create table if not exists public.certificados_digitais (
   tenant_id     uuid not null references public.tenants(id) on delete cascade,
   empresa       text,                 -- rótulo (ex.: razão social)
   cnpj          text not null,        -- titular do certificado (metadado, não segredo)
-  pfx_cifrado   bytea not null,       -- AES-256-GCM(.pfx)  : iv||authTag||ciphertext
-  senha_cifrada bytea not null,       -- AES-256-GCM(senha)
+  -- Ciphertext em base64 (text, não bytea): o PostgREST serializa bytea de forma
+  -- ambígua (hex x base64) — base64 explícito elimina qualquer dúvida no round-trip.
+  pfx_cifrado   text not null,        -- base64( AES-256-GCM(.pfx) ) : iv||authTag||ciphertext
+  senha_cifrada text not null,        -- base64( AES-256-GCM(senha) )
   titular       text,                 -- CN extraído do certificado
   validade_ate  date,                 -- extraída no upload
   ativo         boolean not null default true,

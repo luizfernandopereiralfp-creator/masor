@@ -126,6 +126,9 @@ function HomeConteudo() {
               <Link to="/admin" className="text-xs font-semibold underline" style={{ color: "var(--navy)" }}>
                 {t("home.admin")}
               </Link>
+              <Link to="/fiscal" className="text-xs font-semibold underline" style={{ color: "var(--navy)" }}>
+                {t("home.fiscal")}
+              </Link>
             </>
           )}
         </div>
