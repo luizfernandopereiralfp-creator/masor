@@ -18,6 +18,7 @@ import { Route as HistoricoRouteImport } from './routes/historico'
 import { Route as ImportarRouteImport } from './routes/importar'
 import { Route as PendenciasRouteImport } from './routes/pendencias'
 import { Route as ApiAnalisarRouteImport } from './routes/api/analisar'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -64,6 +65,11 @@ const ApiAnalisarRoute = ApiAnalisarRouteImport.update({
   path: '/api/analisar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/importar': typeof ImportarRoute
   '/pendencias': typeof PendenciasRoute
   '/api/analisar': typeof ApiAnalisarRoute
+  '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByTo {
   '/importar': typeof ImportarRoute
   '/pendencias': typeof PendenciasRoute
   '/api/analisar': typeof ApiAnalisarRoute
+  '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -98,6 +106,7 @@ export interface FileRoutesById {
   '/importar': typeof ImportarRoute
   '/pendencias': typeof PendenciasRoute
   '/api/analisar': typeof ApiAnalisarRoute
+  '/api/chat': typeof ApiChatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,6 +120,7 @@ export interface FileRouteTypes {
     | '/importar'
     | '/pendencias'
     | '/api/analisar'
+    | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -122,6 +132,7 @@ export interface FileRouteTypes {
     | '/importar'
     | '/pendencias'
     | '/api/analisar'
+    | '/api/chat'
   id:
     | '__root__'
     | '/'
@@ -133,6 +144,7 @@ export interface FileRouteTypes {
     | '/importar'
     | '/pendencias'
     | '/api/analisar'
+    | '/api/chat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -145,6 +157,7 @@ export interface RootRouteChildren {
   ImportarRoute: typeof ImportarRoute
   PendenciasRoute: typeof PendenciasRoute
   ApiAnalisarRoute: typeof ApiAnalisarRoute
+  ApiChatRoute: typeof ApiChatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -212,6 +225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAnalisarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -225,6 +245,7 @@ const rootRouteChildren: RootRouteChildren = {
   ImportarRoute: ImportarRoute,
   PendenciasRoute: PendenciasRoute,
   ApiAnalisarRoute: ApiAnalisarRoute,
+  ApiChatRoute: ApiChatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

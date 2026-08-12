@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { ArrowLeft, Loader2, ShieldCheck, TriangleAlert, ExternalLink, Upload } from "lucide-react";
+import { ArrowLeft, Loader2, ShieldCheck, TriangleAlert, ExternalLink, Upload, ChevronDown, Download } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
@@ -9,6 +9,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEmpresa } from "@/lib/empresa";
 import { parseNFe } from "@/lib/nfe/parse-nfe";
 import type { AnaliseFiscal } from "@/lib/ia/contrato";
+import { ChatDock } from "@/components/ChatDock";
+import { exportarAnaliseXlsx } from "@/lib/export/planilha";
+import {
+  VIEW_PADRAO,
+  aplicarDiretriz,
+  ROTULO_SECAO,
+  type ViewPrefs,
+  type SecaoId,
+  type DiretrizView,
+} from "@/lib/ia/apresentacao";
 
 export const Route = createFileRoute("/consulta")({
   component: Consulta,
@@ -78,6 +88,23 @@ function ConsultaConteudo() {
   const [avisos, setAvisos] = useState<string[]>([]);
   const [erro, setErro] = useState<string | null>(null);
   const [nfInfo, setNfInfo] = useState<string | null>(null);
+
+  // ---- apresentação do relatório (a IA/os chips controlam) ----
+  const [view, setView] = useState<ViewPrefs>(VIEW_PADRAO);
+  const aplicarView = (d: DiretrizView) => setView((v) => aplicarDiretriz(v, d));
+  const toggleSecao = (s: SecaoId) =>
+    setView((v) => ({ ...v, abertas: v.abertas.includes(s) ? v.abertas.filter((x) => x !== s) : [...v.abertas, s] }));
+
+  function exportar() {
+    if (!analise) return;
+    exportarAnaliseXlsx(analise, {
+      produto: descricao,
+      ncm,
+      uf: ufSuper,
+      regime: regimeEmpresa,
+      data: analise.data_verificacao_legislativa,
+    });
+  }
 
   // Pré-preenche os dados fixos vindos do cadastro da empresa.
   useEffect(() => {
@@ -465,7 +492,15 @@ function ConsultaConteudo() {
           )}
           {status === "ok" && analise && (
             <>
-              <Relatorio a={analise} avisos={avisos} tx={tx} />
+              <Relatorio
+                a={analise}
+                avisos={avisos}
+                tx={tx}
+                view={view}
+                onDiretriz={aplicarView}
+                onToggle={toggleSecao}
+                onExport={exportar}
+              />
               <button
                 type="button"
                 onClick={contribuir}
@@ -481,200 +516,234 @@ function ConsultaConteudo() {
           )}
         </aside>
       </main>
+
+      {/* caixa de IA sempre disponível */}
+      <ChatDock
+        idioma={lang}
+        contexto={{ analise, operacao: { ncm, uf: ufSuper, regime: regimeEmpresa, produto: descricao } }}
+        onDiretriz={aplicarView}
+        onExport={analise ? exportar : undefined}
+      />
     </div>
   );
 }
 
 /* ============================================================
-   Relatório — formato da persona (canhoto de NF + seções)
+   Relatório — enxuto e didático: números em evidência no topo,
+   detalhes em seções colapsáveis que a IA/os chips abrem.
    ============================================================ */
 function Relatorio({
   a,
   avisos,
   tx,
+  view,
+  onDiretriz,
+  onToggle,
+  onExport,
 }: {
   a: AnaliseFiscal;
   avisos: string[];
   tx: (pt: string, ru: string) => string;
+  view: ViewPrefs;
+  onDiretriz: (d: DiretrizView) => void;
+  onToggle: (s: SecaoId) => void;
+  onExport: () => void;
 }) {
   const fp = a.formacao_preco;
+  const enxuto = view.densidade === "enxuto";
   const statusLabel =
     a.status === "aprovado"
-      ? tx("APROVADO", "ОДОБРЕНО")
+      ? tx("Aprovado", "Одобрено")
       : a.status === "com_ressalvas"
-        ? tx("COM RESSALVAS", "С ОГОВОРКАМИ")
-        : tx("PROVISÓRIO", "ПРЕДВАРИТЕЛЬНО");
+        ? tx("Com ressalvas", "С оговорками")
+        : tx("Provisório", "Предварительно");
+  const statusCor = a.status === "aprovado" ? "var(--success,#1f9d55)" : AMBER;
+
+  // frase didática (linguagem simples quando view.leigo)
+  const margem = fp.margem_estimada_percent != null ? Math.round(fp.margem_estimada_percent * 100) : null;
+  const frase = view.leigo
+    ? `Depois de impostos e créditos, cada unidade custa de fato ${brl(fp.custo_tributario_liquido)}. Para ter cerca de ${margem ?? "—"}% de margem, venda por no mínimo ${brl(fp.preco_venda_sugerido)}.`
+    : a.resumo_executivo;
+
+  const estaAberta = (s: SecaoId) => view.abertas.includes(s);
 
   return (
-    <div className="grid gap-4">
-      {/* canhoto de NF */}
+    <div className="grid gap-3">
+      {/* barra de controle: densidade + exportar */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="inline-flex overflow-hidden rounded-lg border" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+          {(["enxuto", "completo"] as const).map((d) => (
+            <button
+              key={d}
+              type="button"
+              onClick={() => onDiretriz(d === "completo" ? { densidade: "completo", abrir: "todas" } : { densidade: "enxuto", fechar: "todas" })}
+              className="px-3 py-1 text-[11px] font-bold"
+              style={view.densidade === d ? { background: NAVY, color: "#fff" } : { background: "#fff", color: NAVY }}
+            >
+              {d === "enxuto" ? tx("Enxuto", "Кратко") : tx("Completo", "Полный")}
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={onExport}
+          className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-bold"
+          style={{ borderColor: NAVY, color: NAVY }}
+        >
+          <Download size={13} /> {tx("Exportar planilha", "Экспорт")}
+        </button>
+      </div>
+
+      {/* HERO — números em evidência */}
       <div className="overflow-hidden rounded-2xl border bg-white" style={{ borderColor: "var(--border,#e2e8f0)" }}>
-        <div className="flex items-center justify-between px-4 py-3" style={{ background: NAVY }}>
-          <span className="text-xs font-bold uppercase tracking-widest text-white">
-            {tx("Resultado", "Результат")}
-          </span>
-          <span
-            className="rounded px-2 py-0.5 text-[10px] font-bold"
-            style={{
-              background: a.status === "aprovado" ? AMBER : "var(--amber-soft)",
-              color: NAVY,
-            }}
-          >
+        <div className="flex items-center justify-between px-4 py-2.5" style={{ background: NAVY }}>
+          <span className="text-xs font-bold uppercase tracking-widest text-white">{tx("Resultado", "Результат")}</span>
+          <span className="flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold text-white" style={{ background: statusCor }}>
+            {a.status === "aprovado" ? <ShieldCheck size={11} /> : <TriangleAlert size={11} />}
             {statusLabel}
           </span>
         </div>
-        <div className="px-4 py-3">
-          <LinhaNota label={tx("Custo de aquisição", "Себестоимость")} valor={brl(fp.custo_aquisicao)} />
-          {fp.frete_despesas != null && fp.frete_despesas > 0 && (
-            <LinhaNota label={tx("Frete e despesas", "Доставка и расходы")} valor={brl(fp.frete_despesas)} />
-          )}
-          {fp.creditos_tributarios != null && fp.creditos_tributarios > 0 && (
-            <LinhaNota label={tx("Créditos", "Кредиты")} valor={brl(fp.creditos_tributarios)} negativo />
-          )}
-          <Tracejado />
-          <LinhaNota label={tx("Custo tributário líquido", "Чистая налог. себест.")} valor={brl(fp.custo_tributario_liquido)} forte />
-          <LinhaNota label={tx("Carga de saída", "Налог на выходе")} valor={pctFmt(fp.debitos_saida_percent)} />
-          <LinhaNota label={tx("Margem estimada", "Оценка маржи")} valor={pctFmt(fp.margem_estimada_percent)} />
-          <Tracejado />
-          <div className="mt-1 rounded-lg p-3" style={{ background: "var(--amber-soft)" }}>
-            <p className="text-[10px] uppercase tracking-widest" style={{ color: NAVY }}>
+        <div className="p-4">
+          {/* preço mínimo — o número que mais importa */}
+          <div className="rounded-xl p-4 text-center" style={{ background: "var(--amber-soft)" }}>
+            <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: NAVY }}>
               {tx("Preço mínimo de venda", "Мин. цена продажи")}
             </p>
-            <p className="text-2xl font-bold" style={{ color: NAVY, fontFamily: MONO }}>
+            <p className="text-4xl font-black leading-tight" style={{ color: NAVY, fontFamily: MONO }}>
               {brl(fp.preco_venda_sugerido)}
             </p>
           </div>
+          {/* dois indicadores de apoio */}
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <Indicador rotulo={tx("Custo tributário líquido", "Чистая себест.")} valor={brl(fp.custo_tributario_liquido)} />
+            <Indicador rotulo={tx("Margem estimada", "Маржа")} valor={pctFmt(fp.margem_estimada_percent)} />
+          </div>
+          {/* frase didática */}
+          <p className="mt-3 text-sm leading-relaxed" style={{ color: "#4a5568" }}>{frase}</p>
         </div>
       </div>
 
-      {/* parâmetros aplicados com fonte (rastreabilidade) */}
-      {a.parametros_aplicados.length > 0 && (
-        <Secao titulo={tx("Parâmetros aplicados (com fonte)", "Применённые параметры (с источником)")}>
+      {/* avisos + pendências — sempre visíveis (anti-invenção) */}
+      {avisos.map((av, i) => (
+        <Alerta key={`av${i}`} forte>{av}</Alerta>
+      ))}
+      {a.pendencias.length > 0 && (
+        <div className="rounded-xl border p-3" style={{ borderColor: AMBER, background: "var(--amber-soft)" }}>
+          <p className="mb-1.5 text-[11px] font-bold uppercase tracking-widest" style={{ color: NAVY }}>
+            {tx("A confirmar (não presumido)", "Уточнить")}
+          </p>
           <div className="grid gap-1.5">
-            {a.parametros_aplicados.map((p, i) => (
-              <div key={i} className="flex items-center justify-between gap-3 text-xs" style={{ color: NAVY }}>
-                <span>{p.rotulo}</span>
-                <span className="flex items-center gap-1.5 whitespace-nowrap">
-                  <b style={{ fontFamily: MONO }}>{p.valor}</b>
-                  {p.fonte_url ? (
-                    <a
-                      href={p.fonte_url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-0.5 underline"
-                      style={{ color: "var(--info, #2563eb)" }}
-                    >
-                      {tx("fonte", "источник")}
-                      <ExternalLink size={10} />
-                    </a>
-                  ) : (
-                    <span
-                      className="rounded px-1.5 py-0.5 text-[10px] font-bold"
-                      style={{ background: "var(--amber-soft)", color: NAVY }}
-                    >
-                      ⚠ {tx("a confirmar", "уточнить")}
-                    </span>
-                  )}
-                </span>
+            {a.pendencias.map((p, i) => (
+              <div key={i} className="text-xs leading-relaxed" style={{ color: NAVY }}>
+                <b>{p.campo}:</b> {p.motivo}
               </div>
             ))}
           </div>
-        </Secao>
+        </div>
       )}
 
-      {/* avisos de sanidade */}
-      {avisos.length > 0 &&
-        avisos.map((av, i) => (
-          <Alerta key={i} forte>
-            {av}
-          </Alerta>
-        ))}
+      {/* mini-explicação da formação do preço (compacta) */}
+      {!enxuto || estaAberta("memoria") ? null : (
+        <div className="rounded-xl border bg-white px-4 py-3" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+          <MiniLinha label={tx("Custo de aquisição", "Себестоимость")} valor={brl(fp.custo_aquisicao)} />
+          {fp.frete_despesas != null && fp.frete_despesas > 0 && (
+            <MiniLinha label={tx("+ Frete e despesas", "+ Доставка")} valor={brl(fp.frete_despesas)} />
+          )}
+          {fp.creditos_tributarios != null && fp.creditos_tributarios > 0 && (
+            <MiniLinha label={tx("− Créditos", "− Кредиты")} valor={brl(fp.creditos_tributarios)} />
+          )}
+          <MiniLinha label={tx("= Custo líquido", "= Чистая себест.")} valor={brl(fp.custo_tributario_liquido)} forte />
+        </div>
+      )}
 
-      {/* pendências anti-invenção */}
-      {a.pendencias.length > 0 && (
-        <Secao titulo={tx("Pendências (não presumidas)", "Ожидает проверки")}>
-          {a.pendencias.map((p, i) => (
-            <Alerta key={i} forte>
-              <b>{p.campo}:</b> {p.motivo}
-            </Alerta>
+      {/* ---- seções colapsáveis ---- */}
+      <Colapsavel
+        id="parametros"
+        titulo={ROTULO_SECAO.parametros}
+        n={a.parametros_aplicados.length}
+        aberta={estaAberta("parametros")}
+        onToggle={onToggle}
+        tx={tx}
+      >
+        <div className="grid gap-1.5">
+          {a.parametros_aplicados.map((p, i) => (
+            <div key={i} className="flex items-center justify-between gap-3 text-xs" style={{ color: NAVY }}>
+              <span>{p.rotulo}</span>
+              <span className="flex items-center gap-1.5 whitespace-nowrap">
+                <b style={{ fontFamily: MONO }}>{p.valor}</b>
+                {p.fonte_url ? (
+                  <a href={p.fonte_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 underline" style={{ color: "var(--info,#2563eb)" }}>
+                    {tx("fonte", "источник")}
+                    <ExternalLink size={10} />
+                  </a>
+                ) : (
+                  <span className="rounded px-1.5 py-0.5 text-[10px] font-bold" style={{ background: "var(--amber-soft)", color: NAVY }}>
+                    ⚠ {tx("a confirmar", "уточнить")}
+                  </span>
+                )}
+              </span>
+            </div>
           ))}
-        </Secao>
-      )}
+        </div>
+      </Colapsavel>
 
-      <Secao titulo={tx("Resumo executivo", "Резюме")}>
-        <p className="text-sm leading-relaxed" style={{ color: NAVY }}>{a.resumo_executivo}</p>
-      </Secao>
+      <Colapsavel id="memoria" titulo={ROTULO_SECAO.memoria} n={a.memoria_calculo.length} aberta={estaAberta("memoria")} onToggle={onToggle} tx={tx}>
+        <div className="grid gap-1">
+          {a.memoria_calculo.map((p, i) => (
+            <div key={i} className="flex items-baseline justify-between gap-3 text-xs" style={{ color: NAVY }}>
+              <span>
+                {p.rotulo}
+                {p.formula ? <span style={{ color: "#8892A4" }}> · {p.formula}</span> : null}
+              </span>
+              <span style={{ fontFamily: MONO, whiteSpace: "nowrap" }}>
+                {p.unidade === "%" ? pctFmt(p.resultado) : p.unidade === "un" ? (p.resultado ?? "—") : brl(p.resultado)}
+              </span>
+            </div>
+          ))}
+        </div>
+      </Colapsavel>
 
-      <Secao titulo={tx("Tratamento tributário atual", "Текущий налоговый режим")}>
-        <p className="text-sm leading-relaxed" style={{ color: NAVY }}>{a.tratamento_atual}</p>
-      </Secao>
-
-      <Secao titulo={tx("Impactos da Reforma Tributária", "Влияние налоговой реформы")}>
-        <p className="text-sm leading-relaxed" style={{ color: NAVY }}>{a.impactos_reforma}</p>
-      </Secao>
+      <Colapsavel id="reforma" titulo={ROTULO_SECAO.reforma} aberta={estaAberta("reforma")} onToggle={onToggle} tx={tx}>
+        <p className="mb-2 text-sm leading-relaxed" style={{ color: NAVY }}>
+          <b className="text-xs uppercase tracking-wide" style={{ color: "#8892A4" }}>{tx("Hoje", "Сегодня")}: </b>
+          {a.tratamento_atual}
+        </p>
+        <p className="text-sm leading-relaxed" style={{ color: NAVY }}>
+          <b className="text-xs uppercase tracking-wide" style={{ color: "#8892A4" }}>{tx("Reforma", "Реформа")}: </b>
+          {a.impactos_reforma}
+        </p>
+      </Colapsavel>
 
       {a.cenarios.length > 0 && (
-        <Secao titulo={tx("Cenários: atual × transição × futuro", "Сценарии: сейчас × переход × будущее")}>
+        <Colapsavel id="cenarios" titulo={ROTULO_SECAO.cenarios} n={a.cenarios.length} aberta={estaAberta("cenarios")} onToggle={onToggle} tx={tx}>
           <div className="grid gap-2">
             {a.cenarios.map((c, i) => (
               <div key={i} className="rounded-lg border p-2 text-xs" style={{ borderColor: "var(--border,#e2e8f0)", color: NAVY }}>
                 <b className="uppercase">{c.fase}</b>
                 {c.vigencia ? ` · ${c.vigencia}` : ""} — {c.resumo}
-                {c.preco_venda_sugerido != null && (
-                  <span style={{ fontFamily: MONO }}> · PV {brl(c.preco_venda_sugerido)}</span>
-                )}
+                {c.preco_venda_sugerido != null && <span style={{ fontFamily: MONO }}> · PV {brl(c.preco_venda_sugerido)}</span>}
               </div>
             ))}
           </div>
-        </Secao>
-      )}
-
-      {a.memoria_calculo.length > 0 && (
-        <Secao titulo={tx("Memória de cálculo", "Расчёт")}>
-          <div className="grid gap-1">
-            {a.memoria_calculo.map((p, i) => (
-              <div key={i} className="flex items-baseline justify-between gap-3 text-xs" style={{ color: NAVY }}>
-                <span>
-                  {p.rotulo}
-                  {p.formula ? <span style={{ color: "#8892A4" }}> · {p.formula}</span> : null}
-                </span>
-                <span style={{ fontFamily: MONO, whiteSpace: "nowrap" }}>
-                  {p.unidade === "%" ? pctFmt(p.resultado) : p.unidade === "un" ? (p.resultado ?? "—") : brl(p.resultado)}
-                </span>
-              </div>
-            ))}
-          </div>
-        </Secao>
-      )}
-
-      {a.oportunidades_economia.length > 0 && (
-        <Secao titulo={tx("Oportunidades de economia", "Возможности экономии")}>
-          <Lista itens={a.oportunidades_economia} />
-        </Secao>
+        </Colapsavel>
       )}
 
       {a.beneficios_creditos_regimes.length > 0 && (
-        <Secao titulo={tx("Benefícios, créditos e regimes", "Льготы, кредиты, режимы")}>
+        <Colapsavel id="beneficios" titulo={ROTULO_SECAO.beneficios} n={a.beneficios_creditos_regimes.length} aberta={estaAberta("beneficios")} onToggle={onToggle} tx={tx}>
           <div className="grid gap-1">
             {a.beneficios_creditos_regimes.map((b, i) => (
               <div key={i} className="text-xs" style={{ color: NAVY }}>
                 <b>{b.tipo}</b> — {b.descricao}{" "}
-                {b.aplicavel === null ? (
-                  <span style={{ color: AMBER }}>({tx("a confirmar", "уточнить")})</span>
-                ) : b.aplicavel ? (
-                  "✓"
-                ) : (
-                  "✕"
-                )}
+                {b.aplicavel === null ? <span style={{ color: AMBER }}>({tx("a confirmar", "уточнить")})</span> : b.aplicavel ? "✓" : "✕"}
                 {b.fundamento_url && <FonteLink url={b.fundamento_url} />}
               </div>
             ))}
           </div>
-        </Secao>
+        </Colapsavel>
       )}
 
       {a.ncms_enquadramentos.length > 0 && (
-        <Secao titulo={tx("NCMs / enquadramentos possíveis", "Возможные NCM")}>
+        <Colapsavel id="ncms" titulo={ROTULO_SECAO.ncms} n={a.ncms_enquadramentos.length} aberta={estaAberta("ncms")} onToggle={onToggle} tx={tx}>
           <div className="grid gap-1">
             {a.ncms_enquadramentos.map((n, i) => (
               <div key={i} className="text-xs" style={{ color: NAVY }}>
@@ -684,17 +753,39 @@ function Relatorio({
               </div>
             ))}
           </div>
-        </Secao>
+        </Colapsavel>
       )}
 
-      {a.riscos_pontos_atencao.length > 0 && (
-        <Secao titulo={tx("Riscos e pontos de atenção", "Риски")}>
-          <Lista itens={a.riscos_pontos_atencao} />
-        </Secao>
+      {(a.riscos_pontos_atencao.length > 0 || a.oportunidades_economia.length > 0) && (
+        <Colapsavel
+          id="riscos"
+          titulo={ROTULO_SECAO.riscos}
+          n={a.riscos_pontos_atencao.length + a.oportunidades_economia.length}
+          aberta={estaAberta("riscos")}
+          onToggle={onToggle}
+          tx={tx}
+        >
+          {a.oportunidades_economia.length > 0 && (
+            <>
+              <p className="mb-1 text-[11px] font-bold uppercase tracking-wide" style={{ color: "var(--success,#1f9d55)" }}>
+                {tx("Oportunidades", "Возможности")}
+              </p>
+              <Lista itens={a.oportunidades_economia} />
+            </>
+          )}
+          {a.riscos_pontos_atencao.length > 0 && (
+            <>
+              <p className="mb-1 mt-2 text-[11px] font-bold uppercase tracking-wide" style={{ color: AMBER }}>
+                {tx("Atenção", "Внимание")}
+              </p>
+              <Lista itens={a.riscos_pontos_atencao} />
+            </>
+          )}
+        </Colapsavel>
       )}
 
       {a.fundamentacao_legal.length > 0 && (
-        <Secao titulo={tx("Fundamentação legal", "Правовое обоснование")}>
+        <Colapsavel id="fundamentacao" titulo={ROTULO_SECAO.fundamentacao} n={a.fundamentacao_legal.length} aberta={estaAberta("fundamentacao")} onToggle={onToggle} tx={tx}>
           <div className="grid gap-1">
             {a.fundamentacao_legal.map((f, i) => (
               <div key={i} className="text-xs" style={{ color: NAVY }}>
@@ -705,43 +796,87 @@ function Relatorio({
               </div>
             ))}
           </div>
-        </Secao>
-      )}
-
-      {a.dados_adicionais_necessarios.length > 0 && (
-        <Secao titulo={tx("Dados adicionais úteis", "Доп. данные")}>
-          <Lista itens={a.dados_adicionais_necessarios} />
-        </Secao>
+        </Colapsavel>
       )}
 
       {a.fontes_oficiais.length > 0 && (
-        <Secao titulo={tx("Fontes oficiais consultadas", "Официальные источники")}>
+        <Colapsavel id="fontes" titulo={ROTULO_SECAO.fontes} n={a.fontes_oficiais.length} aberta={estaAberta("fontes")} onToggle={onToggle} tx={tx}>
           <div className="grid gap-1">
             {a.fontes_oficiais.map((f, i) => (
-              <a
-                key={i}
-                href={f.url}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 text-xs underline"
-                style={{ color: NAVY }}
-              >
+              <a key={i} href={f.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs underline" style={{ color: NAVY }}>
                 {f.titulo ?? f.url}
                 <ExternalLink size={11} />
               </a>
             ))}
           </div>
-        </Secao>
+        </Colapsavel>
+      )}
+
+      {a.dados_adicionais_necessarios.length > 0 && (
+        <Colapsavel id="dados_adicionais" titulo={ROTULO_SECAO.dados_adicionais} n={a.dados_adicionais_necessarios.length} aberta={estaAberta("dados_adicionais")} onToggle={onToggle} tx={tx}>
+          <Lista itens={a.dados_adicionais_necessarios} />
+        </Colapsavel>
       )}
 
       <p className="text-[10px]" style={{ color: "#8892A4" }}>
         {tx("Última verificação legislativa:", "Последняя проверка:")} {a.data_verificacao_legislativa} ·{" "}
-        {tx(
-          "Simulação orientativa — pendências viram tarefa para a equipe fiscal G41.",
-          "Ориентировочно — пункты уходят команде G41.",
-        )}
+        {tx("Simulação orientativa — pendências viram tarefa para a equipe.", "Ориентировочно — пункты уходят команде.")}
       </p>
     </div>
+  );
+}
+
+function Indicador({ rotulo, valor }: { rotulo: string; valor: string }) {
+  return (
+    <div className="rounded-xl border p-3 text-center" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+      <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#8892A4" }}>{rotulo}</p>
+      <p className="mt-0.5 text-lg font-bold" style={{ color: NAVY, fontFamily: MONO }}>{valor}</p>
+    </div>
+  );
+}
+function MiniLinha({ label, valor, forte }: { label: string; valor: string; forte?: boolean }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 py-0.5">
+      <span className="text-xs" style={{ color: forte ? NAVY : "#8892A4" }}>{label}</span>
+      <span className={forte ? "text-sm font-bold" : "text-xs"} style={{ color: NAVY, fontFamily: MONO, whiteSpace: "nowrap" }}>{valor}</span>
+    </div>
+  );
+}
+function Colapsavel({
+  id,
+  titulo,
+  n,
+  aberta,
+  onToggle,
+  tx,
+  children,
+}: {
+  id: SecaoId;
+  titulo: string;
+  n?: number;
+  aberta: boolean;
+  onToggle: (s: SecaoId) => void;
+  tx: (pt: string, ru: string) => string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="overflow-hidden rounded-xl border bg-white" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+      <button
+        type="button"
+        onClick={() => onToggle(id)}
+        className="flex w-full items-center justify-between gap-2 px-4 py-2.5 text-left"
+        aria-expanded={aberta}
+      >
+        <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide" style={{ color: NAVY }}>
+          {titulo}
+          {n != null && n > 0 && (
+            <span className="rounded-full px-1.5 py-0.5 text-[10px] font-bold" style={{ background: "#f1f3f8", color: "#8892A4" }}>{n}</span>
+          )}
+        </span>
+        <ChevronDown size={16} style={{ color: "#8892A4", transform: aberta ? "rotate(180deg)" : "none", transition: "transform .15s" }} />
+      </button>
+      {aberta && <div className="border-t px-4 py-3" style={{ borderColor: "var(--border,#e2e8f0)" }}>{children}</div>}
+    </section>
   );
 }
 
@@ -821,26 +956,6 @@ function Alternar({ value, onChange, opts }: { value: string; onChange: (v: stri
         </button>
       ))}
     </div>
-  );
-}
-function LinhaNota({ label, valor, negativo, forte }: { label: string; valor: string; negativo?: boolean; forte?: boolean }) {
-  return (
-    <div className="flex items-baseline justify-between gap-4 py-0.5">
-      <span className="text-[10px] uppercase tracking-widest" style={{ color: forte ? NAVY : "#8892A4" }}>{label}</span>
-      <span className={forte ? "text-base font-bold" : "text-sm"} style={{ color: NAVY, fontFamily: MONO, whiteSpace: "nowrap" }}>
-        {negativo ? "−" : ""}
-        {valor}
-      </span>
-    </div>
-  );
-}
-const Tracejado = () => <div className="my-2" style={{ borderTop: "1px dashed #8892A4", opacity: 0.5 }} />;
-function Secao({ titulo, children }: { titulo: string; children: ReactNode }) {
-  return (
-    <section className="rounded-2xl border bg-white p-4" style={{ borderColor: "var(--border,#e2e8f0)" }}>
-      <h3 className="mb-2 text-xs font-bold uppercase tracking-widest" style={{ color: NAVY }}>{titulo}</h3>
-      {children}
-    </section>
   );
 }
 function Alerta({ children, forte }: { children: ReactNode; forte?: boolean }) {
