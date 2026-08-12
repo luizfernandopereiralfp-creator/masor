@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Loader2, PackageSearch } from "lucide-react";
+import { ArrowLeft, Loader2, PackageSearch, Download } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
 import { Protegido } from "@/components/Protegido";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { exportarHistoricoXlsx } from "@/lib/export/planilha";
+import type { AnaliseFiscal } from "@/lib/ia/contrato";
 
 export const Route = createFileRoute("/historico")({
   component: () => (
@@ -63,6 +65,25 @@ function Historico() {
         </Link>
         <img src="/masor-logo.png" alt="Masor" className="h-6 w-auto brightness-0 invert" />
         <span className="text-sm font-bold text-white">· {tx("Histórico", "История")}</span>
+        {regs && regs.length > 0 && (
+          <button
+            type="button"
+            onClick={() =>
+              exportarHistoricoXlsx(
+                regs.map((r) => ({
+                  criado_em: r.created_at,
+                  origem: r.origem,
+                  payload: r.payload,
+                  analise: r.analise as unknown as AnaliseFiscal,
+                })),
+              )
+            }
+            className="ml-auto inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold"
+            style={{ background: AMBER, color: NAVY }}
+          >
+            <Download size={13} /> {tx("Exportar", "Экспорт")}
+          </button>
+        )}
       </header>
 
       <main className="mx-auto max-w-5xl p-4 md:p-6">
