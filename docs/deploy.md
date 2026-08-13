@@ -21,13 +21,28 @@ automático. Só muda o Host (`masor.g41one.com.br`) e a porta interna (3000).
   dig +short masor.g41one.com.br    # precisa devolver 103.199.186.202
   ```
 
-## Passo a passo
+## Auto-deploy (GitHub Actions) — preparo ÚNICO
 
-1. **Clonar/atualizar o repositório na VPS**
+Depois de configurado, **todo push em `main` publica sozinho** (mesmo padrão do Lior):
+o Actions entra na VPS por SSH e roda `/root/masor/deploy.sh` (`git pull` + rebuild).
+
+Preparo único (uma vez só):
+1. **Na VPS**, clonar em `/root/masor` e criar o `.env` (passos 1 e 2 abaixo).
+2. **No GitHub** (repo `masor`) → Settings → Secrets and variables → Actions → New
+   repository secret: **`VPS_SSH_KEY`** = a mesma chave privada usada pelo Lior
+   (`~/.ssh/github_deploy` da VPS, ou o valor do secret `VPS_SSH_KEY` do repo do Lior).
+   > Dica: dá para promover a org-level secret e compartilhar com os dois repos.
+3. **DNS** criado (registro A `masor` → `103.199.186.202`).
+4. Pronto: cada push em `main` dispara o deploy. Também dá para rodar manualmente em
+   **Actions → Deploy Masor na VPS → Run workflow**.
+
+## Passo a passo (preparo na VPS / deploy manual)
+
+1. **Clonar/atualizar o repositório na VPS** (em `/root/masor`, para casar com o Actions)
    ```bash
-   git clone https://github.com/luizfernandopereiralfp-creator/masor.git
-   cd masor
-   # atualizações futuras:  git pull origin main
+   git clone https://github.com/luizfernandopereiralfp-creator/masor.git /root/masor
+   cd /root/masor
+   # atualizações futuras (o Actions faz isso sozinho):  bash deploy.sh
    ```
 
 2. **Criar o `.env` de produção** (ao lado do `docker-compose.yml`)
@@ -35,12 +50,19 @@ automático. Só muda o Host (`masor.g41one.com.br`) e a porta interna (3000).
    cp .env.production.example .env
    nano .env   # preencher com os valores reais
    ```
-   Valores (os públicos são a URL do Supabase + publishable key; os secretos são o
-   token do n8n e, se um dia usado, o service role):
+   Valores:
    - `VITE_SUPABASE_URL` / `SUPABASE_URL` = `https://jkerqallbmozlnttffsi.supabase.co`
    - `VITE_SUPABASE_PUBLISHABLE_KEY` / `SUPABASE_PUBLISHABLE_KEY` = publishable key do projeto
    - `MASOR_ANALISE_WEBHOOK_URL` = `https://n8n.ferpereira.com/webhook/masor-analise-fiscal`
    - `MASOR_WEBHOOK_TOKEN` = token do Header Auth configurado no n8n
+   - `SUPABASE_SERVICE_ROLE_KEY` = **obrigatório para a captura de NF-e (SEFAZ)** —
+     grava certificado cifrado e DFe. Supabase > Settings > API > service_role (secret).
+   - `MASOR_CERT_ENC_KEY` = **obrigatório para o certificado A1** — chave AES-256 (32 bytes
+     base64). Gere a sua: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`.
+     Nunca versionar; trocá-la exige recifrar os certificados já guardados.
+   - `NFE_TP_AMB` = `1` (produção) ou `2` (homologação)
+   - (opcional) `MASOR_CHAT_WEBHOOK_URL` = webhook n8n do chat livre da IA (sem ele, a
+     caixa de IA ainda resolve os comandos de apresentação localmente).
 
    > **Por que as `VITE_*` também entram aqui:** o Vite "assa" essas duas no bundle do
    > cliente **durante o build**. O compose as passa como `build.args` pro Dockerfile.

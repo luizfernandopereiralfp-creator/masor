@@ -1,0 +1,30 @@
+name: Deploy Masor na VPS
+
+# Todo push em main sobe sozinho: o GitHub entra na VPS por SSH e roda
+# /root/masor/deploy.sh (git pull + docker compose up -d --build).
+# Também dá para disparar manualmente pela aba "Actions" (Run workflow).
+# Mesmo padrão do serviço "Lior".
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-masor-vps
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Deploy via SSH
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh -i ~/.ssh/id_deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new \
+            root@103.199.186.202 'bash /root/masor/deploy.sh'
