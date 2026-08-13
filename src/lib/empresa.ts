@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { useClienteAtivo } from "@/lib/cliente-ativo";
 
 /* ============================================================
    Masor — dados da empresa (agora = cliente do Lior).
@@ -34,9 +35,29 @@ type ClienteFiscal = {
   endereco: Record<string, unknown> | null;
 };
 
+export type ClienteResumo = { id: string; razao_social: string | null; nome_fantasia: string | null; cnpj_cpf: string | null };
+
+/** Lista de clientes (via função segura) para o seletor da equipe. */
+export function useClientesFiscais() {
+  const [clientes, setClientes] = useState<ClienteResumo[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  useEffect(() => {
+    void (async () => {
+      if (!supabase) return setCarregando(false);
+      const { data } = await supabase.rpc("masor_clientes_fiscais");
+      const lista = (Array.isArray(data) ? data : []) as ClienteResumo[];
+      lista.sort((a, b) => (a.razao_social ?? "").localeCompare(b.razao_social ?? ""));
+      setClientes(lista);
+      setCarregando(false);
+    })();
+  }, []);
+  return { clientes, carregando };
+}
+
 export function useEmpresa(clienteId?: string | null) {
   const { perfil } = useAuth();
-  const alvo = clienteId ?? perfil?.cliente_id ?? null;
+  const [ativo] = useClienteAtivo();
+  const alvo = clienteId ?? ativo ?? perfil?.cliente_id ?? null;
   const [empresa, setEmpresa] = useState<Empresa | null>(null);
   const [carregando, setCarregando] = useState(true);
 
