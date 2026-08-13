@@ -24,6 +24,7 @@ mkdirSync(saida, { recursive: true });
 const alvos = [
   "src/lib/ia/motor-fiscal.ts",
   "src/lib/fiscal/cofre.ts",
+  "src/lib/fiscal/cofre-lior.ts",
   "src/lib/fiscal/envelope.ts",
   "src/lib/fiscal/dfe-parser.ts",
 ];

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { exigirStaff } from "@/lib/fiscal/guard";
-import { decifrar, decifrarTexto, cofreConfigurado } from "@/lib/fiscal/cofre";
+import { decifrarArquivoLior, decifrarSenhaLior, certLiorConfigurado } from "@/lib/fiscal/cofre-lior";
 import { agentMtls, soapPost } from "@/lib/fiscal/mtls";
 import { envelopeDistDFe, endpointDFe } from "@/lib/fiscal/envelope";
 import { parseRetornoDFe, CSTAT } from "@/lib/fiscal/dfe-parser";
@@ -30,8 +30,8 @@ export const Route = createFileRoute("/api/dfe/buscar")({
         const g = await exigirStaff(request);
         if (!g.ok) return g.resposta;
 
-        if (!cofreConfigurado())
-          return Response.json({ ok: false, erro: "Cofre não configurado (MASOR_CERT_ENC_KEY)." }, { status: 503 });
+        if (!certLiorConfigurado())
+          return Response.json({ ok: false, erro: "Chave dos certificados (CERT_MASTER_KEY) não configurada no servidor." }, { status: 503 });
         const admin = supabaseAdmin();
         if (!admin) return Response.json({ ok: false, erro: "SUPABASE_SERVICE_ROLE_KEY ausente." }, { status: 503 });
 
@@ -39,22 +39,22 @@ export const Route = createFileRoute("/api/dfe/buscar")({
         const clienteId = corpo.cliente_id ?? g.auth.clienteId;
         if (!clienteId) return Response.json({ ok: false, erro: "cliente_id ausente." }, { status: 400 });
 
-        // --- certificado ativo do tenant ---
+        // --- certificado A1 ATIVO do cliente (reusa o e-CNPJ guardado no LIOR) ---
         const { data: cert } = await admin
-          .from("masor_certificados_digitais")
-          .select("id,cnpj,pfx_cifrado,senha_cifrada,validade_ate")
+          .from("clientes_certificados")
+          .select("storage_path,cifra_iv,cifra_auth_tag,senha_cifrada,senha_iv,senha_auth_tag,valido_ate")
           .eq("cliente_id", clienteId)
           .eq("ativo", true)
-          .order("criado_em", { ascending: false })
+          .order("uploaded_at", { ascending: false })
           .limit(1)
           .maybeSingle();
         if (!cert)
           return Response.json(
-            { ok: false, erro: "Nenhum certificado ativo para esta empresa. Cadastre o A1 em /fiscal." },
+            { ok: false, erro: "Cliente sem certificado A1 ativo. Cadastre o e-CNPJ no Lior (cadastro do cliente)." },
             { status: 409 },
           );
-        if (cert.validade_ate && cert.validade_ate < new Date().toISOString().slice(0, 10))
-          return Response.json({ ok: false, erro: `Certificado vencido em ${cert.validade_ate}.` }, { status: 409 });
+        if (cert.valido_ate && cert.valido_ate < new Date().toISOString().slice(0, 10))
+          return Response.json({ ok: false, erro: `Certificado vencido em ${cert.valido_ate}.` }, { status: 409 });
 
         // --- config / checkpoint ---
         const { data: cfg } = await admin
@@ -76,18 +76,25 @@ export const Route = createFileRoute("/api/dfe/buscar")({
             );
         }
 
-        // --- UF do cliente (para cUFAutor) — vem de clientes.endereco (jsonb) ---
-        const { data: cli } = await admin.from("clientes").select("endereco").eq("id", clienteId).maybeSingle();
-        const uf = ((cli as { endereco?: { uf?: string } } | null)?.endereco?.uf as string) ?? "SP";
+        // --- UF + CNPJ do cliente (do Lior) — UF em clientes.endereco (jsonb) ---
+        const { data: cli } = await admin.from("clientes").select("endereco,cnpj_cpf").eq("id", clienteId).maybeSingle();
+        const clienteRow = cli as { endereco?: { uf?: string }; cnpj_cpf?: string } | null;
+        const uf = (clienteRow?.endereco?.uf as string) ?? "SP";
+        const cnpj = (clienteRow?.cnpj_cpf ?? "").replace(/\D/g, "");
+        if (cnpj.length !== 14)
+          return Response.json({ ok: false, erro: "Cliente sem CNPJ válido cadastrado no Lior." }, { status: 409 });
         const tpAmb: 1 | 2 = process.env.NFE_TP_AMB === "2" ? 2 : 1;
 
-        // --- decifra o certificado só em memória ---
+        // --- baixa o cert cifrado do bucket do Lior e decifra só em memória ---
         let pfx: Buffer, senha: string;
         try {
-          pfx = decifrar(Buffer.from(String(cert.pfx_cifrado), "base64"));
-          senha = decifrarTexto(Buffer.from(String(cert.senha_cifrada), "base64"));
+          const { data: blob, error: dlErr } = await admin.storage.from("client-certificados").download(cert.storage_path);
+          if (dlErr || !blob) throw new Error(dlErr?.message ?? "download do certificado falhou");
+          const ciphertext = Buffer.from(await blob.arrayBuffer());
+          pfx = decifrarArquivoLior(ciphertext, cert.cifra_iv, cert.cifra_auth_tag);
+          senha = decifrarSenhaLior(cert.senha_cifrada, cert.senha_iv, cert.senha_auth_tag);
         } catch (e) {
-          return Response.json({ ok: false, erro: `Falha ao abrir o certificado guardado: ${(e as Error).message}` }, { status: 500 });
+          return Response.json({ ok: false, erro: `Falha ao abrir o certificado do Lior: ${(e as Error).message}` }, { status: 500 });
         }
 
         const agent = agentMtls(pfx, senha);
@@ -102,7 +109,7 @@ export const Route = createFileRoute("/api/dfe/buscar")({
         try {
           while (lotes < LIMITE_LOTES) {
             lotes++;
-            const envelope = envelopeDistDFe({ tpAmb, uf, cnpj: cert.cnpj as string, consulta: { modo: "distNSU", ultNSU } });
+            const envelope = envelopeDistDFe({ tpAmb, uf, cnpj, consulta: { modo: "distNSU", ultNSU } });
             const resp = await soapPost(endpoint, envelope, agent);
             if (resp.status !== 200) {
               xMotivo = `HTTP ${resp.status} da SEFAZ`;

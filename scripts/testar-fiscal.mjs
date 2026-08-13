@@ -90,5 +90,29 @@ ok("procNFe: total vNF", r2.docs[0]?.resumo.vNF === "1234.56");
 ok("procNFe: conta itens", r2.docs[0]?.resumo.qtd_itens === 2, "qtd=" + r2.docs[0]?.resumo.qtd_itens);
 ok("procNFe: chave do Id", r2.docs[0]?.chave44 === "35240612345678000195550010000001231000001234");
 
+// ---------- 4. COFRE-LIOR: compat com o esquema de cifra do Lior ----------
+// Cifra EXATAMENTE como a edge function cliente-certificado do Lior
+// (sha256(CERT_MASTER_KEY) -> AES-256-GCM, iv 12B, tag separada) e decifra no Masor.
+process.env.CERT_MASTER_KEY = "uma-frase-secreta-qualquer-do-lior";
+const { decifrarArquivoLior, decifrarSenhaLior, certLiorConfigurado } = await import("../.test-build/fiscal/cofre-lior.js");
+function cifraLior(plaintextBuf) {
+  const key = crypto.createHash("sha256").update(process.env.CERT_MASTER_KEY, "utf8").digest();
+  const iv = crypto.randomBytes(12);
+  const c = crypto.createCipheriv("aes-256-gcm", key, iv);
+  const ct = Buffer.concat([c.update(plaintextBuf), c.final()]);
+  return { ciphertext: ct, iv: iv.toString("base64"), tag: c.getAuthTag().toString("base64") };
+}
+ok("cofre-lior configurado", certLiorConfigurado());
+const pfxFake = crypto.randomBytes(3000); // simula um .pfx
+const encArq = cifraLior(pfxFake);
+ok("decifra arquivo do Lior (round-trip)", decifrarArquivoLior(encArq.ciphertext, encArq.iv, encArq.tag).equals(pfxFake));
+const encSenha = cifraLior(Buffer.from("Senh@ форте 123", "utf8"));
+ok("decifra senha do Lior", decifrarSenhaLior(encSenha.ciphertext.toString("base64"), encSenha.iv, encSenha.tag) === "Senh@ форте 123");
+// chave errada não decifra
+process.env.CERT_MASTER_KEY = "outra-frase";
+let negouL = false;
+try { decifrarArquivoLior(encArq.ciphertext, encArq.iv, encArq.tag); } catch { negouL = true; }
+ok("CERT_MASTER_KEY errada não decifra", negouL);
+
 console.log(falhas === 0 ? "\n🟢 TODOS OS TESTES PASSARAM" : `\n🔴 ${falhas} FALHA(S)`);
 process.exit(falhas ? 1 : 0);

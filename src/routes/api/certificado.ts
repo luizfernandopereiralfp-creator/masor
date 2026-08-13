@@ -2,19 +2,16 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { exigirStaff } from "@/lib/fiscal/guard";
-import { cifrar, cifrarTexto, cofreConfigurado } from "@/lib/fiscal/cofre";
-import { lerCertificado } from "@/lib/fiscal/cert";
+import { certLiorConfigurado } from "@/lib/fiscal/cofre-lior";
 
 /* ============================================================
-   /api/certificado — cadastro do certificado digital A1 (.pfx).
+   GET /api/certificado — status do certificado A1 ATIVO do cliente.
 
-   O arquivo NUNCA é lido no browser além do File handle: sobe por
-   multipart direto para cá, é validado (senha correta? qual CNPJ?
-   qual validade?), CIFRADO (AES-256-GCM) e gravado pelo service
-   role. A resposta devolve só metadados — nunca o blob.
-
-   GET  -> status do certificado ativo do tenant (sem segredo).
-   POST -> upload (multipart: arquivo, senha, cliente_id, empresa).
+   O Masor REUSA o e-CNPJ que o cliente já cadastrou no LIOR
+   (tabela clientes_certificados). Não há upload aqui — o certificado
+   é gerido no cadastro do cliente no Lior. Lê via service role
+   (clientes_certificados é admin-only), então qualquer staff vê o
+   status. Devolve só metadados (validade/nome), nunca o segredo.
    ============================================================ */
 
 export const Route = createFileRoute("/api/certificado")({
@@ -24,111 +21,35 @@ export const Route = createFileRoute("/api/certificado")({
         const g = await exigirStaff(request);
         if (!g.ok) return g.resposta;
         const clienteId = new URL(request.url).searchParams.get("cliente_id") ?? g.auth.clienteId;
-        if (!clienteId) return Response.json({ ok: false, erro: "cliente_id ausente." }, { status: 400 });
+        if (!clienteId) return Response.json({ ok: true, certificado: null, cofre_ok: certLiorConfigurado() });
 
-        // Metadados via client do usuário (RLS: só staff enxerga).
-        const { data, error } = await g.auth.sb
-          .from("masor_certificados_digitais")
-          .select("id,empresa,cnpj,titular,validade_ate,ativo,criado_em")
+        const admin = supabaseAdmin();
+        if (!admin) return Response.json({ ok: false, erro: "SUPABASE_SERVICE_ROLE_KEY ausente." }, { status: 503 });
+
+        const { data, error } = await admin
+          .from("clientes_certificados")
+          .select("filename_original,valido_de,valido_ate,ativo,uploaded_at")
           .eq("cliente_id", clienteId)
           .eq("ativo", true)
-          .order("criado_em", { ascending: false })
+          .order("uploaded_at", { ascending: false })
           .limit(1)
           .maybeSingle();
         if (error) return Response.json({ ok: false, erro: error.message }, { status: 500 });
 
-        return Response.json({ ok: true, certificado: data ?? null, cofre_ok: cofreConfigurado() });
-      },
-
-      POST: async ({ request }) => {
-        const g = await exigirStaff(request);
-        if (!g.ok) return g.resposta;
-
-        if (!cofreConfigurado())
-          return Response.json(
-            { ok: false, erro: "Cofre não configurado no servidor (MASOR_CERT_ENC_KEY ausente)." },
-            { status: 503 },
-          );
-        const admin = supabaseAdmin();
-        if (!admin)
-          return Response.json(
-            { ok: false, erro: "SUPABASE_SERVICE_ROLE_KEY ausente — necessário para guardar o certificado." },
-            { status: 503 },
-          );
-
-        let form: FormData;
-        try {
-          form = await request.formData();
-        } catch {
-          return Response.json({ ok: false, erro: "Envio inválido (esperado multipart/form-data)." }, { status: 400 });
-        }
-        const arquivo = form.get("arquivo");
-        const senha = String(form.get("senha") ?? "");
-        const clienteId = String(form.get("cliente_id") ?? g.auth.clienteId ?? "");
-        const empresa = String(form.get("empresa") ?? "") || null;
-
-        if (!(arquivo instanceof File)) return Response.json({ ok: false, erro: "Arquivo .pfx ausente." }, { status: 400 });
-        if (!senha) return Response.json({ ok: false, erro: "Senha do certificado ausente." }, { status: 400 });
-        if (!clienteId) return Response.json({ ok: false, erro: "cliente_id ausente." }, { status: 400 });
-        if (arquivo.size > 512 * 1024) return Response.json({ ok: false, erro: "Arquivo muito grande para um .pfx." }, { status: 400 });
-
-        const pfx = Buffer.from(await arquivo.arrayBuffer());
-
-        // Valida a senha e extrai metadados — se a senha estiver errada, lança aqui.
-        let meta;
-        try {
-          meta = lerCertificado(pfx, senha);
-        } catch (e) {
-          const msg = (e as Error).message ?? "";
-          const senhaErrada = /mac could not be verified|invalid password|wrong password/i.test(msg);
-          return Response.json(
-            { ok: false, erro: senhaErrada ? "Senha do certificado incorreta." : `Não consegui ler o certificado: ${msg}` },
-            { status: 400 },
-          );
-        }
-        if (meta.expirado)
-          return Response.json({ ok: false, erro: `Certificado vencido em ${meta.validade_ate}.` }, { status: 400 });
-        if (!meta.cnpj)
-          return Response.json({ ok: false, erro: "Não identifiquei o CNPJ no certificado (é um e-CNPJ A1?)." }, { status: 400 });
-
-        // Desativa o anterior e grava o novo (service role — a tabela não aceita insert do usuário).
-        await admin.from("masor_certificados_digitais").update({ ativo: false }).eq("cliente_id", clienteId).eq("ativo", true);
-        const { data, error } = await admin
-          .from("masor_certificados_digitais")
-          .insert({
-            cliente_id: clienteId,
-            empresa,
-            cnpj: meta.cnpj,
-            titular: meta.titular,
-            validade_ate: meta.validade_ate,
-            pfx_cifrado: cifrar(pfx).toString("base64"),
-            senha_cifrada: cifrarTexto(senha).toString("base64"),
-            criado_por: g.auth.userId,
-            ativo: true,
-          })
-          .select("id")
-          .single();
-        if (error) return Response.json({ ok: false, erro: error.message }, { status: 500 });
-
-        await admin.from("masor_fiscal_config").upsert(
-          {
-            cliente_id: clienteId,
-            modo_captura: "certificado_proprio",
-            cert_ref: data.id,
-            atualizado_em: new Date().toISOString(),
-          },
-          { onConflict: "cliente_id" },
-        );
+        const cnpjRow = await admin.from("clientes").select("cnpj_cpf,razao_social").eq("id", clienteId).maybeSingle();
 
         return Response.json({
           ok: true,
-          certificado: {
-            id: data.id,
-            cnpj: meta.cnpj,
-            titular: meta.titular,
-            validade_ate: meta.validade_ate,
-            emissor: meta.emissor,
-          },
+          certificado: data
+            ? {
+                filename: data.filename_original,
+                validade_ate: data.valido_ate,
+                validade_de: data.valido_de,
+                cnpj: (cnpjRow.data as { cnpj_cpf?: string } | null)?.cnpj_cpf ?? null,
+                titular: (cnpjRow.data as { razao_social?: string } | null)?.razao_social ?? null,
+              }
+            : null,
+          cofre_ok: certLiorConfigurado(),
         });
       },
     },
