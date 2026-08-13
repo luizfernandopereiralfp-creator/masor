@@ -14,7 +14,7 @@ import { lerCertificado } from "@/lib/fiscal/cert";
    role. A resposta devolve só metadados — nunca o blob.
 
    GET  -> status do certificado ativo do tenant (sem segredo).
-   POST -> upload (multipart: arquivo, senha, tenant_id, empresa).
+   POST -> upload (multipart: arquivo, senha, cliente_id, empresa).
    ============================================================ */
 
 export const Route = createFileRoute("/api/certificado")({
@@ -23,14 +23,14 @@ export const Route = createFileRoute("/api/certificado")({
       GET: async ({ request }) => {
         const g = await exigirStaff(request);
         if (!g.ok) return g.resposta;
-        const tenantId = new URL(request.url).searchParams.get("tenant_id") ?? g.auth.tenantId;
-        if (!tenantId) return Response.json({ ok: false, erro: "tenant_id ausente." }, { status: 400 });
+        const clienteId = new URL(request.url).searchParams.get("cliente_id") ?? g.auth.clienteId;
+        if (!clienteId) return Response.json({ ok: false, erro: "cliente_id ausente." }, { status: 400 });
 
         // Metadados via client do usuário (RLS: só staff enxerga).
         const { data, error } = await g.auth.sb
-          .from("certificados_digitais")
+          .from("masor_certificados_digitais")
           .select("id,empresa,cnpj,titular,validade_ate,ativo,criado_em")
-          .eq("tenant_id", tenantId)
+          .eq("cliente_id", clienteId)
           .eq("ativo", true)
           .order("criado_em", { ascending: false })
           .limit(1)
@@ -64,12 +64,12 @@ export const Route = createFileRoute("/api/certificado")({
         }
         const arquivo = form.get("arquivo");
         const senha = String(form.get("senha") ?? "");
-        const tenantId = String(form.get("tenant_id") ?? g.auth.tenantId ?? "");
+        const clienteId = String(form.get("cliente_id") ?? g.auth.clienteId ?? "");
         const empresa = String(form.get("empresa") ?? "") || null;
 
         if (!(arquivo instanceof File)) return Response.json({ ok: false, erro: "Arquivo .pfx ausente." }, { status: 400 });
         if (!senha) return Response.json({ ok: false, erro: "Senha do certificado ausente." }, { status: 400 });
-        if (!tenantId) return Response.json({ ok: false, erro: "tenant_id ausente." }, { status: 400 });
+        if (!clienteId) return Response.json({ ok: false, erro: "cliente_id ausente." }, { status: 400 });
         if (arquivo.size > 512 * 1024) return Response.json({ ok: false, erro: "Arquivo muito grande para um .pfx." }, { status: 400 });
 
         const pfx = Buffer.from(await arquivo.arrayBuffer());
@@ -92,11 +92,11 @@ export const Route = createFileRoute("/api/certificado")({
           return Response.json({ ok: false, erro: "Não identifiquei o CNPJ no certificado (é um e-CNPJ A1?)." }, { status: 400 });
 
         // Desativa o anterior e grava o novo (service role — a tabela não aceita insert do usuário).
-        await admin.from("certificados_digitais").update({ ativo: false }).eq("tenant_id", tenantId).eq("ativo", true);
+        await admin.from("masor_certificados_digitais").update({ ativo: false }).eq("cliente_id", clienteId).eq("ativo", true);
         const { data, error } = await admin
-          .from("certificados_digitais")
+          .from("masor_certificados_digitais")
           .insert({
-            tenant_id: tenantId,
+            cliente_id: clienteId,
             empresa,
             cnpj: meta.cnpj,
             titular: meta.titular,
@@ -110,14 +110,14 @@ export const Route = createFileRoute("/api/certificado")({
           .single();
         if (error) return Response.json({ ok: false, erro: error.message }, { status: 500 });
 
-        await admin.from("tenant_fiscal_config").upsert(
+        await admin.from("masor_fiscal_config").upsert(
           {
-            tenant_id: tenantId,
+            cliente_id: clienteId,
             modo_captura: "certificado_proprio",
             cert_ref: data.id,
             atualizado_em: new Date().toISOString(),
           },
-          { onConflict: "tenant_id" },
+          { onConflict: "cliente_id" },
         );
 
         return Response.json({

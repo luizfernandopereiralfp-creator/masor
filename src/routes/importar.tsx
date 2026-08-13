@@ -102,10 +102,10 @@ function ImportarConteudo() {
           pendencias: a.pendencias.length,
         },
       }));
-      if (supabase && perfil?.tenant_id) {
+      if (supabase && perfil) {
         void supabase
-          .from("product_simulations")
-          .insert({ tenant_id: perfil.tenant_id, origem: "importacao", payload: operacao, analise: a });
+          .from("masor_product_simulations")
+          .insert({ cliente_id: perfil.cliente_id, origem: "importacao", payload: operacao, analise: a });
       }
     } catch (err) {
       setResultados((r) => ({ ...r, [item.nItem]: { estado: "error", erro: (err as Error).message } }));
@@ -157,8 +157,8 @@ function ImportarConteudo() {
         ...r,
         [l.n]: { estado: "ok", pv: a.formacao_preco.preco_venda_sugerido, status: a.status, pendencias: a.pendencias.length },
       }));
-      if (supabase && perfil?.tenant_id) {
-        void supabase.from("product_simulations").insert({ tenant_id: perfil.tenant_id, origem: "importacao", payload: operacao, analise: a });
+      if (supabase && perfil) {
+        void supabase.from("masor_product_simulations").insert({ cliente_id: perfil.cliente_id, origem: "importacao", payload: operacao, analise: a });
       }
     } catch (err) {
       setResultadosPl((r) => ({ ...r, [l.n]: { estado: "error", erro: (err as Error).message } }));

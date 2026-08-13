@@ -147,9 +147,9 @@ function ConsultaConteudo() {
 
   // Aprendizado: envia a análise + info do usuário como proposta de regra (fila de revisão).
   async function contribuir() {
-    if (!supabase || !perfil?.tenant_id || !analise) return;
-    const { error } = await supabase.from("rule_change_requests").insert({
-      tenant_id: perfil.tenant_id,
+    if (!supabase || !perfil || !analise) return;
+    const { error } = await supabase.from("masor_rule_change_requests").insert({
+      cliente_id: perfil.cliente_id,
       proposto_por: perfil.user_id,
       alvo: `ncm_rules:${ncm.replace(/\D/g, "")}:${ufSuper}`,
       proposta: {
@@ -223,10 +223,10 @@ function ConsultaConteudo() {
       setAvisos((data.avisos_sanidade as string[]) ?? []);
       setStatus("ok");
       // Persiste no histórico (RLS garante o tenant). Fire-and-forget.
-      if (supabase && perfil?.tenant_id) {
+      if (supabase && perfil) {
         void supabase
-          .from("product_simulations")
-          .insert({ tenant_id: perfil.tenant_id, origem: "consulta", payload: operacao, analise: data.analise });
+          .from("masor_product_simulations")
+          .insert({ cliente_id: perfil.cliente_id, origem: "consulta", payload: operacao, analise: data.analise });
       }
     } catch (e) {
       setErro((e as Error).message);

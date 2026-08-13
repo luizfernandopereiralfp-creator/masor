@@ -5,13 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 
 /* ============================================================
    Masor — autenticação (Supabase Auth) + perfil/tenant
-   O perfil (tenant_id, role) é carregado após o login. A RLS do
+   O perfil (cliente_id, role) é carregado após o login. A RLS do
    banco garante o isolamento; aqui só expomos o contexto ao app.
    ============================================================ */
 
 export type Perfil = {
   user_id: string;
-  tenant_id: string | null;
+  cliente_id: string | null; // cliente atual (portal); null p/ equipe (staff escolhe)
   nome: string | null;
   role: "admin" | "staff" | "cliente";
 };
@@ -33,10 +33,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [perfil, setPerfil] = useState<Perfil | null>(null);
 
-  async function carregarPerfil(userId: string) {
+  async function carregarPerfil(_userId: string) {
     if (!supabase) return;
-    const { data } = await supabase.from("profiles").select("*").eq("user_id", userId).maybeSingle();
-    setPerfil((data as Perfil) ?? null);
+    // Identidade unificada com o Lior: RPC sintetiza role (admin/staff/cliente)
+    // a partir de user_roles/has_role e o cliente atual (portal) do Lior.
+    const { data } = await supabase.rpc("masor_meu_perfil");
+    const row = Array.isArray(data) ? data[0] : data;
+    setPerfil((row as Perfil) ?? null);
   }
 
   useEffect(() => {

@@ -39,7 +39,7 @@ function Pendencias() {
   const carregar = useCallback(async () => {
     if (!supabase) return setRegs([]);
     const { data } = await supabase
-      .from("rule_change_requests")
+      .from("masor_rule_change_requests")
       .select("id,alvo,proposta,justificativa,fontes,status,created_at")
       .eq("status", "pendente")
       .order("created_at", { ascending: false })
@@ -67,7 +67,7 @@ function Pendencias() {
     }
 
     const { error: upErr } = await supabase
-      .from("rule_change_requests")
+      .from("masor_rule_change_requests")
       .update({ status: aprovar ? "aprovado" : "rejeitado", revisado_por: perfil?.user_id ?? null })
       .eq("id", s.id);
     if (upErr) {
@@ -77,7 +77,7 @@ function Pendencias() {
 
     if (aprovar) {
       if (tipo === "ncm_rules" && /^\d{8}$/.test(chave ?? "")) {
-        await supabase.from("ncm_rules").upsert(
+        await supabase.from("masor_ncm_rules").upsert(
           {
             ncm: chave,
             uf: ufAlvo ?? (typeof p.uf === "string" ? p.uf : null),
@@ -94,7 +94,7 @@ function Pendencias() {
         const campos: Record<string, unknown> = { origem_dados: "usuario+verificado", updated_at: new Date().toISOString() };
         for (const k of ["nome", "regiao", "aliq_interna", "equalizacao_simples", "antecipacao_st", "base_legal"])
           if (p[k] !== undefined) campos[k] = p[k];
-        await supabase.from("tax_states").update(campos).eq("sigla", chave);
+        await supabase.from("masor_tax_states").update(campos).eq("sigla", chave);
       } else {
         window.alert(tx("Alvo não reconhecido — solicitação marcada, mas nada aplicado automaticamente.", "Цель не распознана — ничего не применено."));
       }

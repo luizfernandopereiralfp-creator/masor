@@ -75,7 +75,7 @@ function Fiscal() {
       }
       if (supabase) {
         const { data } = await supabase
-          .from("dfe_documentos")
+          .from("masor_dfe_documentos")
           .select("id,nsu,chave44,tipo,resumo,capturado_em")
           .order("capturado_em", { ascending: false })
           .limit(50);
@@ -98,7 +98,7 @@ function Fiscal() {
       const fd = new FormData();
       fd.append("arquivo", arquivo);
       fd.append("senha", senha);
-      if (perfil?.tenant_id) fd.append("tenant_id", perfil.tenant_id);
+      if (perfil?.cliente_id) fd.append("cliente_id", perfil.cliente_id);
       const tok = await token();
       const r = await fetch("/api/certificado", {
         method: "POST",
@@ -129,7 +129,7 @@ function Fiscal() {
       const r = await fetch("/api/dfe/buscar", {
         method: "POST",
         headers: { "content-type": "application/json", ...(tok ? { authorization: `Bearer ${tok}` } : {}) },
-        body: JSON.stringify({ tenant_id: perfil?.tenant_id }),
+        body: JSON.stringify({ cliente_id: perfil?.cliente_id }),
       });
       const d = await r.json();
       if (!d.ok) setMsg({ tipo: "erro", texto: d.erro ?? d.aviso ?? tx("Falha na busca.", "Ошибка.") });

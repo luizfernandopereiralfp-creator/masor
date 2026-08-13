@@ -10,7 +10,7 @@ import { supabaseComUsuario } from "@/integrations/supabase/client.server";
 export type Autorizado = {
   sb: SupabaseClient;
   userId: string;
-  tenantId: string | null;
+  clienteId: string | null;
   role: string;
 };
 
@@ -32,13 +32,12 @@ export async function exigirStaff(request: Request): Promise<ResultadoGuard> {
   const { data, error } = await sb.auth.getUser();
   if (error || !data?.user) return nega(401, "Sessão inválida.");
 
-  const { data: perfil } = await sb
-    .from("profiles")
-    .select("role,tenant_id")
-    .eq("user_id", data.user.id)
-    .maybeSingle();
+  const { data: perfilData } = await sb.rpc("masor_meu_perfil");
+  const perfil = (Array.isArray(perfilData) ? perfilData[0] : perfilData) as
+    | { role?: string; cliente_id?: string | null }
+    | null;
 
-  const role = (perfil as { role?: string } | null)?.role ?? "";
+  const role = perfil?.role ?? "";
   if (role !== "admin" && role !== "staff") return nega(403, "Apenas a equipe fiscal acessa este recurso.");
 
   return {
@@ -46,7 +45,7 @@ export async function exigirStaff(request: Request): Promise<ResultadoGuard> {
     auth: {
       sb,
       userId: data.user.id,
-      tenantId: (perfil as { tenant_id?: string } | null)?.tenant_id ?? null,
+      clienteId: perfil?.cliente_id ?? null,
       role,
     },
   };

@@ -90,7 +90,7 @@ export const Route = createFileRoute("/api/analisar")({
         if (sb && ncmKey.length >= 8 && ufKey) {
           const limite = new Date(Date.now() - 30 * 864e5).toISOString();
           const { data } = await sb
-            .from("ai_reviews")
+            .from("masor_ai_reviews")
             .select("parecer")
             .eq("ncm", ncmKey)
             .eq("uf", ufKey)
@@ -141,7 +141,7 @@ export const Route = createFileRoute("/api/analisar")({
           }
           parecer = parsed.data;
           if (sb && ncmKey.length >= 8 && ufKey) {
-            void sb.from("ai_reviews").insert({ ncm: ncmKey, uf: ufKey, regime: regimeKey, parecer });
+            void sb.from("masor_ai_reviews").insert({ ncm: ncmKey, uf: ufKey, regime: regimeKey, parecer });
           }
         }
         const pf = parecer.parametros_fiscais;

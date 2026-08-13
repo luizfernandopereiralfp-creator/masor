@@ -4,9 +4,12 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 
 /* ============================================================
-   Masor — dados fixos da empresa (tenant), preenchidos 1x.
-   Pré-preenchem as análises (regime, UF, município, markup),
-   evitando redigitar a cada consulta.
+   Masor — dados da empresa (agora = cliente do Lior).
+   Identidade fiscal (razão social, CNPJ, regime, UF, município)
+   vem de public.clientes (via a função segura masor_clientes_fiscais,
+   que não expõe honorários). Config extra do Masor (markup, DAS)
+   vem da satélite masor_cliente_config.
+   Passe o clienteId ativo (staff escolhe); default = cliente do perfil.
    ============================================================ */
 
 export type Empresa = {
@@ -21,34 +24,71 @@ export type Empresa = {
   das_efetivo: number | null;
 };
 
-export function useEmpresa() {
+type ClienteFiscal = {
+  id: string;
+  razao_social: string | null;
+  nome_fantasia: string | null;
+  cnpj_cpf: string | null;
+  regime_tributario: string | null;
+  cnae_principal: string | null;
+  endereco: Record<string, unknown> | null;
+};
+
+export function useEmpresa(clienteId?: string | null) {
   const { perfil } = useAuth();
+  const alvo = clienteId ?? perfil?.cliente_id ?? null;
   const [empresa, setEmpresa] = useState<Empresa | null>(null);
   const [carregando, setCarregando] = useState(true);
 
   const recarregar = useCallback(async () => {
-    if (!supabase || !perfil?.tenant_id) {
+    if (!supabase || !alvo) {
+      setEmpresa(null);
       setCarregando(false);
       return;
     }
-    const { data } = await supabase.from("tenants").select("*").eq("id", perfil.tenant_id).maybeSingle();
-    setEmpresa((data as Empresa) ?? null);
+    // Identidade (clientes) via função segura + config (markup/DAS) via satélite.
+    const [{ data: clientes }, { data: cfg }] = await Promise.all([
+      supabase.rpc("masor_clientes_fiscais"),
+      supabase.from("masor_cliente_config").select("*").eq("cliente_id", alvo).maybeSingle(),
+    ]);
+    const c = (Array.isArray(clientes) ? (clientes as ClienteFiscal[]) : []).find((x) => x.id === alvo) ?? null;
+    const end = (c?.endereco ?? {}) as Record<string, unknown>;
+    const conf = (cfg ?? {}) as { markup_padrao?: number | null; das_efetivo?: number | null };
+    setEmpresa(
+      c
+        ? {
+            id: c.id,
+            nome: c.nome_fantasia ?? c.razao_social,
+            razao_social: c.razao_social,
+            cnpj: c.cnpj_cpf,
+            uf: (end.uf as string) ?? null,
+            municipio: (end.municipio as string) ?? null,
+            regime_tributario: c.regime_tributario,
+            markup_padrao: conf.markup_padrao ?? null,
+            das_efetivo: conf.das_efetivo ?? null,
+          }
+        : null,
+    );
     setCarregando(false);
-  }, [perfil?.tenant_id]);
+  }, [alvo]);
 
   useEffect(() => {
     void recarregar();
   }, [recarregar]);
 
+  // Só grava o que é do Masor (markup/DAS) na satélite; identidade é do Lior.
   const salvar = useCallback(
     async (dados: Partial<Empresa>): Promise<{ erro?: string }> => {
-      if (!supabase || !perfil?.tenant_id) return { erro: "sem empresa vinculada" };
-      const { error } = await supabase.from("tenants").update(dados).eq("id", perfil.tenant_id);
+      if (!supabase || !alvo) return { erro: "sem cliente selecionado" };
+      const { error } = await supabase.from("masor_cliente_config").upsert(
+        { cliente_id: alvo, markup_padrao: dados.markup_padrao ?? null, das_efetivo: dados.das_efetivo ?? null, atualizado_em: new Date().toISOString() },
+        { onConflict: "cliente_id" },
+      );
       if (error) return { erro: error.message };
       await recarregar();
       return {};
     },
-    [perfil?.tenant_id, recarregar],
+    [alvo, recarregar],
   );
 
   return { empresa, carregando, salvar, recarregar };

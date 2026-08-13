@@ -35,15 +35,15 @@ export const Route = createFileRoute("/api/dfe/buscar")({
         const admin = supabaseAdmin();
         if (!admin) return Response.json({ ok: false, erro: "SUPABASE_SERVICE_ROLE_KEY ausente." }, { status: 503 });
 
-        const corpo = (await request.json().catch(() => ({}))) as { tenant_id?: string; forcar?: boolean };
-        const tenantId = corpo.tenant_id ?? g.auth.tenantId;
-        if (!tenantId) return Response.json({ ok: false, erro: "tenant_id ausente." }, { status: 400 });
+        const corpo = (await request.json().catch(() => ({}))) as { cliente_id?: string; forcar?: boolean };
+        const clienteId = corpo.cliente_id ?? g.auth.clienteId;
+        if (!clienteId) return Response.json({ ok: false, erro: "cliente_id ausente." }, { status: 400 });
 
         // --- certificado ativo do tenant ---
         const { data: cert } = await admin
-          .from("certificados_digitais")
+          .from("masor_certificados_digitais")
           .select("id,cnpj,pfx_cifrado,senha_cifrada,validade_ate")
-          .eq("tenant_id", tenantId)
+          .eq("cliente_id", clienteId)
           .eq("ativo", true)
           .order("criado_em", { ascending: false })
           .limit(1)
@@ -58,9 +58,9 @@ export const Route = createFileRoute("/api/dfe/buscar")({
 
         // --- config / checkpoint ---
         const { data: cfg } = await admin
-          .from("tenant_fiscal_config")
+          .from("masor_fiscal_config")
           .select("ult_nsu,atualizado_em")
-          .eq("tenant_id", tenantId)
+          .eq("cliente_id", clienteId)
           .maybeSingle();
 
         // Respeita o intervalo mínimo (evita cStat 656 / bloqueio do CNPJ).
@@ -76,9 +76,9 @@ export const Route = createFileRoute("/api/dfe/buscar")({
             );
         }
 
-        // --- UF do tenant (para cUFAutor) ---
-        const { data: tenant } = await admin.from("tenants").select("uf").eq("id", tenantId).maybeSingle();
-        const uf = (tenant as { uf?: string } | null)?.uf ?? "SP";
+        // --- UF do cliente (para cUFAutor) — vem de clientes.endereco (jsonb) ---
+        const { data: cli } = await admin.from("clientes").select("endereco").eq("id", clienteId).maybeSingle();
+        const uf = ((cli as { endereco?: { uf?: string } } | null)?.endereco?.uf as string) ?? "SP";
         const tpAmb: 1 | 2 = process.env.NFE_TP_AMB === "2" ? 2 : 1;
 
         // --- decifra o certificado só em memória ---
@@ -115,7 +115,7 @@ export const Route = createFileRoute("/api/dfe/buscar")({
 
             if (ret.docs.length) {
               const linhas = ret.docs.map((d) => ({
-                tenant_id: tenantId,
+                cliente_id: clienteId,
                 nsu: d.nsu,
                 chave44: d.chave44,
                 tipo: d.tipo,
@@ -123,18 +123,18 @@ export const Route = createFileRoute("/api/dfe/buscar")({
                 xml: d.xml,
                 resumo: d.resumo,
               }));
-              // Idempotente: unique(tenant_id, nsu).
+              // Idempotente: unique(cliente_id, nsu).
               const { error: insErr, count } = await admin
-                .from("dfe_documentos")
-                .upsert(linhas, { onConflict: "tenant_id,nsu", ignoreDuplicates: true, count: "exact" });
+                .from("masor_dfe_documentos")
+                .upsert(linhas, { onConflict: "cliente_id,nsu", ignoreDuplicates: true, count: "exact" });
               if (!insErr) capturados += count ?? linhas.length;
             }
 
             if (ret.ultNSU) ultNSU = ret.ultNSU;
             // checkpoint a cada lote
-            await admin.from("tenant_fiscal_config").upsert(
-              { tenant_id: tenantId, ult_nsu: ultNSU, atualizado_em: new Date().toISOString() },
-              { onConflict: "tenant_id" },
+            await admin.from("masor_fiscal_config").upsert(
+              { cliente_id: clienteId, ult_nsu: ultNSU, atualizado_em: new Date().toISOString() },
+              { onConflict: "cliente_id" },
             );
 
             if (cStat === CSTAT.CONSUMO_INDEVIDO) break; // 656: recuar imediatamente

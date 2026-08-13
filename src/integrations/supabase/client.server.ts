@@ -9,10 +9,11 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 // Públicas com fallback embutido (robusto a painel que não injeta env de runtime).
 const valido = (v?: string) => !!v && !/SEU-PROJETO|sua-anon|example\.supabase/.test(v);
-const URL = valido(process.env.SUPABASE_URL) ? process.env.SUPABASE_URL! : "https://jkerqallbmozlnttffsi.supabase.co";
+// Projeto UNIFICADO = Supabase do Lior (igzhwzgtxjgeaommatls).
+const URL = valido(process.env.SUPABASE_URL) ? process.env.SUPABASE_URL! : "https://igzhwzgtxjgeaommatls.supabase.co";
 const ANON = valido(process.env.SUPABASE_PUBLISHABLE_KEY)
   ? process.env.SUPABASE_PUBLISHABLE_KEY!
-  : "sb_publishable_UdTxgpsSF7NMnSJqssNURg___po5616";
+  : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlnemh3emd0eGpnZWFvbW1hdGxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU4Njc1ODMsImV4cCI6MjEwMTQ0MzU4M30.0CNd0391eP7rODf1HI3IWTSf3QMg5_IzsN8s-Wl1rG4";
 const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY; // segredo: só via env, sem fallback
 
 /** Client escopado ao usuário (RLS aplicada). `token` = JWT do usuário. */

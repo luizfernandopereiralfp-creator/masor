@@ -9,8 +9,10 @@ import { createClient } from "@supabase/supabase-js";
 /* Config PÚBLICA do projeto (URL + publishable key já vão no bundle do cliente,
    então podem ser default embutido). Isso torna o app robusto a build/painel que
    não injetam as VITE_* — e ignora placeholders do .env.example. */
-const FALLBACK_URL = "https://jkerqallbmozlnttffsi.supabase.co";
-const FALLBACK_ANON = "sb_publishable_UdTxgpsSF7NMnSJqssNURg___po5616";
+// Projeto UNIFICADO = Supabase do Lior (igzhwzgtxjgeaommatls). URL + anon são públicas.
+const FALLBACK_URL = "https://igzhwzgtxjgeaommatls.supabase.co";
+const FALLBACK_ANON =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlnemh3emd0eGpnZWFvbW1hdGxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU4Njc1ODMsImV4cCI6MjEwMTQ0MzU4M30.0CNd0391eP7rODf1HI3IWTSf3QMg5_IzsN8s-Wl1rG4";
 const valido = (v?: string) => !!v && !/SEU-PROJETO|sua-anon|example\.supabase/.test(v);
 
 const envUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;

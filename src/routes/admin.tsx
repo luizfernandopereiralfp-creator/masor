@@ -56,8 +56,8 @@ function Admin() {
   const carregar = useCallback(async () => {
     if (!supabase) return setEstados([]);
     const [{ data: e }, { data: r }] = await Promise.all([
-      supabase.from("tax_states").select("*").order("sigla"),
-      supabase.from("ncm_rules").select("id,ncm,uf,origem,pesquisado_em,fontes").order("updated_at", { ascending: false }).limit(50),
+      supabase.from("masor_tax_states").select("*").order("sigla"),
+      supabase.from("masor_ncm_rules").select("id,ncm,uf,origem,pesquisado_em,fontes").order("updated_at", { ascending: false }).limit(50),
     ]);
     setEstados((e as TaxState[]) ?? []);
     setRegras((r as NcmRule[]) ?? []);
@@ -74,7 +74,7 @@ function Admin() {
   async function salvar(e: TaxState) {
     if (!supabase) return;
     await supabase
-      .from("tax_states")
+      .from("masor_tax_states")
       .update({
         nome: e.nome,
         regiao: e.regiao,
@@ -94,7 +94,7 @@ function Admin() {
   async function adicionarUF() {
     const s = novaUF.trim().toUpperCase();
     if (!/^[A-Z]{2}$/.test(s) || !supabase) return;
-    await supabase.from("tax_states").insert({ sigla: s, nome: s, ativo: true, origem_dados: "manual", pesquisado_em: new Date().toISOString().slice(0, 10) });
+    await supabase.from("masor_tax_states").insert({ sigla: s, nome: s, ativo: true, origem_dados: "manual", pesquisado_em: new Date().toISOString().slice(0, 10) });
     setNovaUF("");
     await carregar();
   }

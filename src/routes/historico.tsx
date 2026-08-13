@@ -44,18 +44,18 @@ function Historico() {
 
   useEffect(() => {
     void (async () => {
-      if (!supabase || !perfil?.tenant_id) {
+      if (!supabase || !perfil) {
         setRegs([]);
         return;
       }
       const { data } = await supabase
-        .from("product_simulations")
+        .from("masor_product_simulations")
         .select("id,origem,created_at,payload,analise")
         .order("created_at", { ascending: false })
         .limit(100);
       setRegs((data as Registro[]) ?? []);
     })();
-  }, [perfil?.tenant_id]);
+  }, [perfil?.user_id]);
 
   return (
     <div className="min-h-screen" style={{ background: "var(--app-bg,#eef1f6)" }}>

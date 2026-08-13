@@ -137,9 +137,9 @@ export function ChatDock({
       // proposta de mudança na base fiscal -> valida o alvo e enfileira p/ aprovação
       let enfileirada = false;
       const p = data.proposta as { alvo?: string; proposta?: unknown; justificativa?: string; fontes?: unknown } | null;
-      if (p?.alvo && ALVO_VALIDO.test(p.alvo) && supabase && perfil?.tenant_id) {
-        const { error } = await supabase.from("rule_change_requests").insert({
-          tenant_id: perfil.tenant_id,
+      if (p?.alvo && ALVO_VALIDO.test(p.alvo) && supabase && perfil) {
+        const { error } = await supabase.from("masor_rule_change_requests").insert({
+          cliente_id: perfil.cliente_id,
           proposto_por: perfil.user_id,
           alvo: p.alvo,
           proposta: p.proposta && typeof p.proposta === "object" ? p.proposta : {},
