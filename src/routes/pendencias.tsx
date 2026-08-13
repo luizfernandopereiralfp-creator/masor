@@ -108,7 +108,7 @@ function Pendencias() {
         <Link to="/" className="text-white/80 hover:text-white">
           <ArrowLeft size={18} />
         </Link>
-        <img src="/masor-logo.png" alt="Masor" className="h-6 w-auto brightness-0 invert" />
+        <img src="/masor-logo.png" alt="Masor" className="h-6 w-auto rounded bg-white px-2 py-1" />
         <span className="text-sm font-bold text-white">· {tx("Pendências (revisão fiscal)", "Ожидают проверки")}</span>
       </header>
 

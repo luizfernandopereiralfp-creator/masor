@@ -8,6 +8,7 @@ import { Protegido } from "@/components/Protegido";
 import { supabase } from "@/integrations/supabase/client";
 import { useEmpresa } from "@/lib/empresa";
 import { parseNFe } from "@/lib/nfe/parse-nfe";
+import { parsePdfNFe } from "@/lib/nfe/parse-pdf-nfe";
 import { AnaliseFiscal } from "@/lib/ia/contrato";
 import { ChatDock } from "@/components/ChatDock";
 import { exportarAnaliseXlsx } from "@/lib/export/planilha";
@@ -119,6 +120,23 @@ function ConsultaConteudo() {
   async function onNF(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
+    // PDF (DANFE): leitura best-effort; pré-preenche o que der.
+    if (/\.pdf$/i.test(f.name) || f.type === "application/pdf") {
+      const r = await parsePdfNFe(await f.arrayBuffer());
+      if (!r.ok) {
+        setNfInfo(r.erro ?? tx("Não consegui ler o PDF.", "Не удалось прочитать PDF."));
+        return;
+      }
+      const it = r.itens[0];
+      if (it) {
+        if (it.descricao) setDescricao(it.descricao);
+        if (it.ncm) setNcm(it.ncm);
+        if (it.valor != null) setCusto(String(it.valor).replace(".", ","));
+      }
+      if (r.emit_uf) setUfForn(r.emit_uf);
+      setNfInfo(r.aviso ?? tx("PDF lido.", "PDF прочитан."));
+      return;
+    }
     const parsed = parseNFe(await f.text());
     if (!parsed.ok || !parsed.itens.length) {
       setNfInfo(tx("Não consegui ler o XML.", "Не удалось прочитать XML."));
@@ -244,7 +262,7 @@ function ConsultaConteudo() {
           <Link to="/" className="text-white/80 hover:text-white">
             <ArrowLeft size={18} />
           </Link>
-          <img src="/masor-logo.png" alt="Masor" className="h-6 w-auto brightness-0 invert" />
+          <img src="/masor-logo.png" alt="Masor" className="h-6 w-auto rounded bg-white px-2 py-1" />
           <h1 className="text-sm font-bold tracking-wide text-white">
             · {tx("Analisar um produto", "Анализ товара")}
           </h1>
@@ -332,8 +350,8 @@ function ConsultaConteudo() {
               style={{ borderColor: AMBER, color: NAVY }}
             >
               <Upload size={14} />
-              {tx("Preencher a partir de uma NF-e (XML)", "Заполнить из NF-e (XML)")}
-              <input type="file" accept=".xml,text/xml,application/xml" className="hidden" onChange={onNF} />
+              {tx("Preencher a partir de uma NF-e (XML ou PDF)", "Заполнить из NF-e (XML или PDF)")}
+              <input type="file" accept=".xml,text/xml,application/xml,.pdf,application/pdf" className="hidden" onChange={onNF} />
               {nfInfo && <span className="ml-1 font-normal" style={{ color: "#8892A4" }}>· {nfInfo}</span>}
             </label>
             <div className="grid gap-4 sm:grid-cols-2">

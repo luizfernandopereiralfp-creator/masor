@@ -59,6 +59,17 @@ function ImportarConteudo() {
     setErroArquivo(null);
     setResultados({});
     setFileName(file.name);
+    // PDF de NF é impreciso p/ lote — o single-NF (tela "Analisar um produto") lê melhor.
+    if (/\.pdf$/i.test(file.name) || file.type === "application/pdf") {
+      setNfe(null);
+      setErroArquivo(
+        tx(
+          "PDF (DANFE) é impreciso para lote. Para uma NF em PDF, use 'Analisar um produto'. Para lote confiável, envie o XML da NF-e ou uma planilha.",
+          "PDF ненадёжен для пакета. Для одной NF в PDF используйте «Анализ товара»; для пакета — XML или таблицу.",
+        ),
+      );
+      return;
+    }
     const texto = await file.text();
     const parsed = parseNFe(texto);
     if (!parsed.ok) {
@@ -181,7 +192,7 @@ function ImportarConteudo() {
         <Link to="/" className="text-white/80 hover:text-white">
           <ArrowLeft size={18} />
         </Link>
-        <img src="/masor-logo.png" alt="Masor" className="h-6 w-auto brightness-0 invert" />
+        <img src="/masor-logo.png" alt="Masor" className="h-6 w-auto rounded bg-white px-2 py-1" />
         <h1 className="text-sm font-bold tracking-wide text-white">· {tx("Importar em lote", "Массовый импорт")}</h1>
       </header>
 
@@ -199,7 +210,7 @@ function ImportarConteudo() {
               >
                 <Upload size={16} />
                 {tx("Escolher XML", "Выбрать XML")}
-                <input type="file" accept=".xml,text/xml,application/xml" className="hidden" onChange={onFile} />
+                <input type="file" accept=".xml,text/xml,application/xml,.pdf,application/pdf" className="hidden" onChange={onFile} />
               </label>
             </label>
             <Campo label={tx("Regime da empresa", "Режим компании")}>

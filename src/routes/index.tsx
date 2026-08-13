@@ -58,7 +58,7 @@ function HomeConteudo() {
         style={{ background: "var(--navy)" }}
       >
         <div className="flex items-center gap-3">
-          <img src="/masor-logo.png" alt="Masor" className="h-8 w-auto brightness-0 invert" />
+          <img src="/masor-logo.png" alt="Masor" className="h-8 w-auto rounded bg-white px-2 py-1" />
           <div>
             <p className="text-[11px]" style={{ color: "var(--amber)" }}>
               {t("app.tagline")}
