@@ -7,9 +7,13 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
    privilegiadas (ex.: gravar cache ai_reviews) — nunca vaza ao client.
    ============================================================ */
 
-const URL = process.env.SUPABASE_URL;
-const ANON = process.env.SUPABASE_PUBLISHABLE_KEY;
-const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Públicas com fallback embutido (robusto a painel que não injeta env de runtime).
+const valido = (v?: string) => !!v && !/SEU-PROJETO|sua-anon|example\.supabase/.test(v);
+const URL = valido(process.env.SUPABASE_URL) ? process.env.SUPABASE_URL! : "https://jkerqallbmozlnttffsi.supabase.co";
+const ANON = valido(process.env.SUPABASE_PUBLISHABLE_KEY)
+  ? process.env.SUPABASE_PUBLISHABLE_KEY!
+  : "sb_publishable_UdTxgpsSF7NMnSJqssNURg___po5616";
+const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY; // segredo: só via env, sem fallback
 
 /** Client escopado ao usuário (RLS aplicada). `token` = JWT do usuário. */
 export function supabaseComUsuario(token: string): SupabaseClient | null {
