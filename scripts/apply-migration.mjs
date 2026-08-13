@@ -5,6 +5,8 @@ import pg from "pg";
 import { readFileSync } from "node:fs";
 
 function env(key) {
+  // process.env vence o .env — permite apontar p/ outro projeto sem editar o .env.
+  if (process.env[key]) return process.env[key];
   const txt = readFileSync(new URL("../.env", import.meta.url), "utf8");
   const m = txt.match(new RegExp(`^${key}="?([^"\\n]+)"?`, "m"));
   return m ? m[1] : null;

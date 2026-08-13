@@ -19,21 +19,14 @@ returns boolean language sql stable security definer set search_path = public as
   select exists (select 1 from public.user_roles where user_id = auth.uid())
 $$;
 
--- Cliente atual de um login-cliente do portal (supermercado). Best-effort:
--- portal_clientes.auth_user_id -> cliente_slug -> conta_azul_clientes -> clientes
--- (casando por CNPJ). Para a equipe (staff) devolve null: staff escolhe o cliente
--- na tela. Portal-cliente do Masor é fase posterior; hoje o uso é staff-first.
+-- Cliente atual de um login-cliente do portal (supermercado).
+-- Rollout STAFF-FIRST: o Masor hoje é usado pela equipe G41 (staff escolhe o
+-- cliente na tela). O mapeamento portal_clientes -> cliente para login-cliente
+-- do Masor fica para a fase 2 (depende de casar conta_azul_clientes<->clientes).
+-- Por ora devolve null: RLS das tabelas operacionais dá acesso via masor_is_staff().
 create or replace function public.masor_cliente_atual()
 returns uuid language sql stable security definer set search_path = public as $$
-  select c.id
-  from public.portal_clientes pc
-  join public.conta_azul_clientes ca on ca.slug = pc.cliente_slug
-  join public.clientes c
-    on regexp_replace(coalesce(c.cnpj_cpf,''),'\D','','g')
-     = regexp_replace(coalesce(ca.cnpj,''),'\D','','g')
-   and coalesce(regexp_replace(c.cnpj_cpf,'\D','','g'),'') <> ''
-  where pc.auth_user_id = auth.uid()
-  limit 1
+  select null::uuid
 $$;
 
 -- Perfil do Masor sintetizado a partir da identidade do Lior. O app chama isto
