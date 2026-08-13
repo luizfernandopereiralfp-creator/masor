@@ -25,6 +25,9 @@ services:
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:-}
       - MASOR_CERT_ENC_KEY=${MASOR_CERT_ENC_KEY:-}
       - MASOR_CHAT_WEBHOOK_URL=${MASOR_CHAT_WEBHOOK_URL:-}
+      # SEFAZ: chave dos certificados A1 do Lior (MESMA da edge function cliente-certificado).
+      # Sem ela, a captura de NF-e (SEFAZ) fica bloqueada.
+      - CERT_MASTER_KEY=${CERT_MASTER_KEY:-}
     networks:
       - root_default
     labels:
