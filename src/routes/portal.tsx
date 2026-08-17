@@ -86,7 +86,7 @@ function PortalConteudo() {
         ) : (
           <>
             <p className="mb-4 text-sm" style={{ color: "#6b7488" }}>
-              {tx("Bem-vindo. Aqui você analisa produtos, importa notas e busca informações fiscais da sua empresa.", "Добро пожаловать.")}
+              {tx("Bem-vindo. Aqui você analisa produtos, importa notas e busca informações fiscais da sua empresa.", "Добро пожаловать. Здесь вы анализируете товары, импортируете накладные и получаете налоговую информацию по вашей компании.")}
             </p>
 
             {/* ferramentas */}
@@ -101,7 +101,7 @@ function PortalConteudo() {
                 to="/consulta"
                 icon={<Search size={18} />}
                 titulo={tx("Analisar um produto", "Анализ товара")}
-                desc={tx("Consulta individual, item a item", "Индивидуальный анализ")}
+                desc={tx("Consulta individual, item a item", "Анализ по одной позиции")}
               />
               <FerramentaCard
                 to="/importar"
@@ -113,7 +113,7 @@ function PortalConteudo() {
                 to="/fiscal"
                 icon={<RefreshCw size={18} />}
                 titulo={tx("Notas na SEFAZ", "Накладные SEFAZ")}
-                desc={tx("Puxar NF-e emitidas contra você", "Загрузить NF-e")}
+                desc={tx("Puxar NF-e emitidas contra você", "Загрузить NF-e на вашу компанию")}
               />
             </div>
 

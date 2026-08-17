@@ -177,12 +177,12 @@ async function bearer(): Promise<Record<string, string>> {
   return tok ? { authorization: `Bearer ${tok}` } : {};
 }
 
-/** Roda a análise fiscal do produto e salva o parecer nele. */
+/** Roda a análise fiscal do produto e salva o parecer nele. Devolve a análise. */
 export async function analisarProduto(
   p: Produto,
   empresa: EmpresaCtx,
   idioma: "pt" | "ru",
-): Promise<{ ok?: true; erro?: string }> {
+): Promise<{ ok?: true; analise?: unknown; erro?: string }> {
   if (!supabase) return { erro: "Supabase indisponível." };
   const operacao = {
     descricao: p.descricao,

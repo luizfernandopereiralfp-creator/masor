@@ -4,6 +4,7 @@ import { z } from "zod";
 import { IDIOMAS, parseParecer, ParecerIA } from "@/lib/ia/contrato";
 import type { AnaliseFiscal } from "@/lib/ia/contrato";
 import { supabaseComUsuario } from "@/integrations/supabase/client.server";
+import { exigirAcesso } from "@/lib/fiscal/guard";
 import {
   systemEspecialista,
   userEspecialista,
@@ -50,7 +51,10 @@ export const Route = createFileRoute("/api/analisar")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        // TODO Fase 4: exigir sessão autenticada + tenant (multi-tenant/RLS).
+        // Exige sessão (staff ou cliente) — evita proxy aberto/abuso do webhook pago da IA.
+        const g = await exigirAcesso(request);
+        if (!g.ok) return g.resposta;
+
         const WEBHOOK_URL = process.env.MASOR_ANALISE_WEBHOOK_URL;
         const TOKEN = process.env.MASOR_WEBHOOK_TOKEN;
         if (!WEBHOOK_URL || !TOKEN) {

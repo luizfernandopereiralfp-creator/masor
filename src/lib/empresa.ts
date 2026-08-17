@@ -74,7 +74,14 @@ export function useEmpresa(clienteId?: string | null) {
       supabase.rpc("masor_clientes_fiscais"),
       supabase.from("masor_cliente_config").select("*").eq("cliente_id", alvo).maybeSingle(),
     ]);
-    const c = (Array.isArray(clientes) ? (clientes as ClienteFiscal[]) : []).find((x) => x.id === alvo) ?? null;
+    let c = (Array.isArray(clientes) ? (clientes as ClienteFiscal[]) : []).find((x) => x.id === alvo) ?? null;
+    // Cliente do portal (não-staff): masor_clientes_fiscais() é gated a staff e volta vazio.
+    // Resolve a PRÓPRIA empresa via masor_meu_cliente().
+    if (!c) {
+      const { data: meu } = await supabase.rpc("masor_meu_cliente");
+      const m = (Array.isArray(meu) ? meu[0] : meu) as ClienteFiscal | undefined;
+      if (m && m.id === alvo) c = m;
+    }
     const end = (c?.endereco ?? {}) as Record<string, unknown>;
     const conf = (cfg ?? {}) as { markup_padrao?: number | null; das_efetivo?: number | null };
     setEmpresa(
