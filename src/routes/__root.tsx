@@ -13,7 +13,6 @@ import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { I18nProvider } from "@/lib/i18n";
 import { AuthProvider } from "@/lib/auth";
-import { SeletorIdioma } from "@/components/SeletorIdioma";
 
 function NotFoundComponent() {
   return (
@@ -133,7 +132,6 @@ function RootComponent() {
       <I18nProvider>
         <AuthProvider>
           <Outlet />
-          <SeletorIdioma />
           <Toaster richColors position="top-right" />
         </AuthProvider>
       </I18nProvider>

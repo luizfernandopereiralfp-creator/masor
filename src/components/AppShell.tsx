@@ -193,8 +193,16 @@ export function AppShell({ children }: { children: ReactNode }) {
 
 function MarcaSidebar() {
   return (
-    <div className="flex items-center gap-2 px-4 pb-3 pt-5">
-      <img src="/masor-logo.png" alt="Masor" className="h-8 w-auto rounded bg-white px-2 py-1" />
+    <div className="flex items-center px-5 pb-3 pt-5">
+      <span
+        className="flex items-center font-extrabold text-white"
+        style={{ gap: 1, fontSize: 26, letterSpacing: "-.02em" }}
+        aria-label="Masor"
+      >
+        Mas
+        <img src="/globe.png" alt="o" style={{ height: "0.92em", transform: "translateY(0.12em)", margin: "0 -.01em" }} />
+        r
+      </span>
     </div>
   );
 }
