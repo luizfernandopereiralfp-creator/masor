@@ -19,6 +19,7 @@ export const Route = createFileRoute("/historico")({
 });
 
 const NAVY = "var(--navy)";
+const INK = "var(--app-ink)";
 const AMBER = "var(--amber)";
 const MONO = "var(--font-mono)";
 
@@ -76,7 +77,7 @@ function Historico() {
                 )
               }
               className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold"
-              style={{ background: AMBER, color: NAVY }}
+              style={{ background: AMBER, color: INK }}
             >
               <Download size={13} /> {tx("Exportar", "Экспорт")}
             </button>
@@ -87,18 +88,18 @@ function Historico() {
             <Loader2 className="animate-spin" style={{ color: AMBER }} />
           </div>
         ) : regs.length === 0 ? (
-          <div className="rounded-2xl border bg-white p-10 text-center" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+          <div className="rounded-2xl border bg-[var(--card)] p-10 text-center" style={{ borderColor: "var(--border,#e2e8f0)" }}>
             <PackageSearch size={30} className="mx-auto" style={{ color: AMBER }} />
-            <p className="mt-3 text-sm font-semibold" style={{ color: NAVY }}>
+            <p className="mt-3 text-sm font-semibold" style={{ color: INK }}>
               {tx("Nenhuma análise ainda", "Пока нет анализов")}
             </p>
-            <Link to="/consulta" className="mt-3 inline-block text-sm font-semibold underline" style={{ color: NAVY }}>
+            <Link to="/consulta" className="mt-3 inline-block text-sm font-semibold underline" style={{ color: INK }}>
               {tx("Analisar um produto →", "Анализ товара →")}
             </Link>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-2xl border bg-white" style={{ borderColor: "var(--border,#e2e8f0)" }}>
-            <table className="w-full text-xs" style={{ color: NAVY }}>
+          <div className="overflow-x-auto rounded-2xl border bg-[var(--card)]" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+            <table className="w-full text-xs" style={{ color: INK }}>
               <thead>
                 <tr className="text-left" style={{ borderBottom: "2px solid var(--border,#e2e8f0)" }}>
                   {[tx("Data", "Дата"), tx("Produto", "Товар"), tx("NCM", "NCM"), tx("Origem", "Источник"), tx("Status", "Статус"), tx("Custo líq.", "Себест."), tx("Preço mín.", "Мин. цена")].map((h) => (
@@ -112,7 +113,7 @@ function Historico() {
                   const st = r.analise?.status ?? "—";
                   return (
                     <tr key={r.id} style={{ borderBottom: "1px solid var(--border,#e2e8f0)" }}>
-                      <td className="whitespace-nowrap px-3 py-2" style={{ color: "#8892A4" }}>
+                      <td className="whitespace-nowrap px-3 py-2" style={{ color: "var(--app-muted)" }}>
                         {new Date(r.created_at).toLocaleDateString("pt-BR")}
                       </td>
                       <td className="px-3 py-2">{String(p.produto_descricao ?? "—")}</td>
@@ -121,7 +122,7 @@ function Historico() {
                       <td className="px-3 py-2">
                         <span
                           className="rounded px-1.5 py-0.5 text-[10px] font-bold"
-                          style={st === "aprovado" ? { background: NAVY, color: "#fff" } : { background: "var(--amber-soft)", color: NAVY }}
+                          style={st === "aprovado" ? { background: NAVY, color: "#fff" } : { background: "var(--amber-soft)", color: INK }}
                         >
                           {st}
                         </span>

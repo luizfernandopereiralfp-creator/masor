@@ -17,6 +17,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 const NAVY = "var(--navy)";
+const INK = "var(--app-ink)";
 const AMBER = "var(--amber)";
 const MONO = "var(--font-mono)";
 
@@ -102,7 +103,7 @@ function Admin() {
 
   if (!staff)
     return (
-      <div className="flex min-h-screen items-center justify-center text-sm" style={{ color: NAVY }}>
+      <div className="flex min-h-screen items-center justify-center text-sm" style={{ color: INK }}>
         {tx("Apenas a equipe G41.", "Только команда G41.")}
       </div>
     );
@@ -113,10 +114,10 @@ function Admin() {
         {/* Adicionar UF */}
         <div className="mb-4 flex items-end gap-2">
           <label className="grid gap-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7488" }}>{tx("Adicionar UF", "Добавить штат")}</span>
-            <input value={novaUF} onChange={(e) => setNovaUF(e.target.value.toUpperCase().slice(0, 2))} placeholder="MG" className="w-24 rounded-md border px-3 py-2 text-sm" style={{ borderColor: "var(--border,#e2e8f0)", color: NAVY, fontFamily: MONO }} />
+            <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--app-muted)" }}>{tx("Adicionar UF", "Добавить штат")}</span>
+            <input value={novaUF} onChange={(e) => setNovaUF(e.target.value.toUpperCase().slice(0, 2))} placeholder="MG" className="w-24 rounded-md border px-3 py-2 text-sm" style={{ borderColor: "var(--border,#e2e8f0)", color: INK, fontFamily: MONO }} />
           </label>
-          <button onClick={adicionarUF} className="inline-flex items-center gap-1 rounded-lg px-4 py-2 text-sm font-bold" style={{ background: AMBER, color: NAVY }}>
+          <button onClick={adicionarUF} className="inline-flex items-center gap-1 rounded-lg px-4 py-2 text-sm font-bold" style={{ background: AMBER, color: INK }}>
             <Plus size={15} /> {tx("Adicionar", "Добавить")}
           </button>
         </div>
@@ -126,10 +127,10 @@ function Admin() {
         ) : (
           <div className="grid gap-3">
             {estados.map((e) => (
-              <div key={e.sigla} className="rounded-2xl border bg-white p-4" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+              <div key={e.sigla} className="rounded-2xl border bg-[var(--card)] p-4" style={{ borderColor: "var(--border,#e2e8f0)" }}>
                 <div className="mb-3 flex items-center justify-between">
-                  <span className="text-sm font-bold" style={{ color: NAVY, fontFamily: MONO }}>
-                    {e.sigla} <span style={{ color: "#8892A4", fontFamily: "inherit" }}>· {e.origem_dados}{e.pesquisado_em ? ` · ${e.pesquisado_em}` : ""}</span>
+                  <span className="text-sm font-bold" style={{ color: INK, fontFamily: MONO }}>
+                    {e.sigla} <span style={{ color: "var(--app-muted)", fontFamily: "inherit" }}>· {e.origem_dados}{e.pesquisado_em ? ` · ${e.pesquisado_em}` : ""}</span>
                   </span>
                   <button onClick={() => salvar(e)} className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold text-white" style={{ background: NAVY }}>
                     {salvo === e.sigla ? <Check size={13} /> : null}
@@ -168,7 +169,7 @@ function Admin() {
                 {Array.isArray(e.fontes) && e.fontes.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-2">
                     {e.fontes.filter((f) => f.url).map((f, i) => (
-                      <a key={i} href={f.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 text-[11px] underline" style={{ color: NAVY }}>
+                      <a key={i} href={f.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 text-[11px] underline" style={{ color: INK }}>
                         {f.campo ?? "fonte"}<ExternalLink size={10} />
                       </a>
                     ))}
@@ -180,12 +181,12 @@ function Admin() {
         )}
 
         {/* ncm_rules aprendidas */}
-        <h2 className="mb-2 mt-8 text-sm font-bold uppercase tracking-widest" style={{ color: NAVY }}>{tx("Regras por NCM (base aprendida)", "Правила по NCM")}</h2>
+        <h2 className="mb-2 mt-8 text-sm font-bold uppercase tracking-widest" style={{ color: INK }}>{tx("Regras por NCM (base aprendida)", "Правила по NCM")}</h2>
         {regras.length === 0 ? (
-          <p className="text-xs" style={{ color: "#8892A4" }}>{tx("Nenhuma regra gravada ainda. Aprovações em /pendencias alimentam esta base.", "Пока нет правил.")}</p>
+          <p className="text-xs" style={{ color: "var(--app-muted)" }}>{tx("Nenhuma regra gravada ainda. Aprovações em /pendencias alimentam esta base.", "Пока нет правил.")}</p>
         ) : (
-          <div className="overflow-x-auto rounded-2xl border bg-white" style={{ borderColor: "var(--border,#e2e8f0)" }}>
-            <table className="w-full text-xs" style={{ color: NAVY }}>
+          <div className="overflow-x-auto rounded-2xl border bg-[var(--card)]" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+            <table className="w-full text-xs" style={{ color: INK }}>
               <thead>
                 <tr className="text-left" style={{ borderBottom: "2px solid var(--border,#e2e8f0)" }}>
                   {["NCM", "UF", tx("Origem", "Источник"), tx("Data", "Дата"), tx("Fontes", "Источники")].map((h) => (
@@ -199,7 +200,7 @@ function Admin() {
                     <td className="px-3 py-2" style={{ fontFamily: MONO }}>{r.ncm}</td>
                     <td className="px-3 py-2" style={{ fontFamily: MONO }}>{r.uf ?? "—"}</td>
                     <td className="px-3 py-2">{r.origem ?? "—"}</td>
-                    <td className="px-3 py-2" style={{ color: "#8892A4" }}>{r.pesquisado_em ?? "—"}</td>
+                    <td className="px-3 py-2" style={{ color: "var(--app-muted)" }}>{r.pesquisado_em ?? "—"}</td>
                     <td className="px-3 py-2">{Array.isArray(r.fontes) ? r.fontes.filter((f) => f.url).length : 0}</td>
                   </tr>
                 ))}
@@ -209,7 +210,7 @@ function Admin() {
         )}
       </div>
 
-      <style>{`.ipt{width:100%;border:1px solid #e3e7ef;border-radius:.5rem;padding:.4rem .6rem;font-size:.85rem;color:var(--navy);outline:none;background:#fff}.ipt:focus{border-color:var(--amber)}`}</style>
+      <style>{`.ipt{width:100%;border:1px solid var(--app-line);border-radius:.5rem;padding:.4rem .6rem;font-size:.85rem;color:var(--app-ink);outline:none;background:var(--app-bg2)}.ipt:focus{border-color:var(--amber)}`}</style>
     </AppShell>
   );
 }
@@ -217,14 +218,14 @@ function Admin() {
 function Campo({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="grid gap-1">
-      <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#6b7488" }}>{label}</span>
+      <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--app-muted)" }}>{label}</span>
       {children}
     </label>
   );
 }
 function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
   return (
-    <button type="button" onClick={() => onChange(!value)} className="rounded-md px-3 py-1.5 text-xs font-bold" style={value ? { background: NAVY, color: "#fff" } : { background: "#f1f3f8", color: NAVY }}>
+    <button type="button" onClick={() => onChange(!value)} className="rounded-md px-3 py-1.5 text-xs font-bold" style={value ? { background: NAVY, color: "#fff" } : { background: "#f1f3f8", color: INK }}>
       {value ? "Sim" : "Não"}
     </button>
   );
@@ -238,7 +239,7 @@ function TriToggle({ value, onChange, tx }: { value: boolean | null; onChange: (
   return (
     <div className="inline-flex overflow-hidden rounded-md border" style={{ borderColor: "var(--border,#e2e8f0)" }}>
       {opts.map(([v, t]) => (
-        <button key={String(v)} type="button" onClick={() => onChange(v)} className="px-2 py-1 text-[11px] font-bold" style={value === v ? { background: NAVY, color: "#fff" } : { background: "#fff", color: NAVY }}>
+        <button key={String(v)} type="button" onClick={() => onChange(v)} className="px-2 py-1 text-[11px] font-bold" style={value === v ? { background: NAVY, color: "#fff" } : { background: "var(--card)", color: INK }}>
           {t}
         </button>
       ))}

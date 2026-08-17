@@ -32,6 +32,7 @@ export const Route = createFileRoute("/empresa")({
 });
 
 const NAVY = "var(--navy)";
+const INK = "var(--app-ink)";
 const AMBER = "var(--amber)";
 const MONO = "var(--font-mono)";
 const REGIMES = ["Simples Nacional", "Simples Nacional (MEI)", "Lucro Presumido", "Lucro Real"];
@@ -93,12 +94,12 @@ function EmpresaConteudo() {
     <AppShell>
       <div className="mx-auto max-w-2xl">
         {!staff ? (
-          <div className="rounded-2xl border bg-white p-8 text-center text-sm" style={{ borderColor: "var(--border,#e2e8f0)", color: "#8892A4" }}>
+          <div className="rounded-2xl border bg-[var(--card)] p-8 text-center text-sm" style={{ borderColor: "var(--border,#e2e8f0)", color: "var(--app-muted)" }}>
             {tx("Apenas a equipe acessa o cadastro de clientes.", "Только команда.")}
           </div>
         ) : (
           <>
-            <p className="mb-4 text-sm" style={{ color: "#6b7488" }}>
+            <p className="mb-4 text-sm" style={{ color: "var(--app-muted)" }}>
               {tx(
                 "Os clientes são os mesmos do Lior (base única). Cadastre, edite e configure aqui — os dados pré-preenchem cada análise.",
                 "Клиенты те же, что в Lior. Заводите и настраивайте здесь.",
@@ -107,13 +108,13 @@ function EmpresaConteudo() {
 
             {/* seletor + ações */}
             {modo === "ver" && (
-              <div className="mb-4 rounded-2xl border bg-white p-4" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+              <div className="mb-4 rounded-2xl border bg-[var(--card)] p-4" style={{ borderColor: "var(--border,#e2e8f0)" }}>
                 <label className="grid gap-1">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7488" }}>
+                  <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--app-muted)" }}>
                     {tx("Cliente ativo", "Активный клиент")}
                   </span>
                   {carregandoLista ? (
-                    <span className="flex items-center gap-2 text-sm" style={{ color: "#8892A4" }}>
+                    <span className="flex items-center gap-2 text-sm" style={{ color: "var(--app-muted)" }}>
                       <Loader2 size={14} className="animate-spin" /> {tx("carregando clientes…", "загрузка…")}
                     </span>
                   ) : (
@@ -143,14 +144,14 @@ function EmpresaConteudo() {
                         type="button"
                         onClick={() => setModo("editar")}
                         className="inline-flex items-center gap-1.5 rounded-xl border px-4 py-2 text-sm font-bold"
-                        style={{ borderColor: NAVY, color: NAVY }}
+                        style={{ borderColor: NAVY, color: INK }}
                       >
                         <Pencil size={15} /> {tx("Editar dados", "Изменить")}
                       </button>
                     )}
                   </div>
                 ) : (
-                  <p className="mt-3 text-[11px]" style={{ color: "#8892A4" }}>
+                  <p className="mt-3 text-[11px]" style={{ color: "var(--app-muted)" }}>
                     {tx("Cadastro e edição de clientes são feitos por um administrador.", "Заведение клиентов — только администратор.")}
                   </p>
                 )}
@@ -175,14 +176,14 @@ function EmpresaConteudo() {
                   <Loader2 className="animate-spin" style={{ color: AMBER }} />
                 </div>
               ) : !empresa ? (
-                <div className="rounded-2xl border bg-white p-8 text-center text-sm" style={{ borderColor: "var(--border,#e2e8f0)", color: "#8892A4" }}>
+                <div className="rounded-2xl border bg-[var(--card)] p-8 text-center text-sm" style={{ borderColor: "var(--border,#e2e8f0)", color: "var(--app-muted)" }}>
                   {tx("Cliente não encontrado.", "Клиент не найден.")}
                 </div>
               ) : (
                 <>
                   {/* identidade */}
-                  <div className="rounded-2xl border bg-white p-6" style={{ borderColor: "var(--border,#e2e8f0)" }}>
-                    <h2 className="mb-3 text-sm font-bold" style={{ color: NAVY }}>{empresa.razao_social ?? empresa.nome ?? "—"}</h2>
+                  <div className="rounded-2xl border bg-[var(--card)] p-6" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+                    <h2 className="mb-3 text-sm font-bold" style={{ color: INK }}>{empresa.razao_social ?? empresa.nome ?? "—"}</h2>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <Leitura label={tx("Nome fantasia", "Название")} valor={empresa.nome} />
                       <Leitura label="CNPJ" valor={empresa.cnpj} mono />
@@ -192,8 +193,8 @@ function EmpresaConteudo() {
                   </div>
 
                   {/* config do Masor */}
-                  <form onSubmit={submitCfg} className="mt-4 grid gap-4 rounded-2xl border bg-white p-6" style={{ borderColor: "var(--border,#e2e8f0)" }}>
-                    <h3 className="text-xs font-bold uppercase tracking-wide" style={{ color: NAVY }}>
+                  <form onSubmit={submitCfg} className="mt-4 grid gap-4 rounded-2xl border bg-[var(--card)] p-6" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+                    <h3 className="text-xs font-bold uppercase tracking-wide" style={{ color: INK }}>
                       {tx("Configuração fiscal (Masor)", "Настройки (Masor)")}
                     </h3>
                     <div className="grid gap-4 sm:grid-cols-2">
@@ -210,7 +211,7 @@ function EmpresaConteudo() {
                         {salvandoCfg ? <Loader2 size={16} className="animate-spin" /> : okCfg ? <Check size={16} /> : null}
                         {okCfg ? tx("Salvo!", "Сохранено!") : tx("Salvar configuração", "Сохранить")}
                       </button>
-                      <Link to="/consulta" className="text-sm font-semibold" style={{ color: NAVY }}>
+                      <Link to="/consulta" className="text-sm font-semibold" style={{ color: INK }}>
                         {tx("Ir para a análise →", "К анализу →")}
                       </Link>
                     </div>
@@ -226,9 +227,9 @@ function EmpresaConteudo() {
             )}
 
             {modo === "ver" && !ativo && (
-              <div className="rounded-2xl border bg-white p-8 text-center" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+              <div className="rounded-2xl border bg-[var(--card)] p-8 text-center" style={{ borderColor: "var(--border,#e2e8f0)" }}>
                 <Building2 size={26} className="mx-auto" style={{ color: AMBER }} />
-                <p className="mt-2 text-sm" style={{ color: "#8892A4" }}>
+                <p className="mt-2 text-sm" style={{ color: "var(--app-muted)" }}>
                   {tx("Escolha um cliente acima ou cadastre um novo.", "Выберите клиента или создайте нового.")}
                 </p>
               </div>
@@ -237,7 +238,7 @@ function EmpresaConteudo() {
         )}
       </div>
 
-      <style>{`.ipt{width:100%;border:1px solid #e3e7ef;border-radius:.6rem;padding:.55rem .75rem;font-size:.875rem;color:var(--navy);outline:none;background:#fff}.ipt:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(233,167,74,.16)}`}</style>
+      <style>{`.ipt{width:100%;border:1px solid var(--app-line);border-radius:.6rem;padding:.55rem .75rem;font-size:.875rem;color:var(--app-ink);outline:none;background:var(--app-bg2)}.ipt:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(233,167,74,.16)}`}</style>
     </AppShell>
   );
 }
@@ -327,7 +328,7 @@ function CadastroCliente({
 
   if (carregando) {
     return (
-      <div className="flex justify-center rounded-2xl border bg-white py-12" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+      <div className="flex justify-center rounded-2xl border bg-[var(--card)] py-12" style={{ borderColor: "var(--border,#e2e8f0)" }}>
         <Loader2 className="animate-spin" style={{ color: AMBER }} />
       </div>
     );
@@ -336,17 +337,17 @@ function CadastroCliente({
   const cnpjDigits = onlyDigits(f.cnpj_cpf);
 
   return (
-    <form onSubmit={submit} className="grid gap-4 rounded-2xl border bg-white p-6" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+    <form onSubmit={submit} className="grid gap-4 rounded-2xl border bg-[var(--card)] p-6" style={{ borderColor: "var(--border,#e2e8f0)" }}>
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold uppercase tracking-wide" style={{ color: NAVY }}>
+        <h3 className="text-sm font-bold uppercase tracking-wide" style={{ color: INK }}>
           {editando ? tx("Editar cliente", "Изменить клиента") : tx("Novo cliente", "Новый клиент")}
         </h3>
-        <button type="button" onClick={onCancelar} className="text-[#8892A4] hover:text-[color:var(--navy)]">
+        <button type="button" onClick={onCancelar} className="text-[var(--app-muted)] hover:text-[color:var(--app-ink)]">
           <X size={18} />
         </button>
       </div>
 
-      <p className="-mt-1 text-[11px]" style={{ color: "#8892A4" }}>
+      <p className="-mt-1 text-[11px]" style={{ color: "var(--app-muted)" }}>
         {tx(
           'Só a razão social é obrigatória. Digite o CNPJ e clique "Buscar na Receita" para preencher o resto automaticamente.',
           "Обязательно только название. Введите CNPJ (14 цифр) и нажмите «Из Receita» — остальное заполнится само.",
@@ -369,7 +370,7 @@ function CadastroCliente({
           onClick={buscarReceita}
           disabled={buscandoReceita || cnpjDigits.length !== 14}
           className="inline-flex h-[42px] items-center gap-1.5 rounded-xl border px-4 text-sm font-bold disabled:opacity-40"
-          style={{ borderColor: NAVY, color: NAVY }}
+          style={{ borderColor: NAVY, color: INK }}
         >
           {buscandoReceita ? <Loader2 size={15} className="animate-spin" /> : <Search size={15} />}
           {tx("Buscar na Receita", "Из Receita")}
@@ -405,7 +406,7 @@ function CadastroCliente({
       </div>
 
       {/* endereço */}
-      <p className="mt-1 text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7488" }}>{tx("Endereço", "Адрес")}</p>
+      <p className="mt-1 text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--app-muted)" }}>{tx("Endereço", "Адрес")}</p>
       <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
         <Campo label={tx("Logradouro", "Улица")}>
           <input className="ipt" value={f.endereco.logradouro ?? ""} onChange={(e) => setEnd("logradouro", e.target.value)} />
@@ -453,7 +454,7 @@ function CadastroCliente({
           {salvando ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
           {editando ? tx("Salvar alterações", "Сохранить") : tx("Cadastrar cliente", "Создать")}
         </button>
-        <button type="button" onClick={onCancelar} className="text-sm font-semibold" style={{ color: "#6b7488" }}>
+        <button type="button" onClick={onCancelar} className="text-sm font-semibold" style={{ color: "var(--app-muted)" }}>
           {tx("Cancelar", "Отмена")}
         </button>
       </div>
@@ -503,11 +504,11 @@ function CertificadoBox({ tx, clienteId, admin }: { tx: (pt: string, ru: string)
   const est = estiloValidade(val.status);
 
   return (
-    <section className="mt-4 rounded-2xl border bg-white p-6" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+    <section className="mt-4 rounded-2xl border bg-[var(--card)] p-6" style={{ borderColor: "var(--border,#e2e8f0)" }}>
       <div className="flex items-center justify-between gap-3">
-        <h3 className="text-xs font-bold uppercase tracking-wide" style={{ color: NAVY }}>{tx("Certificado e-CNPJ (A1)", "Сертификат A1")}</h3>
+        <h3 className="text-xs font-bold uppercase tracking-wide" style={{ color: INK }}>{tx("Certificado e-CNPJ (A1)", "Сертификат A1")}</h3>
         {admin && !abrirUpload && (
-          <button type="button" onClick={() => setAbrirUpload(true)} className="inline-flex items-center gap-1.5 text-[12px] font-bold" style={{ color: NAVY }}>
+          <button type="button" onClick={() => setAbrirUpload(true)} className="inline-flex items-center gap-1.5 text-[12px] font-bold" style={{ color: INK }}>
             <Upload size={13} /> {cert ? tx("Substituir", "Заменить") : tx("Anexar", "Загрузить")}
           </button>
         )}
@@ -518,13 +519,13 @@ function CertificadoBox({ tx, clienteId, admin }: { tx: (pt: string, ru: string)
       ) : cert ? (
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <ShieldCheck size={16} style={{ color: "var(--success,#0f7a57)" }} />
-          <span className="text-sm font-bold" style={{ color: NAVY }}>{cert.titular ?? cert.filename ?? "e-CNPJ"}</span>
+          <span className="text-sm font-bold" style={{ color: INK }}>{cert.titular ?? cert.filename ?? "e-CNPJ"}</span>
           <span className="rounded-full border px-2 py-0.5 text-[11px] font-semibold" style={{ background: est.bg, color: est.fg, borderColor: est.bd }}>
             {textoValidade(val)}
           </span>
         </div>
       ) : (
-        <p className="mt-3 text-xs" style={{ color: "#8892A4" }}>
+        <p className="mt-3 text-xs" style={{ color: "var(--app-muted)" }}>
           {tx("Nenhum e-CNPJ ativo para este cliente.", "Нет активного сертификата.")}
           {!admin && " " + tx("(o upload exige admin)", "(нужен админ)")}
         </p>
@@ -537,14 +538,14 @@ function CertificadoBox({ tx, clienteId, admin }: { tx: (pt: string, ru: string)
       )}
 
       {admin && abrirUpload && (
-        <div className="mt-4 grid gap-3 rounded-xl border p-4" style={{ borderColor: "var(--border,#e2e8f0)", background: "#fafbfc" }}>
+        <div className="mt-4 grid gap-3 rounded-xl border p-4" style={{ borderColor: "var(--border,#e2e8f0)", background: "var(--app-bg2)" }}>
           <Campo label={tx("Arquivo do certificado (.pfx / .p12)", "Файл (.pfx / .p12)")}>
             <input type="file" accept=".pfx,.p12" onChange={(e) => setArquivo(e.target.files?.[0] ?? null)} className="text-xs" />
           </Campo>
           <Campo label={tx("Senha do certificado", "Пароль")}>
             <input type="password" className="ipt" value={senha} onChange={(e) => setSenha(e.target.value)} autoComplete="off" />
           </Campo>
-          <p className="text-[11px]" style={{ color: "#8892A4" }}>
+          <p className="text-[11px]" style={{ color: "var(--app-muted)" }}>
             {tx("O arquivo é criptografado no servidor (AES-256-GCM) e nunca trafega para outros clientes. Mesma cofre do Lior.", "Файл шифруется на сервере.")}
           </p>
           <div className="flex items-center gap-3">
@@ -552,7 +553,7 @@ function CertificadoBox({ tx, clienteId, admin }: { tx: (pt: string, ru: string)
               {enviando ? <Loader2 size={15} className="animate-spin" /> : <Upload size={15} />}
               {tx("Enviar e-CNPJ", "Загрузить")}
             </button>
-            <button type="button" onClick={() => setAbrirUpload(false)} className="text-sm font-semibold" style={{ color: "#6b7488" }}>
+            <button type="button" onClick={() => setAbrirUpload(false)} className="text-sm font-semibold" style={{ color: "var(--app-muted)" }}>
               {tx("Cancelar", "Отмена")}
             </button>
           </div>
@@ -624,31 +625,31 @@ function AcessoClienteBox({ tx, clienteId, razao }: { tx: (pt: string, ru: strin
   }
 
   return (
-    <section className="mt-4 rounded-2xl border bg-white p-6" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+    <section className="mt-4 rounded-2xl border bg-[var(--card)] p-6" style={{ borderColor: "var(--border,#e2e8f0)" }}>
       <div className="flex items-center justify-between gap-3">
-        <h3 className="text-xs font-bold uppercase tracking-wide" style={{ color: NAVY }}>{tx("Acesso do cliente (portal)", "Доступ клиента")}</h3>
+        <h3 className="text-xs font-bold uppercase tracking-wide" style={{ color: INK }}>{tx("Acesso do cliente (portal)", "Доступ клиента")}</h3>
         {!abrir && (
-          <button type="button" onClick={() => { setAbrir(true); setCred(null); }} className="inline-flex items-center gap-1.5 text-[12px] font-bold" style={{ color: NAVY }}>
+          <button type="button" onClick={() => { setAbrir(true); setCred(null); }} className="inline-flex items-center gap-1.5 text-[12px] font-bold" style={{ color: INK }}>
             <UserPlus size={13} /> {tx("Novo acesso", "Новый доступ")}
           </button>
         )}
       </div>
-      <p className="mt-1 text-[11px]" style={{ color: "#8892A4" }}>
+      <p className="mt-1 text-[11px]" style={{ color: "var(--app-muted)" }}>
         {tx("O cliente entra no site e vê só os dados desta empresa.", "Клиент видит только данные этой компании.")}
       </p>
 
       {/* credenciais recém-criadas */}
       {cred && (
         <div className="mt-3 rounded-xl border p-4" style={{ borderColor: "var(--amber)", background: "var(--amber-soft,#fbebd2)" }}>
-          <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: NAVY }}>{tx("Envie estes dados ao cliente", "Отправьте клиенту")}</p>
-          <div className="mt-1 grid gap-0.5 text-sm" style={{ color: NAVY, fontFamily: MONO }}>
+          <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: INK }}>{tx("Envie estes dados ao cliente", "Отправьте клиенту")}</p>
+          <div className="mt-1 grid gap-0.5 text-sm" style={{ color: INK, fontFamily: MONO }}>
             <span>E-mail: <b>{cred.email}</b></span>
             <span>{tx("Senha", "Пароль")}: <b>{cred.senha}</b></span>
           </div>
           <button type="button" onClick={copiar} className="mt-2 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold text-white" style={{ background: NAVY }}>
             <Copy size={13} /> {tx("Copiar credenciais", "Скопировать")}
           </button>
-          <p className="mt-2 text-[10px]" style={{ color: "#8892A4" }}>
+          <p className="mt-2 text-[10px]" style={{ color: "var(--app-muted)" }}>
             {tx("A senha não é exibida de novo. Se perder, gere um novo acesso.", "Пароль больше не показывается.")}
           </p>
         </div>
@@ -656,7 +657,7 @@ function AcessoClienteBox({ tx, clienteId, razao }: { tx: (pt: string, ru: strin
 
       {/* form novo acesso */}
       {abrir && (
-        <div className="mt-3 grid gap-3 rounded-xl border p-4" style={{ borderColor: "var(--border,#e2e8f0)", background: "#fafbfc" }}>
+        <div className="mt-3 grid gap-3 rounded-xl border p-4" style={{ borderColor: "var(--border,#e2e8f0)", background: "var(--app-bg2)" }}>
           <Campo label={tx("E-mail do cliente", "E-mail клиента")}>
             <input className="ipt" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="cliente@empresa.com" autoComplete="off" />
           </Campo>
@@ -665,9 +666,9 @@ function AcessoClienteBox({ tx, clienteId, razao }: { tx: (pt: string, ru: strin
               {criando ? <Loader2 size={15} className="animate-spin" /> : <UserPlus size={15} />}
               {tx("Criar acesso", "Создать")}
             </button>
-            <button type="button" onClick={() => setAbrir(false)} className="text-sm font-semibold" style={{ color: "#6b7488" }}>{tx("Cancelar", "Отмена")}</button>
+            <button type="button" onClick={() => setAbrir(false)} className="text-sm font-semibold" style={{ color: "var(--app-muted)" }}>{tx("Cancelar", "Отмена")}</button>
           </div>
-          <p className="text-[10px]" style={{ color: "#8892A4" }}>
+          <p className="text-[10px]" style={{ color: "var(--app-muted)" }}>
             {tx("Gera uma senha automática; você a envia ao cliente (WhatsApp/e-mail).", "Пароль генерируется автоматически.")}
           </p>
         </div>
@@ -678,11 +679,11 @@ function AcessoClienteBox({ tx, clienteId, razao }: { tx: (pt: string, ru: strin
         {carregando ? (
           <div className="flex justify-center py-3"><Loader2 size={16} className="animate-spin" style={{ color: AMBER }} /></div>
         ) : acessos.length === 0 ? (
-          <p className="text-xs" style={{ color: "#8892A4" }}>{tx("Nenhum acesso ainda.", "Пока нет доступов.")}</p>
+          <p className="text-xs" style={{ color: "var(--app-muted)" }}>{tx("Nenhum acesso ainda.", "Пока нет доступов.")}</p>
         ) : (
           <ul className="grid gap-1">
             {acessos.map((a) => (
-              <li key={a.auth_user_id} className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm" style={{ borderColor: "var(--border,#e2e8f0)", color: NAVY }}>
+              <li key={a.auth_user_id} className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm" style={{ borderColor: "var(--border,#e2e8f0)", color: INK }}>
                 <span>{a.email ?? a.auth_user_id}</span>
                 <button type="button" onClick={() => revogar(a.auth_user_id)} className="inline-flex items-center gap-1 text-[11px] font-semibold" style={{ color: "var(--warn,#b45309)" }}>
                   <Trash2 size={12} /> {tx("Revogar", "Отозвать")}
@@ -699,8 +700,8 @@ function AcessoClienteBox({ tx, clienteId, razao }: { tx: (pt: string, ru: strin
 function Leitura({ label, valor, mono }: { label: string; valor: string | null; mono?: boolean }) {
   return (
     <div>
-      <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#8892A4" }}>{label}</p>
-      <p className="text-sm" style={{ color: NAVY, fontFamily: mono ? MONO : undefined }}>{valor ?? "—"}</p>
+      <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--app-muted)" }}>{label}</p>
+      <p className="text-sm" style={{ color: INK, fontFamily: mono ? MONO : undefined }}>{valor ?? "—"}</p>
     </div>
   );
 }
@@ -708,7 +709,7 @@ function Leitura({ label, valor, mono }: { label: string; valor: string | null; 
 function Campo({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="grid gap-1">
-      <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7488" }}>{label}</span>
+      <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--app-muted)" }}>{label}</span>
       {children}
     </label>
   );

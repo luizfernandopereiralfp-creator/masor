@@ -19,6 +19,7 @@ export const Route = createFileRoute("/fiscal")({
 });
 
 const NAVY = "var(--navy)";
+const INK = "var(--app-ink)";
 const AMBER = "var(--amber)";
 const MONO = "var(--font-mono)";
 const LIOR_CLIENTES = "https://lior.g41one.com.br/admin/clientes";
@@ -139,17 +140,17 @@ function Fiscal() {
       <div className="mx-auto max-w-4xl">
         {/* seletor de cliente (só equipe; cliente é travado na própria empresa) */}
         {staff && (
-        <div className="mb-4 rounded-2xl border bg-white p-4" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+        <div className="mb-4 rounded-2xl border bg-[var(--card)] p-4" style={{ borderColor: "var(--border,#e2e8f0)" }}>
           <label className="grid gap-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7488" }}>
+            <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--app-muted)" }}>
               {tx("Cliente", "Клиент")}
             </span>
             {carregandoLista ? (
-              <span className="flex items-center gap-2 text-sm" style={{ color: "#8892A4" }}>
+              <span className="flex items-center gap-2 text-sm" style={{ color: "var(--app-muted)" }}>
                 <Loader2 size={14} className="animate-spin" /> {tx("carregando…", "загрузка…")}
               </span>
             ) : (
-              <select className="w-full rounded-md border bg-white px-3 py-2 text-sm outline-none" style={{ borderColor: "var(--border,#e2e8f0)", color: NAVY }} value={ativo ?? ""} onChange={(e) => setAtivo(e.target.value || null)}>
+              <select className="w-full rounded-md border bg-[var(--card)] px-3 py-2 text-sm outline-none" style={{ borderColor: "var(--border,#e2e8f0)", color: INK }} value={ativo ?? ""} onChange={(e) => setAtivo(e.target.value || null)}>
                 <option value="">{tx("— selecione —", "— выберите —")}</option>
                 {clientes.map((c) => (
                   <option key={c.id} value={c.id}>{c.razao_social ?? c.nome_fantasia ?? c.id}{c.cnpj_cpf ? ` · ${c.cnpj_cpf}` : ""}</option>
@@ -161,28 +162,28 @@ function Fiscal() {
         )}
 
         {msg && (
-          <div className="mb-4 rounded-xl border px-4 py-3 text-sm" style={msg.tipo === "ok" ? { borderColor: "var(--success,#1f9d55)", color: NAVY, background: "#fff" } : { borderColor: AMBER, background: "var(--amber-soft)", color: NAVY }}>
+          <div className="mb-4 rounded-xl border px-4 py-3 text-sm" style={msg.tipo === "ok" ? { borderColor: "var(--success,#1f9d55)", color: INK, background: "var(--card)" } : { borderColor: AMBER, background: "var(--amber-soft)", color: INK }}>
             {msg.texto}
           </div>
         )}
         {!cofreOk && (
-          <div className="mb-4 flex gap-2 rounded-xl border px-4 py-3 text-sm" style={{ borderColor: AMBER, background: "var(--amber-soft)", color: NAVY }}>
+          <div className="mb-4 flex gap-2 rounded-xl border px-4 py-3 text-sm" style={{ borderColor: AMBER, background: "var(--amber-soft)", color: INK }}>
             <TriangleAlert size={16} style={{ color: AMBER, flexShrink: 0 }} />
             <span>{tx("A chave dos certificados (CERT_MASTER_KEY) não está no servidor do Masor. A busca fica bloqueada até isso ser configurado.", "CERT_MASTER_KEY не настроен.")}</span>
           </div>
         )}
 
         {!ativo ? (
-          <div className="rounded-2xl border bg-white p-8 text-center text-sm" style={{ borderColor: "var(--border,#e2e8f0)", color: "#8892A4" }}>
+          <div className="rounded-2xl border bg-[var(--card)] p-8 text-center text-sm" style={{ borderColor: "var(--border,#e2e8f0)", color: "var(--app-muted)" }}>
             {tx("Selecione um cliente para ver o certificado e buscar as notas.", "Выберите клиента.")}
           </div>
         ) : (
           <>
             {/* certificado (do Lior) */}
-            <section className="rounded-2xl border bg-white p-5" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+            <section className="rounded-2xl border bg-[var(--card)] p-5" style={{ borderColor: "var(--border,#e2e8f0)" }}>
               <div className="flex items-center justify-between gap-3">
-                <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: NAVY }}>{tx("Certificado A1 (e-CNPJ)", "Сертификат A1")}</h2>
-                <a href={LIOR_CLIENTES} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[11px] font-semibold underline" style={{ color: NAVY }}>
+                <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: INK }}>{tx("Certificado A1 (e-CNPJ)", "Сертификат A1")}</h2>
+                <a href={LIOR_CLIENTES} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[11px] font-semibold underline" style={{ color: INK }}>
                   {tx("gerir no Lior", "в Lior")} <ExternalLink size={11} />
                 </a>
               </div>
@@ -191,26 +192,26 @@ function Fiscal() {
               ) : cert ? (
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <ShieldCheck size={16} style={{ color: "var(--success,#1f9d55)" }} />
-                  <span className="text-sm font-bold" style={{ color: NAVY }}>{cert.titular ?? "—"}</span>
-                  {cert.cnpj && <span className="text-xs" style={{ color: "#8892A4", fontFamily: MONO }}>CNPJ {cert.cnpj}</span>}
-                  <span className="text-xs" style={{ color: diasParaVencer != null && diasParaVencer < 30 ? AMBER : "#8892A4" }}>
+                  <span className="text-sm font-bold" style={{ color: INK }}>{cert.titular ?? "—"}</span>
+                  {cert.cnpj && <span className="text-xs" style={{ color: "var(--app-muted)", fontFamily: MONO }}>CNPJ {cert.cnpj}</span>}
+                  <span className="text-xs" style={{ color: diasParaVencer != null && diasParaVencer < 30 ? AMBER : "var(--app-muted)" }}>
                     · {tx("válido até", "до")} <b style={{ fontFamily: MONO }}>{cert.validade_ate ?? "—"}</b>
                     {diasParaVencer != null && diasParaVencer < 30 && ` ⚠ ${tx("renovar", "продлить")}`}
                   </span>
                 </div>
               ) : (
-                <p className="mt-2 text-xs" style={{ color: "#8892A4" }}>
+                <p className="mt-2 text-xs" style={{ color: "var(--app-muted)" }}>
                   {tx("Este cliente não tem certificado A1 ativo. Cadastre o e-CNPJ no cadastro do cliente no Lior.", "Нет активного A1 — загрузите в Lior.")}
                 </p>
               )}
             </section>
 
             {/* buscar */}
-            <section className="mt-4 rounded-2xl border bg-white p-5" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+            <section className="mt-4 rounded-2xl border bg-[var(--card)] p-5" style={{ borderColor: "var(--border,#e2e8f0)" }}>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: NAVY }}>{tx("Buscar notas na SEFAZ", "Получить накладные")}</h2>
-                  <p className="mt-1 text-xs" style={{ color: "#6b7488" }}>{tx("NF-e emitidas contra o CNPJ. A SEFAZ limita a frequência — aguarde 1 hora entre buscas.", "Не чаще 1 раза в час.")}</p>
+                  <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: INK }}>{tx("Buscar notas na SEFAZ", "Получить накладные")}</h2>
+                  <p className="mt-1 text-xs" style={{ color: "var(--app-muted)" }}>{tx("NF-e emitidas contra o CNPJ. A SEFAZ limita a frequência — aguarde 1 hora entre buscas.", "Не чаще 1 раза в час.")}</p>
                 </div>
                 <button type="button" onClick={buscarNotas} disabled={!cert || buscando || emEspera} className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold text-white disabled:opacity-40" style={{ background: NAVY }}>
                   {buscando ? <Loader2 size={15} className="animate-spin" /> : <RefreshCw size={15} />}
@@ -222,15 +223,15 @@ function Fiscal() {
             </section>
 
             {/* documentos */}
-            <h2 className="mb-2 mt-6 text-sm font-bold uppercase tracking-widest" style={{ color: NAVY }}>{tx("Documentos capturados", "Документы")}</h2>
+            <h2 className="mb-2 mt-6 text-sm font-bold uppercase tracking-widest" style={{ color: INK }}>{tx("Documentos capturados", "Документы")}</h2>
             {docs.length === 0 ? (
-              <div className="rounded-2xl border bg-white p-8 text-center" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+              <div className="rounded-2xl border bg-[var(--card)] p-8 text-center" style={{ borderColor: "var(--border,#e2e8f0)" }}>
                 <FileText size={26} className="mx-auto" style={{ color: AMBER }} />
-                <p className="mt-2 text-xs" style={{ color: "#8892A4" }}>{tx("Nenhum documento ainda.", "Пока нет.")}</p>
+                <p className="mt-2 text-xs" style={{ color: "var(--app-muted)" }}>{tx("Nenhum documento ainda.", "Пока нет.")}</p>
               </div>
             ) : (
-              <div className="overflow-x-auto rounded-2xl border bg-white" style={{ borderColor: "var(--border,#e2e8f0)" }}>
-                <table className="w-full text-xs" style={{ color: NAVY }}>
+              <div className="overflow-x-auto rounded-2xl border bg-[var(--card)]" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+                <table className="w-full text-xs" style={{ color: INK }}>
                   <thead>
                     <tr className="text-left" style={{ borderBottom: "2px solid var(--border,#e2e8f0)" }}>
                       {["NSU", tx("Tipo", "Тип"), tx("Emitente", "Поставщик"), tx("Valor", "Сумма"), tx("Chave", "Ключ")].map((h) => (
@@ -245,7 +246,7 @@ function Fiscal() {
                         <td className="px-3 py-2">{d.tipo}</td>
                         <td className="px-3 py-2">{String(d.resumo?.emit_nome ?? d.resumo?.emit_cnpj ?? "—")}</td>
                         <td className="px-3 py-2" style={{ fontFamily: MONO }}>{brl(d.resumo?.vNF)}</td>
-                        <td className="px-3 py-2 text-[10px]" style={{ fontFamily: MONO, color: "#8892A4" }}>{d.chave44 ? `…${d.chave44.slice(-12)}` : "—"}</td>
+                        <td className="px-3 py-2 text-[10px]" style={{ fontFamily: MONO, color: "var(--app-muted)" }}>{d.chave44 ? `…${d.chave44.slice(-12)}` : "—"}</td>
                       </tr>
                     ))}
                   </tbody>

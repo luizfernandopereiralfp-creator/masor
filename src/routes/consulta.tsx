@@ -28,6 +28,7 @@ export const Route = createFileRoute("/consulta")({
 
 /* ---------- helpers ---------- */
 const NAVY = "var(--navy)";
+const INK = "var(--app-ink)";
 const AMBER = "var(--amber)";
 const MONO = "var(--font-mono)";
 
@@ -260,13 +261,13 @@ function ConsultaConteudo() {
         <div className="grid gap-4">
           <Bloco n="01" titulo={tx("Operação", "Операция")}>
             <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg px-3 py-2" style={{ background: "#f1f3f8" }}>
-              <span className="text-xs" style={{ color: NAVY }}>
+              <span className="text-xs" style={{ color: INK }}>
                 {tx("Empresa", "Компания")}:{" "}
                 <b>{regimeEmpresa === "lucro_real" ? "Lucro Real" : regimeEmpresa === "presumido" ? "Presumido" : "Simples"}</b>
                 {ufSuper ? ` · ${ufSuper}` : ""}
                 {municipio ? ` · ${municipio}` : ""}
               </span>
-              <Link to="/empresa" className="text-[11px] font-semibold underline" style={{ color: NAVY }}>
+              <Link to="/empresa" className="text-[11px] font-semibold underline" style={{ color: INK }}>
                 {tx("editar cadastro", "изменить")}
               </Link>
             </div>
@@ -333,12 +334,12 @@ function ConsultaConteudo() {
           >
             <label
               className="flex cursor-pointer items-center gap-2 rounded-lg border border-dashed px-3 py-2 text-xs font-semibold"
-              style={{ borderColor: AMBER, color: NAVY }}
+              style={{ borderColor: AMBER, color: INK }}
             >
               <Upload size={14} />
               {tx("Preencher a partir de uma NF-e (XML ou PDF)", "Заполнить из NF-e (XML или PDF)")}
               <input type="file" accept=".xml,text/xml,application/xml,.pdf,application/pdf" className="hidden" onChange={onNF} />
-              {nfInfo && <span className="ml-1 font-normal" style={{ color: "#8892A4" }}>· {nfInfo}</span>}
+              {nfInfo && <span className="ml-1 font-normal" style={{ color: "var(--app-muted)" }}>· {nfInfo}</span>}
             </label>
             <div className="grid gap-4 sm:grid-cols-2">
               <Campo label={tx("Descrição do produto", "Описание товара")}>
@@ -434,7 +435,7 @@ function ConsultaConteudo() {
               onChange={(e) => setInfoAdicional(e.target.value)}
               rows={2}
               className="w-full rounded-md border px-3 py-2 text-sm outline-none"
-              style={{ borderColor: "var(--border,#e2e8f0)", color: NAVY }}
+              style={{ borderColor: "var(--border,#e2e8f0)", color: INK }}
               placeholder={tx("ex.: benefício estadual, regra específica, correção…", "напр.: льгота, правило, поправка…")}
             />
           </Bloco>
@@ -444,7 +445,7 @@ function ConsultaConteudo() {
             onClick={analisar}
             disabled={!podeAnalisar || status === "loading"}
             className="flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-bold transition-opacity disabled:opacity-40"
-            style={{ background: AMBER, color: NAVY }}
+            style={{ background: AMBER, color: INK }}
           >
             {status === "loading" ? (
               <>
@@ -456,7 +457,7 @@ function ConsultaConteudo() {
             )}
           </button>
           {!podeAnalisar && (
-            <p className="text-[11px]" style={{ color: "#8892A4" }}>
+            <p className="text-[11px]" style={{ color: "var(--app-muted)" }}>
               {tx(
                 "Preencha ao menos descrição, NCM (8 dígitos) e custo para analisar.",
                 "Укажите описание, NCM (8 цифр) и стоимость для анализа.",
@@ -468,12 +469,12 @@ function ConsultaConteudo() {
         {/* ---------- painel de resultado ---------- */}
         <aside className="lg:sticky lg:top-6 self-start">
           {status === "idle" && (
-            <div className="rounded-2xl border bg-white p-6 text-center" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+            <div className="rounded-2xl border bg-[var(--card)] p-6 text-center" style={{ borderColor: "var(--border,#e2e8f0)" }}>
               <ShieldCheck size={28} className="mx-auto" style={{ color: AMBER }} />
-              <p className="mt-3 text-sm font-semibold" style={{ color: NAVY }}>
+              <p className="mt-3 text-sm font-semibold" style={{ color: INK }}>
                 {tx("O parecer aparece aqui", "Заключение появится здесь")}
               </p>
-              <p className="mt-1 text-xs" style={{ color: "#8892A4" }}>
+              <p className="mt-1 text-xs" style={{ color: "var(--app-muted)" }}>
                 {tx(
                   "Cada valor vem com a fonte oficial. Sem confirmação, o resultado sai como provisório.",
                   "Каждое значение — с официальным источником. Без подтверждения — предварительно.",
@@ -482,9 +483,9 @@ function ConsultaConteudo() {
             </div>
           )}
           {status === "loading" && (
-            <div className="rounded-2xl border bg-white p-6 text-center" style={{ borderColor: AMBER }}>
+            <div className="rounded-2xl border bg-[var(--card)] p-6 text-center" style={{ borderColor: AMBER }}>
               <Loader2 size={28} className="mx-auto animate-spin" style={{ color: AMBER }} />
-              <p className="mt-3 text-sm" style={{ color: NAVY }}>
+              <p className="mt-3 text-sm" style={{ color: INK }}>
                 {tx(
                   "A IA está pesquisando a legislação vigente (pode levar até ~2 min com busca na web).",
                   "ИИ изучает действующее законодательство (до ~2 мин с веб-поиском).",
@@ -513,7 +514,7 @@ function ConsultaConteudo() {
                 onClick={contribuir}
                 disabled={contribuido}
                 className="mt-3 w-full rounded-lg border px-4 py-2 text-xs font-semibold disabled:opacity-60"
-                style={{ borderColor: NAVY, color: NAVY }}
+                style={{ borderColor: NAVY, color: INK }}
               >
                 {contribuido
                   ? tx("Enviado à revisão da equipe fiscal ✓", "Отправлено на проверку ✓")
@@ -591,7 +592,7 @@ function Relatorio({
               type="button"
               onClick={() => onDiretriz(d === "completo" ? { densidade: "completo", abrir: "todas" } : { densidade: "enxuto", fechar: "todas" })}
               className="px-3 py-1 text-[11px] font-bold"
-              style={view.densidade === d ? { background: NAVY, color: "#fff" } : { background: "#fff", color: NAVY }}
+              style={view.densidade === d ? { background: NAVY, color: "#fff" } : { background: "var(--card)", color: INK }}
             >
               {d === "enxuto" ? tx("Enxuto", "Кратко") : tx("Completo", "Полный")}
             </button>
@@ -601,14 +602,14 @@ function Relatorio({
           type="button"
           onClick={onExport}
           className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-bold"
-          style={{ borderColor: NAVY, color: NAVY }}
+          style={{ borderColor: NAVY, color: INK }}
         >
           <Download size={13} /> {tx("Exportar planilha", "Экспорт")}
         </button>
       </div>
 
       {/* HERO — números em evidência */}
-      <div className="overflow-hidden rounded-2xl border bg-white" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+      <div className="overflow-hidden rounded-2xl border bg-[var(--card)]" style={{ borderColor: "var(--border,#e2e8f0)" }}>
         <div className="flex items-center justify-between px-4 py-2.5" style={{ background: NAVY }}>
           <span className="text-xs font-bold uppercase tracking-widest text-white">{tx("Resultado", "Результат")}</span>
           <span className="flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold text-white" style={{ background: statusCor }}>
@@ -619,10 +620,10 @@ function Relatorio({
         <div className="p-4">
           {/* preço mínimo — o número que mais importa */}
           <div className="rounded-xl p-4 text-center" style={{ background: "var(--amber-soft)" }}>
-            <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: NAVY }}>
+            <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: INK }}>
               {tx("Preço mínimo de venda", "Мин. цена продажи")}
             </p>
-            <p className="text-4xl font-black leading-tight" style={{ color: NAVY, fontFamily: MONO }}>
+            <p className="text-4xl font-black leading-tight" style={{ color: INK, fontFamily: MONO }}>
               {brl(fp.preco_venda_sugerido)}
             </p>
           </div>
@@ -632,7 +633,7 @@ function Relatorio({
             <Indicador rotulo={tx("Margem estimada", "Маржа")} valor={pctFmt(fp.margem_estimada_percent)} />
           </div>
           {/* frase didática */}
-          <p className="mt-3 text-sm leading-relaxed" style={{ color: "#4a5568" }}>{frase}</p>
+          <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--app-muted)" }}>{frase}</p>
         </div>
       </div>
 
@@ -642,12 +643,12 @@ function Relatorio({
       ))}
       {a.pendencias.length > 0 && (
         <div className="rounded-xl border p-3" style={{ borderColor: AMBER, background: "var(--amber-soft)" }}>
-          <p className="mb-1.5 text-[11px] font-bold uppercase tracking-widest" style={{ color: NAVY }}>
+          <p className="mb-1.5 text-[11px] font-bold uppercase tracking-widest" style={{ color: INK }}>
             {tx("A confirmar (não presumido)", "Уточнить")}
           </p>
           <div className="grid gap-1.5">
             {a.pendencias.map((p, i) => (
-              <div key={i} className="text-xs leading-relaxed" style={{ color: NAVY }}>
+              <div key={i} className="text-xs leading-relaxed" style={{ color: INK }}>
                 <b>{p.campo}:</b> {p.motivo}
               </div>
             ))}
@@ -656,8 +657,8 @@ function Relatorio({
       )}
 
       {/* formação do preço (decomposição) — sempre visível, enxuta ou completa */}
-      <div className="rounded-xl border bg-white px-4 py-3" style={{ borderColor: "var(--border,#e2e8f0)" }}>
-        <p className="mb-1 text-[10px] font-bold uppercase tracking-widest" style={{ color: "#8892A4" }}>
+      <div className="rounded-xl border bg-[var(--card)] px-4 py-3" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+        <p className="mb-1 text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--app-muted)" }}>
           {tx("Como se forma o preço", "Как формируется цена")}
         </p>
         <MiniLinha label={tx("Custo de aquisição", "Себестоимость")} valor={brl(fp.custo_aquisicao)} />
@@ -681,7 +682,7 @@ function Relatorio({
       >
         <div className="grid gap-1.5">
           {a.parametros_aplicados.map((p, i) => (
-            <div key={i} className="flex items-center justify-between gap-3 text-xs" style={{ color: NAVY }}>
+            <div key={i} className="flex items-center justify-between gap-3 text-xs" style={{ color: INK }}>
               <span>{p.rotulo}</span>
               <span className="flex items-center gap-1.5 whitespace-nowrap">
                 <b style={{ fontFamily: MONO }}>{p.valor}</b>
@@ -691,7 +692,7 @@ function Relatorio({
                     <ExternalLink size={10} />
                   </a>
                 ) : (
-                  <span className="rounded px-1.5 py-0.5 text-[10px] font-bold" style={{ background: "var(--amber-soft)", color: NAVY }}>
+                  <span className="rounded px-1.5 py-0.5 text-[10px] font-bold" style={{ background: "var(--amber-soft)", color: INK }}>
                     ⚠ {tx("a confirmar", "уточнить")}
                   </span>
                 )}
@@ -704,10 +705,10 @@ function Relatorio({
       <Colapsavel id="memoria" titulo={ROTULO_SECAO.memoria} n={a.memoria_calculo.length} aberta={estaAberta("memoria")} onToggle={onToggle} tx={tx}>
         <div className="grid gap-1">
           {a.memoria_calculo.map((p, i) => (
-            <div key={i} className="flex items-baseline justify-between gap-3 text-xs" style={{ color: NAVY }}>
+            <div key={i} className="flex items-baseline justify-between gap-3 text-xs" style={{ color: INK }}>
               <span>
                 {p.rotulo}
-                {p.formula ? <span style={{ color: "#8892A4" }}> · {p.formula}</span> : null}
+                {p.formula ? <span style={{ color: "var(--app-muted)" }}> · {p.formula}</span> : null}
               </span>
               <span style={{ fontFamily: MONO, whiteSpace: "nowrap" }}>
                 {p.unidade === "%" ? pctFmt(p.resultado) : p.unidade === "un" ? (p.resultado ?? "—") : brl(p.resultado)}
@@ -718,12 +719,12 @@ function Relatorio({
       </Colapsavel>
 
       <Colapsavel id="reforma" titulo={ROTULO_SECAO.reforma} aberta={estaAberta("reforma")} onToggle={onToggle} tx={tx}>
-        <p className="mb-2 text-sm leading-relaxed" style={{ color: NAVY }}>
-          <b className="text-xs uppercase tracking-wide" style={{ color: "#8892A4" }}>{tx("Hoje", "Сегодня")}: </b>
+        <p className="mb-2 text-sm leading-relaxed" style={{ color: INK }}>
+          <b className="text-xs uppercase tracking-wide" style={{ color: "var(--app-muted)" }}>{tx("Hoje", "Сегодня")}: </b>
           {a.tratamento_atual}
         </p>
-        <p className="text-sm leading-relaxed" style={{ color: NAVY }}>
-          <b className="text-xs uppercase tracking-wide" style={{ color: "#8892A4" }}>{tx("Reforma", "Реформа")}: </b>
+        <p className="text-sm leading-relaxed" style={{ color: INK }}>
+          <b className="text-xs uppercase tracking-wide" style={{ color: "var(--app-muted)" }}>{tx("Reforma", "Реформа")}: </b>
           {a.impactos_reforma}
         </p>
       </Colapsavel>
@@ -732,7 +733,7 @@ function Relatorio({
         <Colapsavel id="cenarios" titulo={ROTULO_SECAO.cenarios} n={a.cenarios.length} aberta={estaAberta("cenarios")} onToggle={onToggle} tx={tx}>
           <div className="grid gap-2">
             {a.cenarios.map((c, i) => (
-              <div key={i} className="rounded-lg border p-2 text-xs" style={{ borderColor: "var(--border,#e2e8f0)", color: NAVY }}>
+              <div key={i} className="rounded-lg border p-2 text-xs" style={{ borderColor: "var(--border,#e2e8f0)", color: INK }}>
                 <b className="uppercase">{c.fase}</b>
                 {c.vigencia ? ` · ${c.vigencia}` : ""} — {c.resumo}
                 {c.preco_venda_sugerido != null && <span style={{ fontFamily: MONO }}> · PV {brl(c.preco_venda_sugerido)}</span>}
@@ -746,7 +747,7 @@ function Relatorio({
         <Colapsavel id="beneficios" titulo={ROTULO_SECAO.beneficios} n={a.beneficios_creditos_regimes.length} aberta={estaAberta("beneficios")} onToggle={onToggle} tx={tx}>
           <div className="grid gap-1">
             {a.beneficios_creditos_regimes.map((b, i) => (
-              <div key={i} className="text-xs" style={{ color: NAVY }}>
+              <div key={i} className="text-xs" style={{ color: INK }}>
                 <b>{b.tipo}</b> — {b.descricao}{" "}
                 {b.aplicavel === null ? <span style={{ color: AMBER }}>({tx("a confirmar", "уточнить")})</span> : b.aplicavel ? "✓" : "✕"}
                 {b.fundamento_url && <FonteLink url={b.fundamento_url} />}
@@ -760,7 +761,7 @@ function Relatorio({
         <Colapsavel id="ncms" titulo={ROTULO_SECAO.ncms} n={a.ncms_enquadramentos.length} aberta={estaAberta("ncms")} onToggle={onToggle} tx={tx}>
           <div className="grid gap-1">
             {a.ncms_enquadramentos.map((n, i) => (
-              <div key={i} className="text-xs" style={{ color: NAVY }}>
+              <div key={i} className="text-xs" style={{ color: INK }}>
                 <b style={{ fontFamily: MONO }}>{n.ncm}</b>
                 {n.cest ? ` · CEST ${n.cest}` : ""} — {n.justificativa}
                 {n.fundamento_url && <FonteLink url={n.fundamento_url} />}
@@ -802,7 +803,7 @@ function Relatorio({
         <Colapsavel id="fundamentacao" titulo={ROTULO_SECAO.fundamentacao} n={a.fundamentacao_legal.length} aberta={estaAberta("fundamentacao")} onToggle={onToggle} tx={tx}>
           <div className="grid gap-1">
             {a.fundamentacao_legal.map((f, i) => (
-              <div key={i} className="text-xs" style={{ color: NAVY }}>
+              <div key={i} className="text-xs" style={{ color: INK }}>
                 <b>{f.norma}</b>
                 {f.artigo ? `, ${f.artigo}` : ""} ({f.orgao}
                 {f.vigencia ? ` · ${f.vigencia}` : ""}) — {f.afirmacao}
@@ -817,7 +818,7 @@ function Relatorio({
         <Colapsavel id="fontes" titulo={ROTULO_SECAO.fontes} n={a.fontes_oficiais.length} aberta={estaAberta("fontes")} onToggle={onToggle} tx={tx}>
           <div className="grid gap-1">
             {a.fontes_oficiais.map((f, i) => (
-              <a key={i} href={f.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs underline" style={{ color: NAVY }}>
+              <a key={i} href={f.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs underline" style={{ color: INK }}>
                 {f.titulo ?? f.url}
                 <ExternalLink size={11} />
               </a>
@@ -832,7 +833,7 @@ function Relatorio({
         </Colapsavel>
       )}
 
-      <p className="text-[10px]" style={{ color: "#8892A4" }}>
+      <p className="text-[10px]" style={{ color: "var(--app-muted)" }}>
         {tx("Última verificação legislativa:", "Последняя проверка:")} {a.data_verificacao_legislativa} ·{" "}
         {tx("Simulação orientativa — pendências viram tarefa para a equipe.", "Ориентировочно — пункты уходят команде.")}
       </p>
@@ -843,16 +844,16 @@ function Relatorio({
 function Indicador({ rotulo, valor }: { rotulo: string; valor: string }) {
   return (
     <div className="rounded-xl border p-3 text-center" style={{ borderColor: "var(--border,#e2e8f0)" }}>
-      <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#8892A4" }}>{rotulo}</p>
-      <p className="mt-0.5 text-lg font-bold" style={{ color: NAVY, fontFamily: MONO }}>{valor}</p>
+      <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--app-muted)" }}>{rotulo}</p>
+      <p className="mt-0.5 text-lg font-bold" style={{ color: INK, fontFamily: MONO }}>{valor}</p>
     </div>
   );
 }
 function MiniLinha({ label, valor, forte }: { label: string; valor: string; forte?: boolean }) {
   return (
     <div className="flex items-baseline justify-between gap-3 py-0.5">
-      <span className="text-xs" style={{ color: forte ? NAVY : "#8892A4" }}>{label}</span>
-      <span className={forte ? "text-sm font-bold" : "text-xs"} style={{ color: NAVY, fontFamily: MONO, whiteSpace: "nowrap" }}>{valor}</span>
+      <span className="text-xs" style={{ color: forte ? INK : "var(--app-muted)" }}>{label}</span>
+      <span className={forte ? "text-sm font-bold" : "text-xs"} style={{ color: INK, fontFamily: MONO, whiteSpace: "nowrap" }}>{valor}</span>
     </div>
   );
 }
@@ -874,20 +875,20 @@ function Colapsavel({
   children: ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-xl border bg-white" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+    <section className="overflow-hidden rounded-xl border bg-[var(--card)]" style={{ borderColor: "var(--border,#e2e8f0)" }}>
       <button
         type="button"
         onClick={() => onToggle(id)}
         className="flex w-full items-center justify-between gap-2 px-4 py-2.5 text-left"
         aria-expanded={aberta}
       >
-        <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide" style={{ color: NAVY }}>
+        <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide" style={{ color: INK }}>
           {titulo}
           {n != null && n > 0 && (
-            <span className="rounded-full px-1.5 py-0.5 text-[10px] font-bold" style={{ background: "#f1f3f8", color: "#8892A4" }}>{n}</span>
+            <span className="rounded-full px-1.5 py-0.5 text-[10px] font-bold" style={{ background: "#f1f3f8", color: "var(--app-muted)" }}>{n}</span>
           )}
         </span>
-        <ChevronDown size={16} style={{ color: "#8892A4", transform: aberta ? "rotate(180deg)" : "none", transition: "transform .15s" }} />
+        <ChevronDown size={16} style={{ color: "var(--app-muted)", transform: aberta ? "rotate(180deg)" : "none", transition: "transform .15s" }} />
       </button>
       {aberta && <div className="border-t px-4 py-3" style={{ borderColor: "var(--border,#e2e8f0)" }}>{children}</div>}
     </section>
@@ -897,12 +898,12 @@ function Colapsavel({
 /* ---------- UI primitives ---------- */
 function Bloco({ n, titulo, sub, children }: { n: string; titulo: string; sub?: string; children: ReactNode }) {
   return (
-    <section className="rounded-2xl border bg-white" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+    <section className="rounded-2xl border bg-[var(--card)]" style={{ borderColor: "var(--border,#e2e8f0)" }}>
       <header className="flex items-baseline gap-3 border-b px-5 py-3" style={{ borderColor: "var(--border,#e2e8f0)" }}>
         <span className="text-xs font-bold tracking-widest" style={{ color: AMBER, fontFamily: MONO }}>{n}</span>
         <div>
-          <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: NAVY }}>{titulo}</h2>
-          {sub && <p className="mt-0.5 text-xs" style={{ color: "#8892A4" }}>{sub}</p>}
+          <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: INK }}>{titulo}</h2>
+          {sub && <p className="mt-0.5 text-xs" style={{ color: "var(--app-muted)" }}>{sub}</p>}
         </div>
       </header>
       <div className="grid gap-4 px-5 py-4">{children}</div>
@@ -912,9 +913,9 @@ function Bloco({ n, titulo, sub, children }: { n: string; titulo: string; sub?: 
 function Campo({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
     <label className="grid gap-1">
-      <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: NAVY }}>{label}</span>
+      <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: INK }}>{label}</span>
       {children}
-      {hint && <span className="text-[11px] leading-snug" style={{ color: "#8892A4" }}>{hint}</span>}
+      {hint && <span className="text-[11px] leading-snug" style={{ color: "var(--app-muted)" }}>{hint}</span>}
     </label>
   );
 }
@@ -937,7 +938,7 @@ function Texto({
       placeholder={placeholder}
       onChange={(e) => onChange(e.target.value)}
       className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:border-[color:var(--amber)]"
-      style={{ borderColor: "var(--border,#e2e8f0)", color: NAVY, fontFamily: mono ? MONO : undefined }}
+      style={{ borderColor: "var(--border,#e2e8f0)", color: INK, fontFamily: mono ? MONO : undefined }}
     />
   );
 }
@@ -946,8 +947,8 @@ function Sel({ value, onChange, opts }: { value: string; onChange: (v: string) =
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full rounded-md border bg-white px-3 py-2 text-sm outline-none"
-      style={{ borderColor: "var(--border,#e2e8f0)", color: NAVY }}
+      className="w-full rounded-md border bg-[var(--card)] px-3 py-2 text-sm outline-none"
+      style={{ borderColor: "var(--border,#e2e8f0)", color: INK }}
     >
       {opts.map(([v, t]) => (
         <option key={v} value={v}>{t}</option>
@@ -964,7 +965,7 @@ function Alternar({ value, onChange, opts }: { value: string; onChange: (v: stri
           type="button"
           onClick={() => onChange(v)}
           className="px-3 py-1.5 text-xs font-semibold"
-          style={value === v ? { background: NAVY, color: "#fff" } : { background: "#fff", color: NAVY }}
+          style={value === v ? { background: NAVY, color: "#fff" } : { background: "var(--card)", color: INK }}
         >
           {t}
         </button>
@@ -977,9 +978,9 @@ function Alerta({ children, forte }: { children: ReactNode; forte?: boolean }) {
     <div
       className="flex gap-2 rounded-md px-3 py-2 text-xs leading-relaxed"
       style={{
-        background: forte ? "var(--amber-soft)" : "#fff",
+        background: forte ? "var(--amber-soft)" : "var(--card)",
         border: `1px solid ${forte ? AMBER : "var(--border,#e2e8f0)"}`,
-        color: NAVY,
+        color: INK,
       }}
     >
       <TriangleAlert size={14} style={{ color: AMBER, flexShrink: 0, marginTop: 1 }} />
@@ -989,7 +990,7 @@ function Alerta({ children, forte }: { children: ReactNode; forte?: boolean }) {
 }
 function Lista({ itens }: { itens: string[] }) {
   return (
-    <ul className="grid list-disc gap-1 pl-4 text-sm" style={{ color: NAVY }}>
+    <ul className="grid list-disc gap-1 pl-4 text-sm" style={{ color: INK }}>
       {itens.map((it, i) => (
         <li key={i}>{it}</li>
       ))}
@@ -998,7 +999,7 @@ function Lista({ itens }: { itens: string[] }) {
 }
 function FonteLink({ url }: { url: string }) {
   return (
-    <a href={url} target="_blank" rel="noreferrer" className="ml-1 inline-flex items-center underline" style={{ color: NAVY }}>
+    <a href={url} target="_blank" rel="noreferrer" className="ml-1 inline-flex items-center underline" style={{ color: INK }}>
       <ExternalLink size={11} />
     </a>
   );

@@ -17,6 +17,7 @@ export const Route = createFileRoute("/pendencias")({
 });
 
 const NAVY = "var(--navy)";
+const INK = "var(--app-ink)";
 const AMBER = "var(--amber)";
 const MONO = "var(--font-mono)";
 
@@ -107,7 +108,7 @@ function Pendencias() {
     <AppShell>
       <div className="mx-auto max-w-3xl">
         {!staff ? (
-          <div className="rounded-2xl border bg-white p-8 text-center text-sm" style={{ borderColor: "var(--border,#e2e8f0)", color: NAVY }}>
+          <div className="rounded-2xl border bg-[var(--card)] p-8 text-center text-sm" style={{ borderColor: "var(--border,#e2e8f0)", color: INK }}>
             {tx("Apenas a equipe fiscal G41 acessa esta fila.", "Только команда G41.")}
           </div>
         ) : regs === null ? (
@@ -115,35 +116,35 @@ function Pendencias() {
             <Loader2 className="animate-spin" style={{ color: AMBER }} />
           </div>
         ) : regs.length === 0 ? (
-          <div className="rounded-2xl border bg-white p-10 text-center text-sm" style={{ borderColor: "var(--border,#e2e8f0)", color: "#8892A4" }}>
+          <div className="rounded-2xl border bg-[var(--card)] p-10 text-center text-sm" style={{ borderColor: "var(--border,#e2e8f0)", color: "var(--app-muted)" }}>
             {tx("Nenhuma pendência. Tudo em dia. 🎉", "Нет ожидающих. 🎉")}
           </div>
         ) : (
           <div className="grid gap-3">
             {regs.map((s) => (
-              <div key={s.id} className="rounded-2xl border bg-white p-4" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+              <div key={s.id} className="rounded-2xl border bg-[var(--card)] p-4" style={{ borderColor: "var(--border,#e2e8f0)" }}>
                 <div className="flex items-start justify-between gap-3">
-                  <div className="text-xs" style={{ color: NAVY }}>
+                  <div className="text-xs" style={{ color: INK }}>
                     <span className="font-bold" style={{ fontFamily: MONO }}>{s.alvo}</span>
-                    <span className="ml-2" style={{ color: "#8892A4" }}>{new Date(s.created_at).toLocaleString("pt-BR")}</span>
+                    <span className="ml-2" style={{ color: "var(--app-muted)" }}>{new Date(s.created_at).toLocaleString("pt-BR")}</span>
                   </div>
                   <div className="flex gap-2">
                     <button onClick={() => decidir(s, true)} className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold text-white" style={{ background: "var(--success,#16a34a)" }}>
                       <Check size={13} /> {tx("Aprovar", "Одобрить")}
                     </button>
-                    <button onClick={() => decidir(s, false)} className="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-bold" style={{ borderColor: "var(--border,#e2e8f0)", color: NAVY }}>
+                    <button onClick={() => decidir(s, false)} className="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-bold" style={{ borderColor: "var(--border,#e2e8f0)", color: INK }}>
                       <X size={13} /> {tx("Rejeitar", "Отклонить")}
                     </button>
                   </div>
                 </div>
-                {s.justificativa && <p className="mt-2 text-sm" style={{ color: NAVY }}>{s.justificativa}</p>}
+                {s.justificativa && <p className="mt-2 text-sm" style={{ color: INK }}>{s.justificativa}</p>}
                 {s.proposta?.informacao_adicional && (
-                  <p className="mt-1 text-xs" style={{ color: "#6b7488" }}>“{s.proposta.informacao_adicional}”</p>
+                  <p className="mt-1 text-xs" style={{ color: "var(--app-muted)" }}>“{s.proposta.informacao_adicional}”</p>
                 )}
                 {Array.isArray(s.fontes) && s.fontes.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-2">
                     {s.fontes.filter((f) => f.url).map((f, i) => (
-                      <a key={i} href={f.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 text-[11px] underline" style={{ color: NAVY }}>
+                      <a key={i} href={f.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 text-[11px] underline" style={{ color: INK }}>
                         {f.campo ?? tx("fonte", "источник")}
                         <ExternalLink size={10} />
                       </a>

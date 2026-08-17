@@ -17,6 +17,7 @@ export const Route = createFileRoute("/importar")({
 });
 
 const NAVY = "var(--navy)";
+const INK = "var(--app-ink)";
 const AMBER = "var(--amber)";
 const MONO = "var(--font-mono)";
 const brl = (v: number | null | undefined) =>
@@ -191,15 +192,15 @@ function ImportarConteudo() {
     <AppShell>
       <div className="mx-auto max-w-6xl">
         {/* upload */}
-        <section className="grid gap-4 rounded-2xl border bg-white p-5" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+        <section className="grid gap-4 rounded-2xl border bg-[var(--card)] p-5" style={{ borderColor: "var(--border,#e2e8f0)" }}>
           <div className="flex flex-wrap items-end gap-4">
             <label className="grid gap-1">
-              <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: NAVY }}>
+              <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: INK }}>
                 {tx("Nota fiscal (NF-e XML)", "Накладная (NF-e XML)")}
               </span>
               <label
                 className="inline-flex cursor-pointer items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold"
-                style={{ background: AMBER, color: NAVY }}
+                style={{ background: AMBER, color: INK }}
               >
                 <Upload size={16} />
                 {tx("Escolher XML", "Выбрать XML")}
@@ -207,27 +208,27 @@ function ImportarConteudo() {
               </label>
             </label>
             <Campo label={tx("Regime da empresa", "Режим компании")}>
-              <select value={regime} onChange={(e) => setRegime(e.target.value)} className="rounded-md border bg-white px-3 py-2 text-sm" style={{ borderColor: "var(--border,#e2e8f0)", color: NAVY }}>
+              <select value={regime} onChange={(e) => setRegime(e.target.value)} className="rounded-md border bg-[var(--card)] px-3 py-2 text-sm" style={{ borderColor: "var(--border,#e2e8f0)", color: INK }}>
                 <option value="lucro_real">{tx("Lucro Real", "Lucro Real")}</option>
                 <option value="presumido">{tx("Lucro Presumido", "Presumido")}</option>
                 <option value="simples">{tx("Simples Nacional", "Simples")}</option>
               </select>
             </Campo>
             <Campo label={tx("Markup alvo (%)", "Наценка (%)")}>
-              <input value={markup} onChange={(e) => setMarkup(e.target.value)} className="w-24 rounded-md border px-3 py-2 text-sm" style={{ borderColor: "var(--border,#e2e8f0)", color: NAVY, fontFamily: MONO }} />
+              <input value={markup} onChange={(e) => setMarkup(e.target.value)} className="w-24 rounded-md border px-3 py-2 text-sm" style={{ borderColor: "var(--border,#e2e8f0)", color: INK, fontFamily: MONO }} />
             </Campo>
             <Campo label={tx("Município", "Город")}>
-              <input value={municipio} onChange={(e) => setMunicipio(e.target.value)} placeholder="Campinas" className="w-40 rounded-md border px-3 py-2 text-sm" style={{ borderColor: "var(--border,#e2e8f0)", color: NAVY }} />
+              <input value={municipio} onChange={(e) => setMunicipio(e.target.value)} placeholder="Campinas" className="w-40 rounded-md border px-3 py-2 text-sm" style={{ borderColor: "var(--border,#e2e8f0)", color: INK }} />
             </Campo>
           </div>
-          {fileName && <p className="text-xs" style={{ color: "#8892A4" }}>{fileName}</p>}
+          {fileName && <p className="text-xs" style={{ color: "var(--app-muted)" }}>{fileName}</p>}
           {erroArquivo && (
-            <div className="flex gap-2 rounded-md px-3 py-2 text-xs" style={{ background: "var(--amber-soft)", color: NAVY }}>
+            <div className="flex gap-2 rounded-md px-3 py-2 text-xs" style={{ background: "var(--amber-soft)", color: INK }}>
               <TriangleAlert size={14} style={{ color: AMBER }} /> {erroArquivo}
             </div>
           )}
-          <div className="flex flex-wrap items-center gap-4 text-[11px]" style={{ color: "#8892A4" }}>
-            <label className="inline-flex cursor-pointer items-center gap-1 font-semibold" style={{ color: NAVY }}>
+          <div className="flex flex-wrap items-center gap-4 text-[11px]" style={{ color: "var(--app-muted)" }}>
+            <label className="inline-flex cursor-pointer items-center gap-1 font-semibold" style={{ color: INK }}>
               <FileSpreadsheet size={13} /> {tx("Importar planilha (XLSX/CSV)", "Импорт таблицы (XLSX/CSV)")}
               <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={onXlsx} />
             </label>
@@ -241,9 +242,9 @@ function ImportarConteudo() {
         {nfe && (
           <section className="mt-6">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm" style={{ color: NAVY }}>
+              <p className="text-sm" style={{ color: INK }}>
                 <b>{nfe.itens.length}</b> {tx("itens", "позиций")} ·{" "}
-                <span style={{ color: "#8892A4" }}>
+                <span style={{ color: "var(--app-muted)" }}>
                   {nfe.emit_nome} ({nfe.emit_uf}) → {nfe.dest_uf}
                 </span>
               </p>
@@ -255,8 +256,8 @@ function ImportarConteudo() {
                 {tx("Analisar todos com IA", "Анализ всех с ИИ")}
               </button>
             </div>
-            <div className="overflow-x-auto rounded-2xl border bg-white" style={{ borderColor: "var(--border,#e2e8f0)" }}>
-              <table className="w-full text-xs" style={{ color: NAVY }}>
+            <div className="overflow-x-auto rounded-2xl border bg-[var(--card)]" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+              <table className="w-full text-xs" style={{ color: INK }}>
                 <thead>
                   <tr className="text-left" style={{ borderBottom: "2px solid var(--border,#e2e8f0)" }}>
                     {["#", tx("Produto", "Товар"), "NCM", "CEST", "CST", tx("Qtd", "Кол"), tx("Vlr unit.", "Цена"), tx("Crítica", "Проверка"), tx("Preço mín. (IA)", "Мин. цена (ИИ)")].map((h) => (
@@ -287,7 +288,7 @@ function ImportarConteudo() {
                         </td>
                         <td className="whitespace-nowrap px-3 py-2">
                           {!r && (
-                            <button onClick={() => analisar(item)} className="rounded px-2 py-1 text-[10px] font-bold" style={{ background: AMBER, color: NAVY }}>
+                            <button onClick={() => analisar(item)} className="rounded px-2 py-1 text-[10px] font-bold" style={{ background: AMBER, color: INK }}>
                               {tx("Analisar", "Анализ")}
                             </button>
                           )}
@@ -296,7 +297,7 @@ function ImportarConteudo() {
                             <span className="inline-flex items-center gap-1.5">
                               <b style={{ fontFamily: MONO }}>{brl(r.pv)}</b>
                               {r.status !== "aprovado" && (
-                                <span className="rounded px-1 py-0.5 text-[9px] font-bold" style={{ background: "var(--amber-soft)", color: NAVY }}>
+                                <span className="rounded px-1 py-0.5 text-[9px] font-bold" style={{ background: "var(--amber-soft)", color: INK }}>
                                   {r.pendencias ? `${r.pendencias} pend.` : r.status}
                                 </span>
                               )}
@@ -310,7 +311,7 @@ function ImportarConteudo() {
                 </tbody>
               </table>
             </div>
-            <p className="mt-2 text-[10px]" style={{ color: "#8892A4" }}>
+            <p className="mt-2 text-[10px]" style={{ color: "var(--app-muted)" }}>
               {tx(
                 "Crítica estrutural é imediata e gratuita. A análise por IA (com fonte) roda sob demanda, item a item.",
                 "Структурная проверка — сразу и бесплатно. Анализ ИИ — по запросу, по позиции.",
@@ -322,9 +323,9 @@ function ImportarConteudo() {
         {planilha && (
           <section className="mt-6">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm" style={{ color: NAVY }}>
+              <p className="text-sm" style={{ color: INK }}>
                 <b>{planilha.length}</b> {tx("linhas", "строк")}{" "}
-                <span style={{ color: "#8892A4" }}>
+                <span style={{ color: "var(--app-muted)" }}>
                   · {tx("empresa", "компания")}: {empresa?.regime_tributario ?? regime} · {empresa?.uf ?? "—"}
                 </span>
               </p>
@@ -332,8 +333,8 @@ function ImportarConteudo() {
                 {tx("Analisar todas com IA", "Анализ всех с ИИ")}
               </button>
             </div>
-            <div className="overflow-x-auto rounded-2xl border bg-white" style={{ borderColor: "var(--border,#e2e8f0)" }}>
-              <table className="w-full text-xs" style={{ color: NAVY }}>
+            <div className="overflow-x-auto rounded-2xl border bg-[var(--card)]" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+              <table className="w-full text-xs" style={{ color: INK }}>
                 <thead>
                   <tr className="text-left" style={{ borderBottom: "2px solid var(--border,#e2e8f0)" }}>
                     {["#", tx("Produto", "Товар"), "NCM", tx("Custo", "Себест."), tx("Crítica", "Проверка"), tx("Preço mín. (IA)", "Мин. цена (ИИ)")].map((h) => (
@@ -362,7 +363,7 @@ function ImportarConteudo() {
                         </td>
                         <td className="whitespace-nowrap px-3 py-2">
                           {!r && (
-                            <button onClick={() => analisarLinha(l)} disabled={!analisavel} className="rounded px-2 py-1 text-[10px] font-bold disabled:opacity-40" style={{ background: AMBER, color: NAVY }}>
+                            <button onClick={() => analisarLinha(l)} disabled={!analisavel} className="rounded px-2 py-1 text-[10px] font-bold disabled:opacity-40" style={{ background: AMBER, color: INK }}>
                               {tx("Analisar", "Анализ")}
                             </button>
                           )}
@@ -371,7 +372,7 @@ function ImportarConteudo() {
                             <span className="inline-flex items-center gap-1.5">
                               <b style={{ fontFamily: MONO }}>{brl(r.pv)}</b>
                               {r.status !== "aprovado" && (
-                                <span className="rounded px-1 py-0.5 text-[9px] font-bold" style={{ background: "var(--amber-soft)", color: NAVY }}>
+                                <span className="rounded px-1 py-0.5 text-[9px] font-bold" style={{ background: "var(--amber-soft)", color: INK }}>
                                   {r.pendencias ? `${r.pendencias} pend.` : r.status}
                                 </span>
                               )}
@@ -385,7 +386,7 @@ function ImportarConteudo() {
                 </tbody>
               </table>
             </div>
-            <p className="mt-2 text-[10px]" style={{ color: "#8892A4" }}>
+            <p className="mt-2 text-[10px]" style={{ color: "var(--app-muted)" }}>
               {tx(
                 "Colunas mapeadas por heurística (descrição, NCM, custo, EAN, CFOP, UF). Os dados fixos vêm do cadastro da empresa.",
                 "Столбцы сопоставлены эвристически; фиксированные данные — из профиля компании.",
@@ -401,7 +402,7 @@ function ImportarConteudo() {
 function Campo({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="grid gap-1">
-      <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: NAVY }}>{label}</span>
+      <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: INK }}>{label}</span>
       {children}
     </label>
   );

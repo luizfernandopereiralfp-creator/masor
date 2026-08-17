@@ -33,6 +33,7 @@ export const Route = createFileRoute("/produtos")({
 });
 
 const NAVY = "var(--navy)";
+const INK = "var(--app-ink)";
 const AMBER = "var(--amber)";
 const MONO = "var(--font-mono)";
 
@@ -123,11 +124,11 @@ function Produtos() {
       <div className="mx-auto max-w-5xl">
         {/* seletor de cliente (só equipe) */}
         {staff && (
-          <div className="mb-4 rounded-2xl border bg-white p-4" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+          <div className="mb-4 rounded-2xl border bg-[var(--card)] p-4" style={{ borderColor: "var(--border,#e2e8f0)" }}>
             <label className="grid gap-1">
-              <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7488" }}>{tx("Cliente", "Клиент")}</span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--app-muted)" }}>{tx("Cliente", "Клиент")}</span>
               {carregandoLista ? (
-                <span className="flex items-center gap-2 text-sm" style={{ color: "#8892A4" }}><Loader2 size={14} className="animate-spin" /> {tx("carregando…", "загрузка…")}</span>
+                <span className="flex items-center gap-2 text-sm" style={{ color: "var(--app-muted)" }}><Loader2 size={14} className="animate-spin" /> {tx("carregando…", "загрузка…")}</span>
               ) : (
                 <select className="ipt" value={ativo ?? ""} onChange={(e) => setAtivo(e.target.value || null)}>
                   <option value="">{tx("— selecione —", "— выберите —")}</option>
@@ -147,7 +148,7 @@ function Produtos() {
         ) : (
           <>
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: NAVY }}>{tx("Catálogo", "Каталог")}</h2>
+              <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: INK }}>{tx("Catálogo", "Каталог")}</h2>
               <button type="button" onClick={() => { setForm(produtoFormVazio()); setModo("novo"); }} className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold text-white" style={{ background: NAVY }}>
                 <Plus size={15} /> {tx("Novo produto", "Новый товар")}
               </button>
@@ -158,12 +159,12 @@ function Produtos() {
             ) : produtos.length === 0 ? (
               <Vazio tx={tx} texto={tx("Nenhum produto ainda. Cadastre o primeiro.", "Пока нет товаров.")} />
             ) : (
-              <div className="overflow-x-auto rounded-2xl border bg-white" style={{ borderColor: "var(--border,#e2e8f0)" }}>
-                <table className="w-full text-sm" style={{ color: NAVY }}>
+              <div className="overflow-x-auto rounded-2xl border bg-[var(--card)]" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+                <table className="w-full text-sm" style={{ color: INK }}>
                   <thead>
                     <tr className="text-left" style={{ borderBottom: "2px solid var(--border,#e2e8f0)" }}>
                       {[tx("Produto", "Товар"), "NCM", tx("Custo", "Стоим."), tx("Estoque", "Склад"), tx("Análise", "Анализ"), ""].map((h, i) => (
-                        <th key={i} className="whitespace-nowrap px-3 py-2 text-[10px] font-bold uppercase tracking-wider" style={{ color: "#6b7488" }}>{h}</th>
+                        <th key={i} className="whitespace-nowrap px-3 py-2 text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--app-muted)" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -175,7 +176,7 @@ function Produtos() {
                         <tr key={p.id} style={{ borderBottom: "1px solid var(--border,#eef1f6)" }}>
                           <td className="px-3 py-2">
                             <div className="font-semibold">{p.descricao}</div>
-                            {p.ean && <div className="text-[10px]" style={{ color: "#8892A4", fontFamily: MONO }}>EAN {p.ean}</div>}
+                            {p.ean && <div className="text-[10px]" style={{ color: "var(--app-muted)", fontFamily: MONO }}>EAN {p.ean}</div>}
                           </td>
                           <td className="px-3 py-2" style={{ fontFamily: MONO }}>{p.ncm ?? "—"}</td>
                           <td className="px-3 py-2" style={{ fontFamily: MONO }}>{p.custo_nf != null ? p.custo_nf.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "—"}</td>
@@ -186,17 +187,17 @@ function Produtos() {
                           </td>
                           <td className="px-3 py-2">
                             {p.analise ? (
-                              <button type="button" onClick={() => verAnalise(p)} className="text-[11px] font-bold underline" style={{ color: NAVY }}>
+                              <button type="button" onClick={() => verAnalise(p)} className="text-[11px] font-bold underline" style={{ color: INK }}>
                                 {tx("Ver resultado", "Результат")}
                               </button>
                             ) : (
-                              <span className="text-[11px]" style={{ color: "#8892A4" }}>—</span>
+                              <span className="text-[11px]" style={{ color: "var(--app-muted)" }}>—</span>
                             )}
-                            {p.analise_em && <div className="text-[10px]" style={{ color: "#8892A4" }}>{new Date(p.analise_em).toLocaleDateString(lang === "ru" ? "ru-RU" : "pt-BR")}</div>}
+                            {p.analise_em && <div className="text-[10px]" style={{ color: "var(--app-muted)" }}>{new Date(p.analise_em).toLocaleDateString(lang === "ru" ? "ru-RU" : "pt-BR")}</div>}
                           </td>
                           <td className="px-3 py-2">
                             <div className="flex items-center justify-end gap-1.5">
-                              <button type="button" onClick={() => analisar(p)} disabled={analisando === p.id} className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-bold disabled:opacity-50" style={{ background: AMBER, color: NAVY }}>
+                              <button type="button" onClick={() => analisar(p)} disabled={analisando === p.id} className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-bold disabled:opacity-50" style={{ background: AMBER, color: INK }}>
                                 {analisando === p.id ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
                                 {tx("Analisar imposto", "Рассчитать налог")}
                               </button>
@@ -224,7 +225,7 @@ function Produtos() {
         <ResultadoAnaliseModal tx={tx} lang={lang} produto={resultado.produto} analise={resultado.analise} onFechar={() => setResultado(null)} />
       )}
 
-      <style>{`.ipt{width:100%;border:1px solid #e3e7ef;border-radius:.6rem;padding:.55rem .75rem;font-size:.875rem;color:var(--navy);outline:none;background:#fff}.ipt:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(233,167,74,.16)}`}</style>
+      <style>{`.ipt{width:100%;border:1px solid var(--app-line);border-radius:.6rem;padding:.55rem .75rem;font-size:.875rem;color:var(--app-ink);outline:none;background:var(--app-bg2)}.ipt:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(233,167,74,.16)}`}</style>
     </AppShell>
   );
 }
@@ -245,10 +246,10 @@ function FormProduto({
   onCancelar: () => void;
 }) {
   return (
-    <form onSubmit={onSalvar} className="grid gap-4 rounded-2xl border bg-white p-6" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+    <form onSubmit={onSalvar} className="grid gap-4 rounded-2xl border bg-[var(--card)] p-6" style={{ borderColor: "var(--border,#e2e8f0)" }}>
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold uppercase tracking-wide" style={{ color: NAVY }}>{editando ? tx("Editar produto", "Изменить товар") : tx("Novo produto", "Новый товар")}</h3>
-        <button type="button" onClick={onCancelar} className="text-[#8892A4]"><X size={18} /></button>
+        <h3 className="text-sm font-bold uppercase tracking-wide" style={{ color: INK }}>{editando ? tx("Editar produto", "Изменить товар") : tx("Novo produto", "Новый товар")}</h3>
+        <button type="button" onClick={onCancelar} className="text-[var(--app-muted)]"><X size={18} /></button>
       </div>
       <Campo label={tx("Descrição *", "Описание *")}>
         <input className="ipt" value={form.descricao} onChange={(e) => set("descricao", e.target.value)} required />
@@ -272,7 +273,7 @@ function FormProduto({
       )}
       <div className="flex items-center gap-3">
         <button type="submit" className="flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold text-white" style={{ background: NAVY }}><Check size={16} /> {tx("Salvar", "Сохранить")}</button>
-        <button type="button" onClick={onCancelar} className="text-sm font-semibold" style={{ color: "#6b7488" }}>{tx("Cancelar", "Отмена")}</button>
+        <button type="button" onClick={onCancelar} className="text-sm font-semibold" style={{ color: "var(--app-muted)" }}>{tx("Cancelar", "Отмена")}</button>
       </div>
     </form>
   );
@@ -312,25 +313,25 @@ function EstoqueDialog({ tx, produto, clienteId, onFechar }: { tx: (pt: string, 
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4" onClick={onFechar}>
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-t-2xl bg-white p-6 sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
+      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-t-2xl bg-[var(--card)] p-6 sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="mb-3 flex items-start justify-between">
           <div>
-            <h3 className="text-sm font-bold" style={{ color: NAVY }}>{produto.descricao}</h3>
-            <p className="text-[11px]" style={{ color: "#8892A4" }}>{tx("Controle de estoque", "Управление складом")}</p>
+            <h3 className="text-sm font-bold" style={{ color: INK }}>{produto.descricao}</h3>
+            <p className="text-[11px]" style={{ color: "var(--app-muted)" }}>{tx("Controle de estoque", "Управление складом")}</p>
           </div>
-          <button type="button" onClick={onFechar} className="text-[#8892A4]"><X size={18} /></button>
+          <button type="button" onClick={onFechar} className="text-[var(--app-muted)]"><X size={18} /></button>
         </div>
 
         <div className="mb-4 rounded-xl border p-4 text-center" style={{ borderColor: "var(--border,#e2e8f0)" }}>
-          <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#8892A4" }}>{tx("Saldo atual", "Текущий остаток")}</p>
-          <p className="text-2xl font-bold" style={{ color: NAVY, fontFamily: MONO }}>{saldo.toLocaleString("pt-BR")} <span className="text-sm">{produto.unidade ?? "UN"}</span></p>
+          <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--app-muted)" }}>{tx("Saldo atual", "Текущий остаток")}</p>
+          <p className="text-2xl font-bold" style={{ color: INK, fontFamily: MONO }}>{saldo.toLocaleString("pt-BR")} <span className="text-sm">{produto.unidade ?? "UN"}</span></p>
         </div>
 
         {/* lançar movimento */}
-        <div className="mb-4 grid gap-3 rounded-xl border p-4" style={{ borderColor: "var(--border,#e2e8f0)", background: "#fafbfc" }}>
+        <div className="mb-4 grid gap-3 rounded-xl border p-4" style={{ borderColor: "var(--border,#e2e8f0)", background: "var(--app-bg2)" }}>
           <div className="flex gap-2">
             {([["entrada", tx("Entrada", "Приход"), <PackagePlus size={14} key="e" />], ["saida", tx("Saída", "Расход"), <PackageMinus size={14} key="s" />], ["ajuste", tx("Ajuste", "Корр."), <SlidersHorizontal size={14} key="a" />]] as const).map(([t, rot, ic]) => (
-              <button key={t} type="button" onClick={() => setTipo(t)} className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold" style={tipo === t ? { background: NAVY, color: "#fff" } : { border: "1px solid var(--border,#e2e8f0)", color: NAVY }}>
+              <button key={t} type="button" onClick={() => setTipo(t)} className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold" style={tipo === t ? { background: NAVY, color: "#fff" } : { border: "1px solid var(--border,#e2e8f0)", color: INK }}>
                 {ic} {rot}
               </button>
             ))}
@@ -340,30 +341,30 @@ function EstoqueDialog({ tx, produto, clienteId, onFechar }: { tx: (pt: string, 
             <input className="ipt" placeholder={tx("Custo unit. (opc.)", "Цена ед. (опц.)")} style={{ fontFamily: MONO }} value={custo} onChange={(e) => setCusto(e.target.value)} />
             <input className="ipt" placeholder={tx("Obs. (opc.)", "Прим. (опц.)")} value={obs} onChange={(e) => setObs(e.target.value)} />
           </div>
-          {tipo === "ajuste" && <p className="text-[10px]" style={{ color: "#8892A4" }}>{tx("Ajuste aceita valor negativo (ex.: −3 para corrigir para baixo).", "Корректировка допускает отрицательное значение.")}</p>}
+          {tipo === "ajuste" && <p className="text-[10px]" style={{ color: "var(--app-muted)" }}>{tx("Ajuste aceita valor negativo (ex.: −3 para corrigir para baixo).", "Корректировка допускает отрицательное значение.")}</p>}
           <button type="button" onClick={lancar} disabled={salvando} className="inline-flex w-fit items-center gap-2 rounded-xl px-5 py-2 text-sm font-bold text-white disabled:opacity-50" style={{ background: NAVY }}>
             {salvando ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />} {tx("Lançar", "Записать")}
           </button>
         </div>
 
         {/* histórico */}
-        <h4 className="mb-2 text-[11px] font-bold uppercase tracking-wider" style={{ color: "#6b7488" }}>{tx("Movimentações", "Движения")}</h4>
+        <h4 className="mb-2 text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--app-muted)" }}>{tx("Movimentações", "Движения")}</h4>
         {carregando ? (
           <div className="flex justify-center py-4"><Loader2 className="animate-spin" style={{ color: AMBER }} /></div>
         ) : movs.length === 0 ? (
-          <p className="text-xs" style={{ color: "#8892A4" }}>{tx("Nenhuma movimentação.", "Нет движений.")}</p>
+          <p className="text-xs" style={{ color: "var(--app-muted)" }}>{tx("Nenhuma movimentação.", "Нет движений.")}</p>
         ) : (
           <ul className="grid gap-1">
             {movs.map((m) => (
               <li key={m.id} className="flex items-center justify-between rounded-lg border px-3 py-2 text-xs" style={{ borderColor: "var(--border,#eef1f6)" }}>
                 <span className="flex items-center gap-2">
-                  <b style={{ color: m.tipo === "saida" ? "#b45309" : m.tipo === "entrada" ? "#0f7a57" : NAVY }}>
+                  <b style={{ color: m.tipo === "saida" ? "#b45309" : m.tipo === "entrada" ? "#0f7a57" : INK }}>
                     {m.tipo === "entrada" ? "+" : m.tipo === "saida" ? "−" : "±"}{Math.abs(m.quantidade).toLocaleString("pt-BR")}
                   </b>
-                  <span style={{ color: "#8892A4" }}>{m.tipo === "entrada" ? tx("entrada", "приход") : m.tipo === "saida" ? tx("saída", "расход") : tx("ajuste", "корр.")}{m.origem === "nfe" ? " · NF-e" : ""}</span>
-                  {m.ref && <span style={{ color: "#8892A4" }}>· {m.ref}</span>}
+                  <span style={{ color: "var(--app-muted)" }}>{m.tipo === "entrada" ? tx("entrada", "приход") : m.tipo === "saida" ? tx("saída", "расход") : tx("ajuste", "корр.")}{m.origem === "nfe" ? " · NF-e" : ""}</span>
+                  {m.ref && <span style={{ color: "var(--app-muted)" }}>· {m.ref}</span>}
                 </span>
-                <span style={{ color: "#8892A4", fontFamily: MONO }}>{new Date(m.data).toLocaleDateString("pt-BR")}</span>
+                <span style={{ color: "var(--app-muted)", fontFamily: MONO }}>{new Date(m.data).toLocaleDateString("pt-BR")}</span>
               </li>
             ))}
           </ul>
@@ -407,16 +408,16 @@ function ResultadoAnaliseModal({
   const impostoUn = pv != null && carga != null ? pv * carga : null;
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4" onClick={onFechar}>
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-t-2xl bg-white p-6 sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
+      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-t-2xl bg-[var(--card)] p-6 sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="mb-4 flex items-start justify-between">
           <div>
-            <h3 className="text-sm font-bold" style={{ color: NAVY }}>{produto.descricao}</h3>
-            <p className="text-[11px]" style={{ color: "#8892A4" }}>
+            <h3 className="text-sm font-bold" style={{ color: INK }}>{produto.descricao}</h3>
+            <p className="text-[11px]" style={{ color: "var(--app-muted)" }}>
               {tx("Resultado da análise fiscal", "Результат налогового анализа")}
               {a.provisorio ? ` · ${tx("provisório", "предварительно")}` : ""}
             </p>
           </div>
-          <button type="button" onClick={onFechar} className="text-[#8892A4]"><X size={18} /></button>
+          <button type="button" onClick={onFechar} className="text-[var(--app-muted)]"><X size={18} /></button>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3">
@@ -426,7 +427,7 @@ function ResultadoAnaliseModal({
         </div>
 
         {a.resumo_executivo && (
-          <div className="mt-4 rounded-xl border p-4 text-sm" style={{ borderColor: "var(--border,#e2e8f0)", color: NAVY }}>{a.resumo_executivo}</div>
+          <div className="mt-4 rounded-xl border p-4 text-sm" style={{ borderColor: "var(--border,#e2e8f0)", color: INK }}>{a.resumo_executivo}</div>
         )}
 
         {a.oportunidades_economia && a.oportunidades_economia.length > 0 && (
@@ -434,19 +435,19 @@ function ResultadoAnaliseModal({
             <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "#0f7a57" }}>{tx("Oportunidades de economia", "Возможности экономии")}</p>
             <ul className="mt-1 grid gap-1">
               {a.oportunidades_economia.slice(0, 3).map((o, i) => (
-                <li key={i} className="text-xs" style={{ color: NAVY }}>• {o}</li>
+                <li key={i} className="text-xs" style={{ color: INK }}>• {o}</li>
               ))}
             </ul>
           </div>
         )}
 
         <div className="mt-4 flex items-center justify-between">
-          <span className="text-[10px]" style={{ color: "#8892A4" }}>
+          <span className="text-[10px]" style={{ color: "var(--app-muted)" }}>
             {a.fontes_oficiais && a.fontes_oficiais.length > 0
               ? tx(`${a.fontes_oficiais.length} fonte(s) oficial(is) citada(s)`, `${a.fontes_oficiais.length} офиц. источник(ов)`)
               : tx("Cálculo pelo motor determinístico Masor.", "Расчёт детерминированным движком Masor.")}
           </span>
-          <Link to="/consulta" className="text-xs font-semibold" style={{ color: NAVY }}>{tx("Refazer na consulta →", "В консультацию →")}</Link>
+          <Link to="/consulta" className="text-xs font-semibold" style={{ color: INK }}>{tx("Refazer na consulta →", "В консультацию →")}</Link>
         </div>
       </div>
     </div>
@@ -456,16 +457,16 @@ function ResultadoAnaliseModal({
 function BigCard({ titulo, valor, sub, destaque }: { titulo: string; valor: string; sub?: string; destaque?: boolean }) {
   return (
     <div className="rounded-xl border p-4 text-center" style={destaque ? { borderColor: "var(--amber)", background: "var(--amber-soft,#fbebd2)" } : { borderColor: "var(--border,#e2e8f0)" }}>
-      <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#6b7488" }}>{titulo}</p>
-      <p className="mt-1 text-xl font-bold" style={{ color: NAVY, fontFamily: MONO }}>{valor}</p>
-      {sub && <p className="text-[10px]" style={{ color: "#8892A4", fontFamily: MONO }}>{sub}</p>}
+      <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--app-muted)" }}>{titulo}</p>
+      <p className="mt-1 text-xl font-bold" style={{ color: INK, fontFamily: MONO }}>{valor}</p>
+      {sub && <p className="text-[10px]" style={{ color: "var(--app-muted)", fontFamily: MONO }}>{sub}</p>}
     </div>
   );
 }
 
 function IconBtn({ children, title, onClick, warn }: { children: ReactNode; title: string; onClick: () => void; warn?: boolean }) {
   return (
-    <button type="button" title={title} onClick={onClick} className="rounded-lg p-1.5 transition hover:bg-[color:var(--amber-soft,#fbebd2)]" style={{ color: warn ? "var(--warn,#b45309)" : NAVY }}>
+    <button type="button" title={title} onClick={onClick} className="rounded-lg p-1.5 transition hover:bg-[color:var(--amber-soft,#fbebd2)]" style={{ color: warn ? "var(--warn,#b45309)" : INK }}>
       {children}
     </button>
   );
@@ -473,9 +474,9 @@ function IconBtn({ children, title, onClick, warn }: { children: ReactNode; titl
 
 function Vazio({ tx, texto }: { tx: (pt: string, ru: string) => string; texto: string }) {
   return (
-    <div className="rounded-2xl border bg-white p-8 text-center" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+    <div className="rounded-2xl border bg-[var(--card)] p-8 text-center" style={{ borderColor: "var(--border,#e2e8f0)" }}>
       <PackagePlus size={26} className="mx-auto" style={{ color: AMBER }} />
-      <p className="mt-2 text-sm" style={{ color: "#8892A4" }}>{texto}</p>
+      <p className="mt-2 text-sm" style={{ color: "var(--app-muted)" }}>{texto}</p>
       <span className="hidden">{tx("", "")}</span>
     </div>
   );
@@ -484,9 +485,9 @@ function Vazio({ tx, texto }: { tx: (pt: string, ru: string) => string; texto: s
 function Campo({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
   return (
     <label className="grid gap-1">
-      <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7488" }}>{label}</span>
+      <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--app-muted)" }}>{label}</span>
       {children}
-      {hint && <span className="text-[10px]" style={{ color: "#8892A4" }}>{hint}</span>}
+      {hint && <span className="text-[10px]" style={{ color: "var(--app-muted)" }}>{hint}</span>}
     </label>
   );
 }
