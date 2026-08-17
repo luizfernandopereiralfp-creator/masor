@@ -82,6 +82,11 @@ function Produtos() {
     if (!clienteId) return;
     const r = await salvarProduto(clienteId, form);
     if (r.erro) return toast.error(r.erro);
+    // estoque inicial (só no cadastro): vira uma entrada de estoque
+    if (modo === "novo" && r.id) {
+      const q = Number((form.estoque_inicial || "").replace(",", "."));
+      if (q > 0) await lancarMovimento(clienteId, r.id, "entrada", q, form.custo_nf ? Number(form.custo_nf.replace(",", ".")) : null, tx("estoque inicial", "начальный остаток"));
+    }
     toast.success(tx("Produto salvo.", "Товар сохранён."));
     setModo("lista");
     await carregar();
@@ -267,6 +272,11 @@ function FormProduto({
         <Campo label={tx("Estoque mín.", "Мин. склад")}><input className="ipt" style={{ fontFamily: MONO }} value={form.estoque_min} onChange={(e) => set("estoque_min", e.target.value)} /></Campo>
       </div>
       <Campo label={tx("Categoria", "Категория")}><input className="ipt" value={form.categoria} onChange={(e) => set("categoria", e.target.value)} /></Campo>
+      {!editando && (
+        <Campo label={tx("Estoque inicial (qtd)", "Начальный остаток (кол-во)")} hint={tx("opcional — lança uma entrada de estoque agora", "необязательно — создаёт приход на складе")}>
+          <input className="ipt" style={{ fontFamily: MONO }} value={form.estoque_inicial} onChange={(e) => set("estoque_inicial", e.target.value)} />
+        </Campo>
+      )}
       <div className="flex items-center gap-3">
         <button type="submit" className="flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold text-white" style={{ background: NAVY }}><Check size={16} /> {tx("Salvar", "Сохранить")}</button>
         <button type="button" onClick={onCancelar} className="text-sm font-semibold" style={{ color: "#6b7488" }}>{tx("Cancelar", "Отмена")}</button>

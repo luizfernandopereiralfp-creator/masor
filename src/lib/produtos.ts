@@ -34,6 +34,7 @@ export type ProdutoForm = {
   custo_nf: string;
   markup_pct: string;
   estoque_min: string;
+  estoque_inicial: string; // só no cadastro (novo) — vira uma entrada de estoque
 };
 
 export type Movimento = {
@@ -57,7 +58,7 @@ const nOrNull = (s: string): number | null => {
 };
 
 export function produtoFormVazio(): ProdutoForm {
-  return { id: null, descricao: "", ean: "", ncm: "", cest: "", unidade: "UN", categoria: "", custo_nf: "", markup_pct: "", estoque_min: "" };
+  return { id: null, descricao: "", ean: "", ncm: "", cest: "", unidade: "UN", categoria: "", custo_nf: "", markup_pct: "", estoque_min: "", estoque_inicial: "" };
 }
 
 export function produtoParaForm(p: Produto): ProdutoForm {
@@ -72,6 +73,7 @@ export function produtoParaForm(p: Produto): ProdutoForm {
     custo_nf: p.custo_nf != null ? String(p.custo_nf) : "",
     markup_pct: p.markup_pct != null ? String(p.markup_pct) : "",
     estoque_min: p.estoque_min != null ? String(p.estoque_min) : "",
+    estoque_inicial: "", // não se aplica na edição
   };
 }
 
@@ -215,5 +217,5 @@ export async function analisarProduto(
     .from("masor_produtos")
     .update({ analise: data.analise, analise_em: new Date().toISOString(), atualizado_em: new Date().toISOString() })
     .eq("id", p.id);
-  return error ? { erro: error.message } : { ok: true };
+  return error ? { erro: error.message } : { ok: true, analise: data.analise };
 }
