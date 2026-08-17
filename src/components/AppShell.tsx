@@ -1,7 +1,6 @@
 import { type ReactNode, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
-  LayoutDashboard,
   Package,
   PackageSearch,
   Upload,
@@ -38,7 +37,7 @@ type NavItem = {
 };
 
 const NAV_STAFF: NavItem[] = [
-  { to: "/", icon: LayoutDashboard, pt: "Painel", ru: "Панель" },
+  { to: "/", icon: Home, pt: "Início", ru: "Главная" },
   { to: "/produtos", icon: Package, pt: "Produtos & Estoque", ru: "Товары и склад" },
   { to: "/consulta", icon: PackageSearch, pt: "Consulta", ru: "Проверка" },
   { to: "/importar", icon: Upload, pt: "Importar", ru: "Импорт" },
@@ -61,7 +60,7 @@ const NAV_CLIENTE: NavItem[] = [
 function tituloDaRota(path: string, lang: "pt" | "ru", itens: NavItem[]): string {
   const hit = itens.find((i) => i.to !== "/" && path.startsWith(i.to));
   if (hit) return lang === "ru" ? hit.ru : hit.pt;
-  return lang === "ru" ? "Панель" : "Painel";
+  return lang === "ru" ? "Главная" : "Início";
 }
 
 export function AppShell({ children }: { children: ReactNode }) {

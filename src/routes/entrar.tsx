@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Check, ShieldCheck } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
@@ -10,7 +10,6 @@ export const Route = createFileRoute("/entrar")({
 });
 
 const NAVY = "var(--navy)";
-const AMBER = "var(--amber)";
 
 function Entrar() {
   const { lang, setLang } = useI18n();
@@ -51,63 +50,97 @@ function Entrar() {
   }
 
   return (
-    <div
-      className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10"
-      style={{
-        background:
-          "radial-gradient(1200px 600px at 50% -10%, rgba(233,167,74,0.14), transparent 60%), linear-gradient(180deg, #f7f9fc 0%, #eef1f6 100%)",
-      }}
-    >
-      {/* faixa decorativa navy no topo */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5" style={{ background: NAVY }} />
-
-      <div className="w-full max-w-[400px]">
-        {/* logo */}
-        <div className="mb-7 flex flex-col items-center">
-          <img src="/masor-logo.png" alt="Masor" className="h-12 w-auto" style={{ maxWidth: 200 }} />
-          <p className="mt-3 text-[13px] font-medium tracking-wide" style={{ color: "#6b7488" }}>
-            {tx("Inteligência tributária para supermercados", "Налоговый интеллект для супермаркетов")}
-          </p>
-        </div>
-
-        {/* card */}
-        <form
-          onSubmit={submit}
-          className="grid gap-4 rounded-3xl border bg-white p-7"
+    <div className="grid min-h-screen md:grid-cols-[1.05fr_.95fr]">
+      {/* Painel de marca (esquerda) — some no mobile */}
+      <aside
+        className="relative hidden flex-col justify-between overflow-hidden p-14 md:flex"
+        style={{ background: NAVY }}
+      >
+        <div
+          className="pointer-events-none absolute"
           style={{
-            borderColor: "rgba(20,29,51,0.06)",
-            boxShadow: "0 24px 60px -28px rgba(11,23,64,0.28), 0 8px 24px -16px rgba(11,23,64,0.12)",
+            right: -120,
+            top: -80,
+            width: 460,
+            height: 460,
+            borderRadius: "50%",
+            background: "radial-gradient(circle at 30% 30%, rgba(233,167,74,.22), transparent 62%)",
           }}
+        />
+        <Wordmark />
+        <div className="relative z-[1]">
+          <div
+            className="text-xs font-semibold uppercase"
+            style={{ letterSpacing: ".26em", color: "var(--amber)" }}
+          >
+            {tx("Inteligência tributária", "Налоговая аналитика")}
+          </div>
+          <h1
+            className="mt-4 font-extrabold text-white"
+            style={{ fontSize: 42, lineHeight: 1.08, letterSpacing: "-.02em", maxWidth: "14ch", fontFamily: "var(--font-display)" }}
+          >
+            {tx("O preço certo de cada produto, com a fonte ao lado.", "Правильная цена каждого товара — с указанием источника.")}
+          </h1>
+          <p className="mt-4" style={{ color: "#C7CEDE", fontSize: 15.5, lineHeight: 1.6, maxWidth: "40ch" }}>
+            {tx(
+              "Custo real, impostos e preço mínimo de venda — considerando a legislação vigente e a Reforma Tributária. Cada número com sua norma oficial.",
+              "Реальная себестоимость, налоги и минимальная цена продажи — с учётом действующего законодательства и налоговой реформы. Каждая цифра со ссылкой на норму.",
+            )}
+          </p>
+          <div className="mt-6 flex flex-wrap gap-2.5">
+            <Pill icon={<Check size={14} />}>{tx("Anti-invenção", "Без выдумок")}</Pill>
+            <Pill icon={<ShieldCheck size={14} />}>{tx("Auditável", "Проверяемо")}</Pill>
+          </div>
+        </div>
+        <div
+          className="relative z-[1] uppercase"
+          style={{ color: "#7d88a8", fontSize: 11.5, letterSpacing: ".14em" }}
         >
-          {/* segmentado */}
-          <div className="grid grid-cols-2 gap-1 rounded-xl p-1" style={{ background: "#f1f3f8" }}>
-            {(["login", "cadastro"] as const).map((m) => (
+          G41 Inteligência Contábil · masor.g41one.com.br
+        </div>
+      </aside>
+
+      {/* Formulário (direita) */}
+      <div className="relative flex items-center justify-center p-6 md:p-10" style={{ background: "var(--card)" }}>
+        {/* seletor de idioma */}
+        <div className="absolute right-6 top-6 md:right-8 md:top-8">
+          <div
+            className="flex overflow-hidden rounded-full border text-xs font-semibold"
+            style={{ borderColor: "var(--app-line)" }}
+          >
+            {(["pt", "ru"] as const).map((l) => (
               <button
-                key={m}
+                key={l}
                 type="button"
-                onClick={() => {
-                  setModo(m);
-                  setErro(null);
-                  setMsg(null);
-                }}
-                className="rounded-lg py-2 text-[13px] font-semibold transition-all"
-                style={
-                  modo === m
-                    ? { background: "#fff", color: NAVY, boxShadow: "0 1px 3px rgba(11,23,64,0.12)" }
-                    : { background: "transparent", color: "#8892A4" }
-                }
+                onClick={() => setLang(l)}
+                className="px-3 py-1.5"
+                style={lang === l ? { background: NAVY, color: "#fff" } : { background: "transparent", color: "var(--app-muted)" }}
               >
-                {m === "login" ? tx("Entrar", "Вход") : tx("Criar conta", "Регистрация")}
+                {l.toUpperCase()}
               </button>
             ))}
           </div>
+        </div>
+
+        <form onSubmit={submit} className="w-full" style={{ maxWidth: 380 }}>
+          {/* logo compacto só no mobile */}
+          <img src="/masor-logo.png" alt="Masor" className="mb-6 h-9 w-auto md:hidden" />
+
+          <h2 className="text-[26px] font-bold" style={{ letterSpacing: "-.01em", color: "var(--app-ink)", fontFamily: "var(--font-display)" }}>
+            {modo === "login" ? tx("Entrar", "Вход") : tx("Criar conta", "Регистрация")}
+          </h2>
+          <p className="mb-7 mt-2 text-sm" style={{ color: "var(--app-muted)" }}>
+            {modo === "login"
+              ? tx("Acesse o painel da sua conta.", "Войдите в панель вашего аккаунта.")
+              : tx("Crie seu acesso ao Masor.", "Создайте доступ к Masor.")}
+          </p>
 
           {modo === "cadastro" && (
             <Campo label={tx("Nome", "Имя")}>
               <input value={nome} onChange={(e) => setNome(e.target.value)} required className="masor-input" placeholder={tx("Seu nome", "Ваше имя")} />
             </Campo>
           )}
-          <Campo label="E-mail">
+          <Campo label={tx("E-mail", "Эл. почта")}>
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="masor-input" placeholder="voce@empresa.com.br" autoComplete="email" />
           </Campo>
           <Campo label={tx("Senha", "Пароль")}>
@@ -124,12 +157,12 @@ function Entrar() {
           </Campo>
 
           {erro && (
-            <div className="rounded-lg px-3 py-2 text-[13px]" style={{ background: "var(--amber-soft)", color: NAVY }}>
+            <div className="mb-3 rounded-lg px-3 py-2 text-[13px]" style={{ background: "var(--amber-soft)", color: NAVY }}>
               ⚠ {erro}
             </div>
           )}
           {msg && (
-            <div className="rounded-lg px-3 py-2 text-[13px]" style={{ background: "#eef2fb", color: NAVY }}>
+            <div className="mb-3 rounded-lg px-3 py-2 text-[13px]" style={{ background: "var(--infobg)", color: NAVY }}>
               {msg}
             </div>
           )}
@@ -137,42 +170,71 @@ function Entrar() {
           <button
             type="submit"
             disabled={enviando}
-            className="mt-1 flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white transition-transform active:scale-[0.99] disabled:opacity-60"
-            style={{ background: NAVY }}
+            className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-bold text-white transition-transform active:scale-[0.99] disabled:opacity-60"
+            style={{ background: NAVY, boxShadow: "var(--shadow-app)" }}
           >
             {enviando && <Loader2 size={16} className="animate-spin" />}
             {modo === "login" ? tx("Entrar", "Войти") : tx("Criar conta", "Создать аккаунт")}
           </button>
-        </form>
 
-        {/* rodapé */}
-        <div className="mt-5 flex items-center justify-between px-1">
-          <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: AMBER }}>
-            Insights Impulsionam
-          </span>
-          <div className="flex items-center gap-2 text-xs">
-            {(["pt", "ru"] as const).map((l) => (
-              <button key={l} onClick={() => setLang(l)} className="font-bold" style={{ color: lang === l ? NAVY : "#b3b9c6" }}>
-                {l.toUpperCase()}
-              </button>
-            ))}
+          <div className="mt-5 text-center text-[13px]" style={{ color: "var(--app-muted)" }}>
+            {modo === "login" ? (
+              <>
+                {tx("Não tem acesso?", "Нет доступа?")}{" "}
+                <button type="button" onClick={() => { setModo("cadastro"); setErro(null); setMsg(null); }} className="font-semibold" style={{ color: NAVY }}>
+                  {tx("Criar conta", "Регистрация")}
+                </button>
+              </>
+            ) : (
+              <>
+                {tx("Já tem conta?", "Уже есть аккаунт?")}{" "}
+                <button type="button" onClick={() => { setModo("login"); setErro(null); setMsg(null); }} className="font-semibold" style={{ color: NAVY }}>
+                  {tx("Entrar", "Войти")}
+                </button>
+              </>
+            )}
           </div>
-        </div>
+        </form>
       </div>
 
       <style>{`
-        .masor-input{width:100%;border:1px solid #e3e7ef;border-radius:.7rem;padding:.6rem .8rem;font-size:.9rem;color:var(--navy);outline:none;transition:border-color .15s, box-shadow .15s;background:#fff}
-        .masor-input::placeholder{color:#aab0be}
+        .masor-input{width:100%;border:1px solid var(--app-line);border-radius:12px;padding:.75rem .875rem;font-size:.9rem;color:var(--app-ink);outline:none;transition:border-color .15s, box-shadow .15s;background:var(--app-bg2);margin-bottom:1.125rem}
+        .masor-input::placeholder{color:var(--app-faint)}
         .masor-input:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(233,167,74,0.18)}
       `}</style>
     </div>
   );
 }
 
+function Wordmark() {
+  return (
+    <div
+      className="relative z-[1] flex items-center font-extrabold text-white"
+      style={{ gap: 2, fontSize: 30, letterSpacing: "-.02em" }}
+    >
+      Mas
+      <img src="/globe.png" alt="o" style={{ height: "0.92em", transform: "translateY(0.12em)", margin: "0 -.01em" }} />
+      r
+    </div>
+  );
+}
+
+function Pill({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <span
+      className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[12.5px] font-medium"
+      style={{ background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.12)", color: "#DCE3F2" }}
+    >
+      <span style={{ color: "var(--amber)" }}>{icon}</span>
+      {children}
+    </span>
+  );
+}
+
 function Campo({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label className="grid gap-1.5">
-      <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7488" }}>{label}</span>
+    <label className="block">
+      <span className="mb-1.5 block text-[13px] font-semibold" style={{ color: "var(--app-ink)" }}>{label}</span>
       {children}
     </label>
   );
