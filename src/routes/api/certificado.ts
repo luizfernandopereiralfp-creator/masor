@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { exigirStaff } from "@/lib/fiscal/guard";
+import { exigirAcesso, clienteEfetivo } from "@/lib/fiscal/guard";
 import { certLiorConfigurado } from "@/lib/fiscal/cofre-lior";
 
 /* ============================================================
@@ -18,9 +18,9 @@ export const Route = createFileRoute("/api/certificado")({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        const g = await exigirStaff(request);
+        const g = await exigirAcesso(request);
         if (!g.ok) return g.resposta;
-        const clienteId = new URL(request.url).searchParams.get("cliente_id") ?? g.auth.clienteId;
+        const clienteId = clienteEfetivo(g.auth, new URL(request.url).searchParams.get("cliente_id"));
         if (!clienteId) return Response.json({ ok: true, certificado: null, cofre_ok: certLiorConfigurado() });
 
         const admin = supabaseAdmin();

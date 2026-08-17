@@ -11,7 +11,7 @@ import { useClientesFiscais } from "@/lib/empresa";
 
 export const Route = createFileRoute("/fiscal")({
   component: () => (
-    <Protegido>
+    <Protegido permitirCliente>
       <Fiscal />
     </Protegido>
   ),
@@ -53,6 +53,11 @@ function Fiscal() {
     const t = setInterval(() => setAgora(Date.now()), 30000);
     return () => clearInterval(t);
   }, []);
+
+  // Cliente do portal: travado na PRÓPRIA empresa (sem seletor).
+  useEffect(() => {
+    if (!staff && perfil?.cliente_id && ativo !== perfil.cliente_id) setAtivo(perfil.cliente_id);
+  }, [staff, perfil?.cliente_id, ativo, setAtivo]);
 
   const token = useCallback(async () => {
     if (!supabase) return null;
@@ -124,13 +129,6 @@ function Fiscal() {
     }
   }
 
-  if (!staff)
-    return (
-      <div className="flex min-h-screen items-center justify-center text-sm" style={{ color: NAVY }}>
-        {tx("Apenas a equipe fiscal acessa esta área.", "Только налоговая команда.")}
-      </div>
-    );
-
   const diasParaVencer = cert?.validade_ate ? Math.ceil((new Date(cert.validade_ate).getTime() - Date.now()) / 864e5) : null;
   const emEspera = proxima != null && agora > 0 && agora < proxima;
   const minEspera = emEspera ? Math.ceil((proxima! - agora) / 60000) : 0;
@@ -146,7 +144,8 @@ function Fiscal() {
       </header>
 
       <main className="mx-auto max-w-4xl p-4 md:p-6">
-        {/* seletor de cliente */}
+        {/* seletor de cliente (só equipe; cliente é travado na própria empresa) */}
+        {staff && (
         <div className="mb-4 rounded-2xl border bg-white p-4" style={{ borderColor: "var(--border,#e2e8f0)" }}>
           <label className="grid gap-1">
             <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7488" }}>
@@ -166,6 +165,7 @@ function Fiscal() {
             )}
           </label>
         </div>
+        )}
 
         {msg && (
           <div className="mb-4 rounded-xl border px-4 py-3 text-sm" style={msg.tipo === "ok" ? { borderColor: "var(--success,#1f9d55)", color: NAVY, background: "#fff" } : { borderColor: AMBER, background: "var(--amber-soft)", color: NAVY }}>

@@ -41,7 +41,7 @@ type Operacao = Record<string, unknown>;
 
 function Consulta() {
   return (
-    <Protegido>
+    <Protegido permitirCliente>
       <ConsultaConteudo />
     </Protegido>
   );

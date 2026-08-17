@@ -31,7 +31,7 @@ type LinhaResultado = {
 
 function Importar() {
   return (
-    <Protegido>
+    <Protegido permitirCliente>
       <ImportarConteudo />
     </Protegido>
   );

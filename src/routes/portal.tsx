@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Loader2, Building2, LogOut, FileText } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
+import { Loader2, Building2, LogOut, FileText, Search, FileUp, RefreshCw, ArrowRight } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
@@ -86,8 +86,30 @@ function PortalConteudo() {
         ) : (
           <>
             <p className="mb-4 text-sm" style={{ color: "#6b7488" }}>
-              {tx("Bem-vindo. Aqui você acompanha a inteligência tributária da sua empresa.", "Добро пожаловать.")}
+              {tx("Bem-vindo. Aqui você analisa produtos, importa notas e busca informações fiscais da sua empresa.", "Добро пожаловать.")}
             </p>
+
+            {/* ferramentas */}
+            <div className="mb-5 grid gap-3 sm:grid-cols-3">
+              <FerramentaCard
+                to="/consulta"
+                icon={<Search size={18} />}
+                titulo={tx("Analisar um produto", "Анализ товара")}
+                desc={tx("Consulta individual, item a item", "Индивидуальный анализ")}
+              />
+              <FerramentaCard
+                to="/importar"
+                icon={<FileUp size={18} />}
+                titulo={tx("Importar", "Импорт")}
+                desc={tx("Planilha, NF-e (XML) ou PDF", "Таблица, NF-e (XML) или PDF")}
+              />
+              <FerramentaCard
+                to="/fiscal"
+                icon={<RefreshCw size={18} />}
+                titulo={tx("Notas na SEFAZ", "Накладные SEFAZ")}
+                desc={tx("Puxar NF-e emitidas contra você", "Загрузить NF-e")}
+              />
+            </div>
 
             {/* empresa */}
             <div className="rounded-2xl border bg-white p-6" style={{ borderColor: "var(--border,#e2e8f0)" }}>
@@ -125,6 +147,35 @@ function PortalConteudo() {
         )}
       </main>
     </div>
+  );
+}
+
+function FerramentaCard({
+  to,
+  icon,
+  titulo,
+  desc,
+}: {
+  to: "/consulta" | "/importar" | "/fiscal";
+  icon: ReactNode;
+  titulo: string;
+  desc: string;
+}) {
+  return (
+    <Link
+      to={to}
+      className="group flex flex-col gap-1.5 rounded-2xl border bg-white p-4 transition hover:shadow-md"
+      style={{ borderColor: "var(--border,#e2e8f0)" }}
+    >
+      <span className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ background: "var(--amber-soft,#fbebd2)", color: NAVY }}>
+        {icon}
+      </span>
+      <span className="mt-1 text-sm font-bold" style={{ color: NAVY }}>{titulo}</span>
+      <span className="text-[11px]" style={{ color: "#8892A4" }}>{desc}</span>
+      <span className="mt-1 inline-flex items-center text-[11px] font-semibold transition group-hover:translate-x-0.5" style={{ color: NAVY }}>
+        <ArrowRight size={14} />
+      </span>
+    </Link>
   );
 }
 

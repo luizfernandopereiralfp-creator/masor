@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { exigirStaff } from "@/lib/fiscal/guard";
+import { exigirAcesso, clienteEfetivo } from "@/lib/fiscal/guard";
 import { decifrarArquivoLior, decifrarSenhaLior, certLiorConfigurado } from "@/lib/fiscal/cofre-lior";
 import { agentMtls, soapPost } from "@/lib/fiscal/mtls";
 import { envelopeDistDFe, endpointDFe } from "@/lib/fiscal/envelope";
@@ -30,7 +30,7 @@ export const Route = createFileRoute("/api/dfe/buscar")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const g = await exigirStaff(request);
+        const g = await exigirAcesso(request);
         if (!g.ok) return g.resposta;
 
         if (!certLiorConfigurado())
@@ -39,7 +39,7 @@ export const Route = createFileRoute("/api/dfe/buscar")({
         if (!admin) return Response.json({ ok: false, erro: "SUPABASE_SERVICE_ROLE_KEY ausente." }, { status: 503 });
 
         const corpo = (await request.json().catch(() => ({}))) as { cliente_id?: string; forcar?: boolean };
-        const clienteId = corpo.cliente_id ?? g.auth.clienteId;
+        const clienteId = clienteEfetivo(g.auth, corpo.cliente_id);
         if (!clienteId) return Response.json({ ok: false, erro: "cliente_id ausente." }, { status: 400 });
 
         // --- certificado A1 ATIVO do cliente (reusa o e-CNPJ guardado no LIOR) ---

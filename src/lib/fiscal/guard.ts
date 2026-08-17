@@ -58,3 +58,32 @@ export async function exigirAdmin(request: Request): Promise<ResultadoGuard> {
   if (g.auth.role !== "admin") return nega(403, "Apenas administradores podem gerir acessos de cliente.");
   return g;
 }
+
+/**
+ * Exige JWT válido — permite staff/admin E cliente do portal.
+ * Cliente recebe SEMPRE apenas o próprio cliente_id (auth.clienteId).
+ */
+export async function exigirAcesso(request: Request): Promise<ResultadoGuard> {
+  const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? null;
+  if (!token) return nega(401, "Não autenticado.");
+  const sb = supabaseComUsuario(token);
+  if (!sb) return nega(503, "Supabase não configurado no servidor.");
+  const { data, error } = await sb.auth.getUser();
+  if (error || !data?.user) return nega(401, "Sessão inválida.");
+  const { data: perfilData } = await sb.rpc("masor_meu_perfil");
+  const perfil = (Array.isArray(perfilData) ? perfilData[0] : perfilData) as
+    | { role?: string; cliente_id?: string | null }
+    | null;
+  const role = perfil?.role ?? "";
+  if (role !== "admin" && role !== "staff" && role !== "cliente") return nega(403, "Sem acesso.");
+  return { ok: true, auth: { sb, userId: data.user.id, clienteId: perfil?.cliente_id ?? null, role } };
+}
+
+/**
+ * cliente_id efetivo: staff pode operar o cliente pedido; cliente é TRAVADO
+ * no próprio (nunca aceita cliente_id de outro pela requisição).
+ */
+export function clienteEfetivo(auth: Autorizado, pedido?: string | null): string | null {
+  if (auth.role === "cliente") return auth.clienteId;
+  return pedido ?? auth.clienteId;
+}
