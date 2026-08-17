@@ -5,8 +5,8 @@ services:
       args:
         # Públicas (publishable key + URL) — já vão no bundle do cliente, então
         # podem ter default embutido. Um .env ao lado do compose sobrescreve.
-        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-https://jkerqallbmozlnttffsi.supabase.co}
-        VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY:-sb_publishable_UdTxgpsSF7NMnSJqssNURg___po5616}
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-https://igzhwzgtxjgeaommatls.supabase.co}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlnemh3emd0eGpnZWFvbW1hdGxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU4Njc1ODMsImV4cCI6MjEwMTQ0MzU4M30.0CNd0391eP7rODf1HI3IWTSf3QMg5_IzsN8s-Wl1rG4}
     container_name: masor
     restart: unless-stopped
     environment:
@@ -14,8 +14,8 @@ services:
       - PORT=3000
       - HOST=0.0.0.0
       # Públicas (default embutido; .env sobrescreve).
-      - SUPABASE_URL=${SUPABASE_URL:-https://jkerqallbmozlnttffsi.supabase.co}
-      - SUPABASE_PUBLISHABLE_KEY=${SUPABASE_PUBLISHABLE_KEY:-sb_publishable_UdTxgpsSF7NMnSJqssNURg___po5616}
+      - SUPABASE_URL=${SUPABASE_URL:-https://igzhwzgtxjgeaommatls.supabase.co}
+      - SUPABASE_PUBLISHABLE_KEY=${SUPABASE_PUBLISHABLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlnemh3emd0eGpnZWFvbW1hdGxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU4Njc1ODMsImV4cCI6MjEwMTQ0MzU4M30.0CNd0391eP7rODf1HI3IWTSf3QMg5_IzsN8s-Wl1rG4}
       - MASOR_ANALISE_WEBHOOK_URL=${MASOR_ANALISE_WEBHOOK_URL:-https://n8n.ferpereira.com/webhook/masor-analise-fiscal}
       - NFE_TP_AMB=${NFE_TP_AMB:-1}
       # SEGREDOS — default VAZIO. Preencher via .env (deploy.sh) ou pelo editor de
