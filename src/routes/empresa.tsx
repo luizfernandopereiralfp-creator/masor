@@ -134,26 +134,32 @@ function EmpresaConteudo() {
                     </select>
                   )}
                 </label>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setModo("novo")}
-                    className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold text-white"
-                    style={{ background: NAVY }}
-                  >
-                    <Plus size={15} /> {tx("Novo cliente", "Новый клиент")}
-                  </button>
-                  {ativo && (
+                {admin ? (
+                  <div className="mt-3 flex flex-wrap gap-2">
                     <button
                       type="button"
-                      onClick={() => setModo("editar")}
-                      className="inline-flex items-center gap-1.5 rounded-xl border px-4 py-2 text-sm font-bold"
-                      style={{ borderColor: NAVY, color: NAVY }}
+                      onClick={() => setModo("novo")}
+                      className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold text-white"
+                      style={{ background: NAVY }}
                     >
-                      <Pencil size={15} /> {tx("Editar dados", "Изменить")}
+                      <Plus size={15} /> {tx("Novo cliente", "Новый клиент")}
                     </button>
-                  )}
-                </div>
+                    {ativo && (
+                      <button
+                        type="button"
+                        onClick={() => setModo("editar")}
+                        className="inline-flex items-center gap-1.5 rounded-xl border px-4 py-2 text-sm font-bold"
+                        style={{ borderColor: NAVY, color: NAVY }}
+                      >
+                        <Pencil size={15} /> {tx("Editar dados", "Изменить")}
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <p className="mt-3 text-[11px]" style={{ color: "#8892A4" }}>
+                    {tx("Cadastro e edição de clientes são feitos por um administrador.", "Заведение клиентов — только администратор.")}
+                  </p>
+                )}
               </div>
             )}
 
@@ -343,6 +349,13 @@ function CadastroCliente({
         </button>
       </div>
 
+      <p className="-mt-1 text-[11px]" style={{ color: "#8892A4" }}>
+        {tx(
+          'Só a razão social é obrigatória. Digite o CNPJ e clique "Buscar na Receita" para preencher o resto automaticamente.',
+          "Обязательно только название. Введите CNPJ (14 цифр) и нажмите «Из Receita» — остальное заполнится само.",
+        )}
+      </p>
+
       {/* CNPJ + Receita */}
       <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
         <Campo label="CNPJ / CPF">
@@ -522,7 +535,7 @@ function CertificadoBox({ tx, clienteId, admin }: { tx: (pt: string, ru: string)
 
       {status && !status.cofre_ok && (
         <p className="mt-2 text-[11px]" style={{ color: "var(--warn,#b45309)" }}>
-          ⚠ {tx("O cofre (CERT_MASTER_KEY) não está configurado no servidor — a captura na SEFAZ fica bloqueada.", "CERT_MASTER_KEY не настроен.")}
+          ⚠ {tx("Captura de notas na SEFAZ temporariamente indisponível (configuração do servidor).", "Загрузка накладных из SEFAZ временно недоступна.")}
         </p>
       )}
 

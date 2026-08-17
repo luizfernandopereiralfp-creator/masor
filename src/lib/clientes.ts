@@ -220,7 +220,11 @@ export async function enviarCertificado(
   const { error } = await supabase.functions.invoke("cliente-certificado", {
     body: { action: "upload", cliente_id: clienteId, filename: file.name, file_base64, senha, valido_ate },
   });
-  if (error) return { erro: error.message.includes("403") ? "Sem permissão (upload de e-CNPJ exige admin)." : error.message };
+  if (error) {
+    const status = (error as { context?: { status?: number } }).context?.status;
+    if (status === 401 || status === 403) return { erro: "Sem permissão (upload de e-CNPJ exige admin)." };
+    return { erro: error.message };
+  }
   return { ok: true, valido_ate };
 }
 

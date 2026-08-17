@@ -85,7 +85,7 @@ export function useEmpresa(clienteId?: string | null) {
             razao_social: c.razao_social,
             cnpj: c.cnpj_cpf,
             uf: (end.uf as string) ?? null,
-            municipio: (end.municipio as string) ?? null,
+            municipio: (end.cidade as string) ?? null,
             regime_tributario: c.regime_tributario,
             markup_padrao: conf.markup_padrao ?? null,
             das_efetivo: conf.das_efetivo ?? null,
