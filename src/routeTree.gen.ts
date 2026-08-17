@@ -18,9 +18,11 @@ import { Route as FiscalRouteImport } from './routes/fiscal'
 import { Route as HistoricoRouteImport } from './routes/historico'
 import { Route as ImportarRouteImport } from './routes/importar'
 import { Route as PendenciasRouteImport } from './routes/pendencias'
+import { Route as PortalRouteImport } from './routes/portal'
 import { Route as ApiAnalisarRouteImport } from './routes/api/analisar'
 import { Route as ApiCertificadoRouteImport } from './routes/api/certificado'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiPortalAcessoRouteImport } from './routes/api/portal-acesso'
 import { Route as ApiDfeBuscarRouteImport } from './routes/api/dfe.buscar'
 
 const IndexRoute = IndexRouteImport.update({
@@ -68,6 +70,11 @@ const PendenciasRoute = PendenciasRouteImport.update({
   path: '/pendencias',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PortalRoute = PortalRouteImport.update({
+  id: '/portal',
+  path: '/portal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAnalisarRoute = ApiAnalisarRouteImport.update({
   id: '/api/analisar',
   path: '/api/analisar',
@@ -81,6 +88,11 @@ const ApiCertificadoRoute = ApiCertificadoRouteImport.update({
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPortalAcessoRoute = ApiPortalAcessoRouteImport.update({
+  id: '/api/portal-acesso',
+  path: '/api/portal-acesso',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiDfeBuscarRoute = ApiDfeBuscarRouteImport.update({
@@ -99,9 +111,11 @@ export interface FileRoutesByFullPath {
   '/historico': typeof HistoricoRoute
   '/importar': typeof ImportarRoute
   '/pendencias': typeof PendenciasRoute
+  '/portal': typeof PortalRoute
   '/api/analisar': typeof ApiAnalisarRoute
   '/api/certificado': typeof ApiCertificadoRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/portal-acesso': typeof ApiPortalAcessoRoute
   '/api/dfe/buscar': typeof ApiDfeBuscarRoute
 }
 export interface FileRoutesByTo {
@@ -114,9 +128,11 @@ export interface FileRoutesByTo {
   '/historico': typeof HistoricoRoute
   '/importar': typeof ImportarRoute
   '/pendencias': typeof PendenciasRoute
+  '/portal': typeof PortalRoute
   '/api/analisar': typeof ApiAnalisarRoute
   '/api/certificado': typeof ApiCertificadoRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/portal-acesso': typeof ApiPortalAcessoRoute
   '/api/dfe/buscar': typeof ApiDfeBuscarRoute
 }
 export interface FileRoutesById {
@@ -130,9 +146,11 @@ export interface FileRoutesById {
   '/historico': typeof HistoricoRoute
   '/importar': typeof ImportarRoute
   '/pendencias': typeof PendenciasRoute
+  '/portal': typeof PortalRoute
   '/api/analisar': typeof ApiAnalisarRoute
   '/api/certificado': typeof ApiCertificadoRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/portal-acesso': typeof ApiPortalAcessoRoute
   '/api/dfe/buscar': typeof ApiDfeBuscarRoute
 }
 export interface FileRouteTypes {
@@ -147,9 +165,11 @@ export interface FileRouteTypes {
     | '/historico'
     | '/importar'
     | '/pendencias'
+    | '/portal'
     | '/api/analisar'
     | '/api/certificado'
     | '/api/chat'
+    | '/api/portal-acesso'
     | '/api/dfe/buscar'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -162,9 +182,11 @@ export interface FileRouteTypes {
     | '/historico'
     | '/importar'
     | '/pendencias'
+    | '/portal'
     | '/api/analisar'
     | '/api/certificado'
     | '/api/chat'
+    | '/api/portal-acesso'
     | '/api/dfe/buscar'
   id:
     | '__root__'
@@ -177,9 +199,11 @@ export interface FileRouteTypes {
     | '/historico'
     | '/importar'
     | '/pendencias'
+    | '/portal'
     | '/api/analisar'
     | '/api/certificado'
     | '/api/chat'
+    | '/api/portal-acesso'
     | '/api/dfe/buscar'
   fileRoutesById: FileRoutesById
 }
@@ -193,9 +217,11 @@ export interface RootRouteChildren {
   HistoricoRoute: typeof HistoricoRoute
   ImportarRoute: typeof ImportarRoute
   PendenciasRoute: typeof PendenciasRoute
+  PortalRoute: typeof PortalRoute
   ApiAnalisarRoute: typeof ApiAnalisarRoute
   ApiCertificadoRoute: typeof ApiCertificadoRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiPortalAcessoRoute: typeof ApiPortalAcessoRoute
   ApiDfeBuscarRoute: typeof ApiDfeBuscarRoute
 }
 
@@ -264,6 +290,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PendenciasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/portal': {
+      id: '/portal'
+      path: '/portal'
+      fullPath: '/portal'
+      preLoaderRoute: typeof PortalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/analisar': {
       id: '/api/analisar'
       path: '/api/analisar'
@@ -283,6 +316,13 @@ declare module '@tanstack/react-router' {
       path: '/api/chat'
       fullPath: '/api/chat'
       preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/portal-acesso': {
+      id: '/api/portal-acesso'
+      path: '/api/portal-acesso'
+      fullPath: '/api/portal-acesso'
+      preLoaderRoute: typeof ApiPortalAcessoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/dfe/buscar': {
@@ -305,9 +345,11 @@ const rootRouteChildren: RootRouteChildren = {
   HistoricoRoute: HistoricoRoute,
   ImportarRoute: ImportarRoute,
   PendenciasRoute: PendenciasRoute,
+  PortalRoute: PortalRoute,
   ApiAnalisarRoute: ApiAnalisarRoute,
   ApiCertificadoRoute: ApiCertificadoRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiPortalAcessoRoute: ApiPortalAcessoRoute,
   ApiDfeBuscarRoute: ApiDfeBuscarRoute,
 }
 export const routeTree = rootRouteImport

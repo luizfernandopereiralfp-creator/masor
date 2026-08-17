@@ -50,3 +50,11 @@ export async function exigirStaff(request: Request): Promise<ResultadoGuard> {
     },
   };
 }
+
+/** Exige JWT válido + papel admin (para provisionar acesso de cliente). */
+export async function exigirAdmin(request: Request): Promise<ResultadoGuard> {
+  const g = await exigirStaff(request);
+  if (!g.ok) return g;
+  if (g.auth.role !== "admin") return nega(403, "Apenas administradores podem gerir acessos de cliente.");
+  return g;
+}

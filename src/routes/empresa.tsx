@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
-import { ArrowLeft, Loader2, Check, Building2, Plus, Pencil, Search, X, ShieldCheck, Upload } from "lucide-react";
+import { ArrowLeft, Loader2, Check, Building2, Plus, Pencil, Search, X, ShieldCheck, Upload, UserPlus, Copy, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { useI18n } from "@/lib/i18n";
@@ -20,6 +20,7 @@ import {
   type CertStatusResp,
 } from "@/lib/clientes";
 import { avaliarValidade, textoValidade, estiloValidade } from "@/lib/certificado-validade";
+import { listarAcessos, criarAcesso, revogarAcesso, type PortalAcesso } from "@/lib/portal";
 
 export const Route = createFileRoute("/empresa")({
   component: () => (
@@ -224,6 +225,9 @@ function EmpresaConteudo() {
 
                   {/* e-CNPJ */}
                   <CertificadoBox tx={tx} clienteId={ativo} admin={admin} />
+
+                  {/* acesso do cliente (portal) */}
+                  {admin && <AcessoClienteBox tx={tx} clienteId={ativo} razao={empresa.razao_social ?? empresa.nome ?? ""} />}
                 </>
               )
             )}
@@ -561,6 +565,140 @@ function CertificadoBox({ tx, clienteId, admin }: { tx: (pt: string, ru: string)
           </div>
         </div>
       )}
+    </section>
+  );
+}
+
+/* ============================================================
+   Acesso do cliente (portal) — admin cria login e recebe e-mail+senha
+   para enviar (WhatsApp). Não depende de SMTP.
+   ============================================================ */
+function AcessoClienteBox({ tx, clienteId, razao }: { tx: (pt: string, ru: string) => string; clienteId: string; razao: string }) {
+  const [acessos, setAcessos] = useState<PortalAcesso[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [abrir, setAbrir] = useState(false);
+  const [email, setEmail] = useState("");
+  const [criando, setCriando] = useState(false);
+  const [cred, setCred] = useState<{ email: string; senha: string } | null>(null);
+
+  const carregar = useCallback(async () => {
+    setCarregando(true);
+    setAcessos(await listarAcessos(clienteId));
+    setCarregando(false);
+  }, [clienteId]);
+
+  useEffect(() => {
+    void carregar();
+  }, [carregar]);
+
+  async function criar() {
+    if (!email.trim() || criando) return;
+    setCriando(true);
+    const r = await criarAcesso(clienteId, email.trim());
+    setCriando(false);
+    if (r.erro) {
+      toast.error(r.erro);
+      return;
+    }
+    setCred({ email: r.email ?? email.trim(), senha: r.senha ?? "" });
+    setEmail("");
+    setAbrir(false);
+    await carregar();
+    toast.success(tx("Acesso criado.", "Доступ создан."));
+  }
+
+  async function revogar(uid: string) {
+    if (!confirm(tx("Revogar este acesso? O login deixa de funcionar.", "Отозвать доступ?"))) return;
+    const r = await revogarAcesso(uid);
+    if (r.erro) {
+      toast.error(r.erro);
+      return;
+    }
+    await carregar();
+    toast.success(tx("Acesso revogado.", "Доступ отозван."));
+  }
+
+  function copiar() {
+    if (!cred) return;
+    const msg = tx(
+      `Acesso ao Masor (${razao})\nSite: https://masor.g41one.com.br\nE-mail: ${cred.email}\nSenha: ${cred.senha}`,
+      `Доступ к Masor (${razao})\nСайт: https://masor.g41one.com.br\nE-mail: ${cred.email}\nПароль: ${cred.senha}`,
+    );
+    navigator.clipboard?.writeText(msg).then(
+      () => toast.success(tx("Credenciais copiadas.", "Скопировано.")),
+      () => toast.error(tx("Não foi possível copiar.", "Ошибка копирования.")),
+    );
+  }
+
+  return (
+    <section className="mt-4 rounded-2xl border bg-white p-6" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-xs font-bold uppercase tracking-wide" style={{ color: NAVY }}>{tx("Acesso do cliente (portal)", "Доступ клиента")}</h3>
+        {!abrir && (
+          <button type="button" onClick={() => { setAbrir(true); setCred(null); }} className="inline-flex items-center gap-1.5 text-[12px] font-bold" style={{ color: NAVY }}>
+            <UserPlus size={13} /> {tx("Novo acesso", "Новый доступ")}
+          </button>
+        )}
+      </div>
+      <p className="mt-1 text-[11px]" style={{ color: "#8892A4" }}>
+        {tx("O cliente entra no site e vê só os dados desta empresa.", "Клиент видит только данные этой компании.")}
+      </p>
+
+      {/* credenciais recém-criadas */}
+      {cred && (
+        <div className="mt-3 rounded-xl border p-4" style={{ borderColor: "var(--amber)", background: "var(--amber-soft,#fbebd2)" }}>
+          <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: NAVY }}>{tx("Envie estes dados ao cliente", "Отправьте клиенту")}</p>
+          <div className="mt-1 grid gap-0.5 text-sm" style={{ color: NAVY, fontFamily: MONO }}>
+            <span>E-mail: <b>{cred.email}</b></span>
+            <span>{tx("Senha", "Пароль")}: <b>{cred.senha}</b></span>
+          </div>
+          <button type="button" onClick={copiar} className="mt-2 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold text-white" style={{ background: NAVY }}>
+            <Copy size={13} /> {tx("Copiar credenciais", "Скопировать")}
+          </button>
+          <p className="mt-2 text-[10px]" style={{ color: "#8892A4" }}>
+            {tx("A senha não é exibida de novo. Se perder, gere um novo acesso.", "Пароль больше не показывается.")}
+          </p>
+        </div>
+      )}
+
+      {/* form novo acesso */}
+      {abrir && (
+        <div className="mt-3 grid gap-3 rounded-xl border p-4" style={{ borderColor: "var(--border,#e2e8f0)", background: "#fafbfc" }}>
+          <Campo label={tx("E-mail do cliente", "E-mail клиента")}>
+            <input className="ipt" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="cliente@empresa.com" autoComplete="off" />
+          </Campo>
+          <div className="flex items-center gap-3">
+            <button type="button" onClick={criar} disabled={!email.trim() || criando} className="inline-flex items-center gap-2 rounded-xl px-5 py-2 text-sm font-bold text-white disabled:opacity-50" style={{ background: NAVY }}>
+              {criando ? <Loader2 size={15} className="animate-spin" /> : <UserPlus size={15} />}
+              {tx("Criar acesso", "Создать")}
+            </button>
+            <button type="button" onClick={() => setAbrir(false)} className="text-sm font-semibold" style={{ color: "#6b7488" }}>{tx("Cancelar", "Отмена")}</button>
+          </div>
+          <p className="text-[10px]" style={{ color: "#8892A4" }}>
+            {tx("Gera uma senha automática; você a envia ao cliente (WhatsApp/e-mail).", "Пароль генерируется автоматически.")}
+          </p>
+        </div>
+      )}
+
+      {/* lista de acessos */}
+      <div className="mt-3">
+        {carregando ? (
+          <div className="flex justify-center py-3"><Loader2 size={16} className="animate-spin" style={{ color: AMBER }} /></div>
+        ) : acessos.length === 0 ? (
+          <p className="text-xs" style={{ color: "#8892A4" }}>{tx("Nenhum acesso ainda.", "Пока нет доступов.")}</p>
+        ) : (
+          <ul className="grid gap-1">
+            {acessos.map((a) => (
+              <li key={a.auth_user_id} className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm" style={{ borderColor: "var(--border,#e2e8f0)", color: NAVY }}>
+                <span>{a.email ?? a.auth_user_id}</span>
+                <button type="button" onClick={() => revogar(a.auth_user_id)} className="inline-flex items-center gap-1 text-[11px] font-semibold" style={{ color: "var(--warn,#b45309)" }}>
+                  <Trash2 size={12} /> {tx("Revogar", "Отозвать")}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </section>
   );
 }

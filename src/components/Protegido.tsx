@@ -4,14 +4,24 @@ import { Loader2 } from "lucide-react";
 
 import { useAuth } from "@/lib/auth";
 
-/** Envolve conteúdo que exige login. Sem sessão → redireciona para /entrar. */
-export function Protegido({ children }: { children: ReactNode }) {
-  const { carregando, session } = useAuth();
+/**
+ * Envolve conteúdo que exige login.
+ * - Sem sessão → /entrar.
+ * - Papel 'cliente' → /portal (a menos que permitirCliente, usado pela própria tela do portal).
+ */
+export function Protegido({ children, permitirCliente = false }: { children: ReactNode; permitirCliente?: boolean }) {
+  const { carregando, session, perfil } = useAuth();
   const navigate = useNavigate();
+  const ehCliente = perfil?.role === "cliente";
 
   useEffect(() => {
-    if (!carregando && !session) navigate({ to: "/entrar" });
-  }, [carregando, session, navigate]);
+    if (carregando) return;
+    if (!session) {
+      navigate({ to: "/entrar" });
+      return;
+    }
+    if (!permitirCliente && ehCliente) navigate({ to: "/portal" });
+  }, [carregando, session, ehCliente, permitirCliente, navigate]);
 
   if (carregando)
     return (
@@ -20,5 +30,6 @@ export function Protegido({ children }: { children: ReactNode }) {
       </div>
     );
   if (!session) return null;
+  if (!permitirCliente && ehCliente) return null; // evita piscar a tela interna antes do redirect
   return <>{children}</>;
 }
