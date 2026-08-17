@@ -20,6 +20,7 @@ import { Route as ImportarRouteImport } from './routes/importar'
 import { Route as PendenciasRouteImport } from './routes/pendencias'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as ProdutosRouteImport } from './routes/produtos'
+import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as ApiAnalisarRouteImport } from './routes/api/analisar'
 import { Route as ApiCertificadoRouteImport } from './routes/api/certificado'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
@@ -81,6 +82,11 @@ const ProdutosRoute = ProdutosRouteImport.update({
   path: '/produtos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
+  id: '/redefinir-senha',
+  path: '/redefinir-senha',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAnalisarRoute = ApiAnalisarRouteImport.update({
   id: '/api/analisar',
   path: '/api/analisar',
@@ -119,6 +125,7 @@ export interface FileRoutesByFullPath {
   '/pendencias': typeof PendenciasRoute
   '/portal': typeof PortalRoute
   '/produtos': typeof ProdutosRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/api/analisar': typeof ApiAnalisarRoute
   '/api/certificado': typeof ApiCertificadoRoute
   '/api/chat': typeof ApiChatRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/pendencias': typeof PendenciasRoute
   '/portal': typeof PortalRoute
   '/produtos': typeof ProdutosRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/api/analisar': typeof ApiAnalisarRoute
   '/api/certificado': typeof ApiCertificadoRoute
   '/api/chat': typeof ApiChatRoute
@@ -156,6 +164,7 @@ export interface FileRoutesById {
   '/pendencias': typeof PendenciasRoute
   '/portal': typeof PortalRoute
   '/produtos': typeof ProdutosRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/api/analisar': typeof ApiAnalisarRoute
   '/api/certificado': typeof ApiCertificadoRoute
   '/api/chat': typeof ApiChatRoute
@@ -176,6 +185,7 @@ export interface FileRouteTypes {
     | '/pendencias'
     | '/portal'
     | '/produtos'
+    | '/redefinir-senha'
     | '/api/analisar'
     | '/api/certificado'
     | '/api/chat'
@@ -194,6 +204,7 @@ export interface FileRouteTypes {
     | '/pendencias'
     | '/portal'
     | '/produtos'
+    | '/redefinir-senha'
     | '/api/analisar'
     | '/api/certificado'
     | '/api/chat'
@@ -212,6 +223,7 @@ export interface FileRouteTypes {
     | '/pendencias'
     | '/portal'
     | '/produtos'
+    | '/redefinir-senha'
     | '/api/analisar'
     | '/api/certificado'
     | '/api/chat'
@@ -231,6 +243,7 @@ export interface RootRouteChildren {
   PendenciasRoute: typeof PendenciasRoute
   PortalRoute: typeof PortalRoute
   ProdutosRoute: typeof ProdutosRoute
+  RedefinirSenhaRoute: typeof RedefinirSenhaRoute
   ApiAnalisarRoute: typeof ApiAnalisarRoute
   ApiCertificadoRoute: typeof ApiCertificadoRoute
   ApiChatRoute: typeof ApiChatRoute
@@ -317,6 +330,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProdutosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/redefinir-senha': {
+      id: '/redefinir-senha'
+      path: '/redefinir-senha'
+      fullPath: '/redefinir-senha'
+      preLoaderRoute: typeof RedefinirSenhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/analisar': {
       id: '/api/analisar'
       path: '/api/analisar'
@@ -367,6 +387,7 @@ const rootRouteChildren: RootRouteChildren = {
   PendenciasRoute: PendenciasRoute,
   PortalRoute: PortalRoute,
   ProdutosRoute: ProdutosRoute,
+  RedefinirSenhaRoute: RedefinirSenhaRoute,
   ApiAnalisarRoute: ApiAnalisarRoute,
   ApiCertificadoRoute: ApiCertificadoRoute,
   ApiChatRoute: ApiChatRoute,

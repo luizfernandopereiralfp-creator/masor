@@ -4,6 +4,7 @@ import { Loader2, Check, ShieldCheck } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/entrar")({
   component: Entrar,
@@ -47,6 +48,22 @@ function Entrar() {
       else router.invalidate();
     }
     setEnviando(false);
+  }
+
+  async function esqueciSenha() {
+    setErro(null);
+    setMsg(null);
+    if (!email.trim()) {
+      setErro(tx("Digite seu e-mail acima para receber o link de redefinição.", "Введите e-mail выше, чтобы получить ссылку для сброса."));
+      return;
+    }
+    if (!supabase) return setErro("Supabase indisponível.");
+    setEnviando(true);
+    const redirectTo = typeof window !== "undefined" ? `${window.location.origin}/redefinir-senha` : undefined;
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo });
+    setEnviando(false);
+    if (error) setErro(error.message);
+    else setMsg(tx("Enviamos um link de redefinição para o seu e-mail.", "Мы отправили ссылку для сброса на вашу почту."));
   }
 
   return (
@@ -155,6 +172,14 @@ function Entrar() {
               autoComplete={modo === "login" ? "current-password" : "new-password"}
             />
           </Campo>
+
+          {modo === "login" && (
+            <div className="mb-4 text-right">
+              <button type="button" onClick={esqueciSenha} disabled={enviando} className="text-[13px] font-semibold disabled:opacity-60" style={{ color: NAVY }}>
+                {tx("Esqueci a senha", "Забыли пароль")}
+              </button>
+            </div>
+          )}
 
           {erro && (
             <div className="mb-3 rounded-lg px-3 py-2 text-[13px]" style={{ background: "var(--amber-soft)", color: NAVY }}>
