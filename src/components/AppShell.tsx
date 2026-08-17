@@ -55,7 +55,6 @@ const NAV_CLIENTE: NavItem[] = [
   { to: "/produtos", icon: Package, pt: "Meus produtos", ru: "Мои товары" },
   { to: "/consulta", icon: PackageSearch, pt: "Analisar", ru: "Анализ" },
   { to: "/importar", icon: Upload, pt: "Importar", ru: "Импорт" },
-  { to: "/historico", icon: History, pt: "Minhas notas", ru: "Мои документы" },
 ];
 
 /** Título da página atual (breadcrumb simples) a partir do path. */
