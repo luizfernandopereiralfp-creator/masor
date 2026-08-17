@@ -55,10 +55,13 @@ export const Route = createFileRoute("/api/chat")({
           return Response.json({ ok: false, erro: `Entrada inválida: ${(e as Error).message}` }, { status: 400 });
         }
 
+        // Reusa o MESMO workflow n8n da análise (que já tem o Claude) quando não
+        // houver um webhook de chat dedicado. A pergunta livre é enviada no formato
+        // system+user que esse workflow já consome — sem depender de 2º workflow.
         const WEBHOOK_URL = process.env.MASOR_CHAT_WEBHOOK_URL ?? process.env.MASOR_ANALISE_WEBHOOK_URL;
         const TOKEN = process.env.MASOR_WEBHOOK_TOKEN;
-        if (!WEBHOOK_URL || !TOKEN || !process.env.MASOR_CHAT_WEBHOOK_URL) {
-          // Sem workflow de chat conectado ainda: degrada com transparência.
+        if (!WEBHOOK_URL || !TOKEN) {
+          // Sem NENHUM webhook de IA conectado: degrada com transparência.
           return Response.json({
             ok: true,
             resposta:
@@ -71,18 +74,35 @@ export const Route = createFileRoute("/api/chat")({
           });
         }
 
+        // Monta a mensagem do usuário no formato que o workflow de análise consome
+        // (campo "user"), embutindo contexto e histórico recente.
+        const temCtx = corpo.contexto && Object.keys(corpo.contexto).length > 0;
+        const userMsg = [
+          temCtx ? `CONTEXTO DA TELA:\n${JSON.stringify(corpo.contexto)}` : "",
+          corpo.historico.length
+            ? `HISTÓRICO RECENTE:\n${corpo.historico.map((h) => `${h.papel === "user" ? "Usuário" : "IA"}: ${h.texto}`).join("\n")}`
+            : "",
+          `PERGUNTA DO USUÁRIO:\n${corpo.mensagem}`,
+        ]
+          .filter(Boolean)
+          .join("\n\n");
+
         let resp: Response;
         try {
           resp = await fetch(WEBHOOK_URL, {
             method: "POST",
             headers: { "content-type": "application/json", "x-masor-token": TOKEN },
             body: JSON.stringify({
+              // Campos p/ o workflow de análise (system+user) E p/ um eventual
+              // workflow de chat dedicado (modo+mensagem) — superset compatível.
               modo: "chat",
               system: SISTEMA,
+              user: userMsg,
               mensagem: corpo.mensagem,
               historico: corpo.historico,
               contexto: corpo.contexto,
               idioma: corpo.idioma,
+              meta: { modo: "chat" },
             }),
             signal: AbortSignal.timeout(120_000),
           });
