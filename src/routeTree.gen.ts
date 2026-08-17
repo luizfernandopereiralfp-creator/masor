@@ -19,6 +19,7 @@ import { Route as HistoricoRouteImport } from './routes/historico'
 import { Route as ImportarRouteImport } from './routes/importar'
 import { Route as PendenciasRouteImport } from './routes/pendencias'
 import { Route as PortalRouteImport } from './routes/portal'
+import { Route as ProdutosRouteImport } from './routes/produtos'
 import { Route as ApiAnalisarRouteImport } from './routes/api/analisar'
 import { Route as ApiCertificadoRouteImport } from './routes/api/certificado'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
@@ -75,6 +76,11 @@ const PortalRoute = PortalRouteImport.update({
   path: '/portal',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProdutosRoute = ProdutosRouteImport.update({
+  id: '/produtos',
+  path: '/produtos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAnalisarRoute = ApiAnalisarRouteImport.update({
   id: '/api/analisar',
   path: '/api/analisar',
@@ -112,6 +118,7 @@ export interface FileRoutesByFullPath {
   '/importar': typeof ImportarRoute
   '/pendencias': typeof PendenciasRoute
   '/portal': typeof PortalRoute
+  '/produtos': typeof ProdutosRoute
   '/api/analisar': typeof ApiAnalisarRoute
   '/api/certificado': typeof ApiCertificadoRoute
   '/api/chat': typeof ApiChatRoute
@@ -129,6 +136,7 @@ export interface FileRoutesByTo {
   '/importar': typeof ImportarRoute
   '/pendencias': typeof PendenciasRoute
   '/portal': typeof PortalRoute
+  '/produtos': typeof ProdutosRoute
   '/api/analisar': typeof ApiAnalisarRoute
   '/api/certificado': typeof ApiCertificadoRoute
   '/api/chat': typeof ApiChatRoute
@@ -147,6 +155,7 @@ export interface FileRoutesById {
   '/importar': typeof ImportarRoute
   '/pendencias': typeof PendenciasRoute
   '/portal': typeof PortalRoute
+  '/produtos': typeof ProdutosRoute
   '/api/analisar': typeof ApiAnalisarRoute
   '/api/certificado': typeof ApiCertificadoRoute
   '/api/chat': typeof ApiChatRoute
@@ -166,6 +175,7 @@ export interface FileRouteTypes {
     | '/importar'
     | '/pendencias'
     | '/portal'
+    | '/produtos'
     | '/api/analisar'
     | '/api/certificado'
     | '/api/chat'
@@ -183,6 +193,7 @@ export interface FileRouteTypes {
     | '/importar'
     | '/pendencias'
     | '/portal'
+    | '/produtos'
     | '/api/analisar'
     | '/api/certificado'
     | '/api/chat'
@@ -200,6 +211,7 @@ export interface FileRouteTypes {
     | '/importar'
     | '/pendencias'
     | '/portal'
+    | '/produtos'
     | '/api/analisar'
     | '/api/certificado'
     | '/api/chat'
@@ -218,6 +230,7 @@ export interface RootRouteChildren {
   ImportarRoute: typeof ImportarRoute
   PendenciasRoute: typeof PendenciasRoute
   PortalRoute: typeof PortalRoute
+  ProdutosRoute: typeof ProdutosRoute
   ApiAnalisarRoute: typeof ApiAnalisarRoute
   ApiCertificadoRoute: typeof ApiCertificadoRoute
   ApiChatRoute: typeof ApiChatRoute
@@ -297,6 +310,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/produtos': {
+      id: '/produtos'
+      path: '/produtos'
+      fullPath: '/produtos'
+      preLoaderRoute: typeof ProdutosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/analisar': {
       id: '/api/analisar'
       path: '/api/analisar'
@@ -346,6 +366,7 @@ const rootRouteChildren: RootRouteChildren = {
   ImportarRoute: ImportarRoute,
   PendenciasRoute: PendenciasRoute,
   PortalRoute: PortalRoute,
+  ProdutosRoute: ProdutosRoute,
   ApiAnalisarRoute: ApiAnalisarRoute,
   ApiCertificadoRoute: ApiCertificadoRoute,
   ApiChatRoute: ApiChatRoute,

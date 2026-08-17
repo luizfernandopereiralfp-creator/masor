@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
-import { Loader2, Building2, LogOut, FileText, Search, FileUp, RefreshCw, ArrowRight } from "lucide-react";
+import { Loader2, Building2, LogOut, FileText, Search, FileUp, RefreshCw, ArrowRight, Boxes } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
@@ -90,7 +90,13 @@ function PortalConteudo() {
             </p>
 
             {/* ferramentas */}
-            <div className="mb-5 grid gap-3 sm:grid-cols-3">
+            <div className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <FerramentaCard
+                to="/produtos"
+                icon={<Boxes size={18} />}
+                titulo={tx("Produtos e estoque", "Товары и склад")}
+                desc={tx("Catálogo, análise e estoque", "Каталог и склад")}
+              />
               <FerramentaCard
                 to="/consulta"
                 icon={<Search size={18} />}
@@ -156,7 +162,7 @@ function FerramentaCard({
   titulo,
   desc,
 }: {
-  to: "/consulta" | "/importar" | "/fiscal";
+  to: "/consulta" | "/importar" | "/fiscal" | "/produtos";
   icon: ReactNode;
   titulo: string;
   desc: string;

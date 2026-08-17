@@ -34,6 +34,7 @@ const pt: Dict = {
   "home.importar.cta": "Enviar arquivo",
 
   "home.empresa": "⚙ Cadastro da empresa (preencha 1x)",
+  "home.produtos": "📦 Produtos e estoque",
   "home.historico": "Histórico de análises",
   "home.pendencias": "Pendências fiscais",
   "home.admin": "⚙ Configuração tributária",
@@ -75,6 +76,7 @@ const ru: Dict = {
   "home.importar.cta": "Загрузить файл",
 
   "home.empresa": "⚙ Данные компании (заполнить 1 раз)",
+  "home.produtos": "📦 Товары и склад",
   "home.historico": "История анализов",
   "home.pendencias": "Ожидают проверки",
   "home.admin": "⚙ Налоговые настройки",
