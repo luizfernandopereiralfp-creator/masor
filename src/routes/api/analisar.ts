@@ -95,6 +95,7 @@ export const Route = createFileRoute("/api/analisar")({
             .eq("ncm", ncmKey)
             .eq("uf", ufKey)
             .eq("regime", regimeKey ?? "")
+            .eq("idioma", corpo.idioma)
             .gte("created_at", limite)
             .order("created_at", { ascending: false })
             .limit(1)
@@ -141,7 +142,7 @@ export const Route = createFileRoute("/api/analisar")({
           }
           parecer = parsed.data;
           if (sb && ncmKey.length >= 8 && ufKey) {
-            void sb.from("masor_ai_reviews").insert({ ncm: ncmKey, uf: ufKey, regime: regimeKey, parecer });
+            void sb.from("masor_ai_reviews").insert({ ncm: ncmKey, uf: ufKey, regime: regimeKey, idioma: corpo.idioma, parecer });
           }
         }
         const pf = parecer.parametros_fiscais;
@@ -172,44 +173,50 @@ export const Route = createFileRoute("/api/analisar")({
             ...pf,
             mva_pct: pf.mva_pct ?? (op.mva_estimado ? num(op.mva_estimado) : null),
           },
+          idioma: corpo.idioma,
         };
         const m = calcularFiscal(entradaMotor);
 
         // Rastreabilidade: cada parâmetro que entrou na conta, com sua fonte.
         const fonteDe = (campo: string): string | null =>
           parecer.fontes_parametros.find((x) => x.campo === campo && x.url)?.url ?? null;
-        const simNao = (b: boolean | null) => (b === null ? null : b ? "Sim" : "Não");
+        const T = (ptTxt: string, ruTxt: string) => (corpo.idioma === "ru" ? ruTxt : ptTxt);
+        const simNao = (b: boolean | null) => (b === null ? null : b ? T("Sim", "Да") : T("Não", "Нет"));
         const parametros_aplicados: AnaliseFiscal["parametros_aplicados"] = [];
         const addParam = (rotulo: string, campo: string, valor: string | null) =>
           parametros_aplicados.push({
             rotulo,
-            valor: valor ?? "a confirmar",
+            valor: valor ?? T("a confirmar", "уточняется"),
             fonte_url: fonteDe(campo),
             confirmado: valor !== null,
           });
         addParam(
-          "Alíquota interna (destino)",
+          T("Alíquota interna (destino)", "Внутренняя ставка (назначение)"),
           "aliq_interna_destino",
           pf.aliq_interna_destino != null ? `${pf.aliq_interna_destino}%` : null,
         );
         if (entradaMotor.origem !== "interna")
           addParam(
-            "Região do destino (entrada interestadual)",
+            T("Região do destino (entrada interestadual)", "Регион назначения (межштатный вход)"),
             "regiao_destino",
-            pf.regiao_destino ? (pf.regiao_destino === "n_ne_co_es" ? "N/NE/CO/ES · 7%" : "Sul/Sudeste · 12%") : null,
+            pf.regiao_destino
+              ? pf.regiao_destino === "n_ne_co_es"
+                ? T("N/NE/CO/ES · 7%", "С/СВ/ЦЗ/ES · 7%")
+                : T("Sul/Sudeste · 12%", "Юг/Юго-Восток · 12%")
+              : null,
           );
-        addParam("Sujeito a ICMS-ST", "sujeito_st", simNao(pf.sujeito_st));
-        addParam("PIS/COFINS monofásico", "monofasico", simNao(pf.monofasico));
+        addParam(T("Sujeito a ICMS-ST", "Облагается ICMS-ST"), "sujeito_st", simNao(pf.sujeito_st));
+        addParam(T("PIS/COFINS monofásico", "PIS/COFINS монофазный"), "monofasico", simNao(pf.monofasico));
         if (pf.aliquota_zero_pc !== null)
-          addParam("PIS/COFINS alíquota zero (cesta básica)", "aliquota_zero_pc", simNao(pf.aliquota_zero_pc));
+          addParam(T("PIS/COFINS alíquota zero (cesta básica)", "PIS/COFINS нулевая ставка (базовая корзина)"), "aliquota_zero_pc", simNao(pf.aliquota_zero_pc));
         if (pf.reducao_base_icms_pct != null && pf.reducao_base_icms_pct > 0)
-          addParam("Redução de base de ICMS", "reducao_base_icms_pct", `${pf.reducao_base_icms_pct}%`);
+          addParam(T("Redução de base de ICMS", "Снижение базы ICMS"), "reducao_base_icms_pct", `${pf.reducao_base_icms_pct}%`);
         if (entradaMotor.consta_lista_st) {
-          addParam("Antecipação de ST (destino)", "antecipacao_st", simNao(pf.antecipacao_st));
+          addParam(T("Antecipação de ST (destino)", "Предоплата ST (назначение)"), "antecipacao_st", simNao(pf.antecipacao_st));
           if (pf.mva_pct != null) addParam("MVA / IVA-ST", "mva_pct", `${pf.mva_pct}%`);
         }
         if (entradaMotor.regime_empresa === "simples")
-          addParam("Equalização do Simples (destino)", "equalizacao_simples", simNao(pf.equalizacao_simples));
+          addParam(T("Equalização do Simples (destino)", "Уравнивание Simples (назначение)"), "equalizacao_simples", simNao(pf.equalizacao_simples));
 
         // 4) monta o relatório final: NÚMEROS do motor + NARRATIVA da IA
         const provisorio = m.provisorio || parecer.status === "provisorio";

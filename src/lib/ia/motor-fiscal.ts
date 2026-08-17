@@ -8,6 +8,9 @@
    forma reproduzível e audita a conta da IA. Regra não confirmada
    (parâmetro null) NÃO é aplicada — resultado sai PROVISÓRIO.
    Nada aqui inventa alíquota: tudo vem dos parâmetros de entrada.
+
+   Os textos legíveis (rótulos, fórmulas, alertas, pendências) saem
+   no idioma pedido (PT/RU) via T() — a aritmética é a mesma.
    ============================================================ */
 
 export type Regiao = "sul_sudeste" | "n_ne_co_es";
@@ -16,6 +19,7 @@ export type RegimeEmpresa = "lucro_real" | "presumido" | "simples";
 export type RegimeFornecedor = "normal" | "simples";
 export type Finalidade = "revenda" | "uso_consumo";
 export type PisCofins = "normal" | "monofasico" | "zero";
+export type IdiomaMotor = "pt" | "ru";
 
 /** Parâmetros fiscais confirmados pela IA (null = não confirmado por fonte). */
 export type ParametrosFiscais = {
@@ -47,6 +51,7 @@ export type EntradaMotor = {
   tipo_margem: "venda" | "markup";
   das_efetivo_pct: number; // alíquota efetiva do DAS (Simples), default 4
   params: ParametrosFiscais;
+  idioma?: IdiomaMotor; // idioma dos textos legíveis (default pt)
 };
 
 export type PassoMotor = {
@@ -78,6 +83,7 @@ const pctStr = (frac: number) =>
 
 /** Núcleo do cálculo — espelha o `calc` do v3, parametrizado. */
 export function calcularFiscal(e: EntradaMotor): ResultadoMotor {
+  const T = (pt: string, ru: string) => (e.idioma === "ru" ? ru : pt);
   const p = e.params;
   const preco = Math.max(e.custo_nf - (e.descontos || 0), 0);
   const vIpi = e.ipi || 0;
@@ -124,21 +130,21 @@ export function calcularFiscal(e: EntradaMotor): ResultadoMotor {
     credICMS = preco * taxaDestaque;
   }
   if (credICMS > 0)
-    memoria.push({ rotulo: "Crédito de ICMS (entrada)", formula: "preço × alíquota destacada", resultado: credICMS, unidade: "BRL" });
+    memoria.push({ rotulo: T("Crédito de ICMS (entrada)", "Кредит ICMS (вход)"), formula: T("preço × alíquota destacada", "цена × выделенная ставка"), resultado: credICMS, unidade: "BRL" });
 
   // --- crédito de PIS/COFINS (Lucro Real, tributação normal) ---
   let credPC = 0;
   if (lucroReal && e.pis_cofins === "normal")
     credPC = 0.0925 * Math.max(preco - (e.st_retida ? 0 : preco * taxaDestaque), 0);
   if (credPC > 0)
-    memoria.push({ rotulo: "Crédito de PIS/COFINS", formula: "9,25% × (preço − ICMS destacado)", resultado: credPC, unidade: "BRL" });
+    memoria.push({ rotulo: T("Crédito de PIS/COFINS", "Кредит PIS/COFINS"), formula: T("9,25% × (preço − ICMS destacado)", "9,25% × (цена − выделенный ICMS)"), resultado: credPC, unidade: "BRL" });
 
   // --- DIFAL (uso/consumo) ou equalização Simples (revenda) ---
   let difal = 0;
   const gap = Math.max(interna - taxaDestaque, 0);
   if (interestadual && e.finalidade === "uso_consumo" && gap > 0) {
     difal = preco * gap;
-    memoria.push({ rotulo: `DIFAL (uso/consumo) ${pctStr(gap)}`, formula: "preço × (interna − interestadual)", resultado: difal, unidade: "BRL" });
+    memoria.push({ rotulo: `${T("DIFAL (uso/consumo)", "DIFAL (потребление)")} ${pctStr(gap)}`, formula: T("preço × (interna − interestadual)", "цена × (внутр. − межштатная)"), resultado: difal, unidade: "BRL" });
   } else if (
     interestadual &&
     empresaSimples &&
@@ -148,7 +154,7 @@ export function calcularFiscal(e: EntradaMotor): ResultadoMotor {
     p.equalizacao_simples === true
   ) {
     difal = preco * gap;
-    memoria.push({ rotulo: `Equalização Simples ${pctStr(gap)}`, formula: "preço × (interna − interestadual)", resultado: difal, unidade: "BRL" });
+    memoria.push({ rotulo: `${T("Equalização Simples", "Уравнивание Simples")} ${pctStr(gap)}`, formula: T("preço × (interna − interestadual)", "цена × (внутр. − межштатная)"), resultado: difal, unidade: "BRL" });
   }
 
   // --- antecipação de ST na entrada (sem retenção) ---
@@ -158,14 +164,14 @@ export function calcularFiscal(e: EntradaMotor): ResultadoMotor {
   if (precisaAntecip && mva > 0) {
     const baseST = (preco + vIpi + vFrete) * (1 + mva);
     antecip = Math.max(baseST * interna - preco * taxaDestaque, 0);
-    memoria.push({ rotulo: "Antecipação de ST (estimada)", formula: "base×(1+MVA)×interna − crédito entrada", resultado: antecip, unidade: "BRL" });
+    memoria.push({ rotulo: T("Antecipação de ST (estimada)", "Предоплата ST (оценка)"), formula: T("base×(1+MVA)×interna − crédito entrada", "база×(1+MVA)×внутр. − кредит входа"), resultado: antecip, unidade: "BRL" });
   }
 
   // --- custo de cadastro ---
   const custo = preco + vIpi + vFrete + difal + antecip - credICMS - credPC;
   memoria.push({
-    rotulo: "Custo de aquisição",
-    formula: "preço + IPI + frete + DIFAL/antecip − créditos",
+    rotulo: T("Custo de aquisição", "Стоимость приобретения"),
+    formula: T("preço + IPI + frete + DIFAL/antecip − créditos", "цена + IPI + фрахт + DIFAL/предоплата − кредиты"),
     resultado: custo,
     unidade: "BRL",
   });
@@ -186,40 +192,49 @@ export function calcularFiscal(e: EntradaMotor): ResultadoMotor {
   const margemReal =
     pvMarkup && pvMarkup > 0 ? (pvMarkup * (1 - tribSaida) - custo) / pvMarkup : 0;
 
-  memoria.push({ rotulo: "Carga tributária de saída", resultado: tribSaida, unidade: "%" });
+  memoria.push({ rotulo: T("Carga tributária de saída", "Налоговая нагрузка на выходе"), resultado: tribSaida, unidade: "%" });
   memoria.push({
-    rotulo: e.tipo_margem === "venda" ? `Preço mínimo (margem ${pctStr(alvo)} s/ venda)` : `Preço mínimo (markup ${pctStr(alvo)})`,
-    formula: e.tipo_margem === "venda" ? "custo ÷ (1 − tributos − margem)" : "custo × (1+markup) ÷ (1 − tributos)",
+    rotulo:
+      e.tipo_margem === "venda"
+        ? `${T("Preço mínimo (margem", "Мин. цена (маржа")} ${pctStr(alvo)} ${T("s/ venda)", "от продажи)")}`
+        : `${T("Preço mínimo (markup", "Мин. цена (наценка")} ${pctStr(alvo)})`,
+    formula:
+      e.tipo_margem === "venda"
+        ? T("custo ÷ (1 − tributos − margem)", "стоимость ÷ (1 − налоги − маржа)")
+        : T("custo × (1+markup) ÷ (1 − tributos)", "стоимость × (1+наценка) ÷ (1 − налоги)"),
     resultado: pv,
     unidade: "BRL",
   });
 
   // --- pendências: parâmetros não confirmados que afetam a conta ---
-  if (p.aliq_interna_destino === null) pendencias.push({ campo: "alíquota interna", motivo: "não confirmada pela pesquisa" });
+  if (p.aliq_interna_destino === null) pendencias.push({ campo: T("alíquota interna", "внутренняя ставка"), motivo: T("não confirmada pela pesquisa", "не подтверждено поиском") });
   if (interestadual && e.origem === "sul_sudeste" && p.regiao_destino === null)
     pendencias.push({
-      campo: "região do destino",
-      motivo: "não confirmada — assumida a hipótese conservadora de 7% (menor crédito) na entrada interestadual",
+      campo: T("região do destino", "регион назначения"),
+      motivo: T(
+        "não confirmada — assumida a hipótese conservadora de 7% (menor crédito) na entrada interestadual",
+        "не подтверждён — принята консервативная гипотеза 7% (меньший кредит) на межштатном входе",
+      ),
     });
   if (empresaSimples && interestadual && !e.st_retida && p.equalizacao_simples === null)
-    pendencias.push({ campo: "equalização do Simples", motivo: "não confirmada no destino" });
+    pendencias.push({ campo: T("equalização do Simples", "уравнивание Simples"), motivo: T("não confirmada no destino", "не подтверждено в пункте назначения") });
   if (e.consta_lista_st && !e.st_retida && p.antecipacao_st === null)
-    pendencias.push({ campo: "antecipação de ST", motivo: "não confirmada no destino" });
-  if (p.sujeito_st === null) pendencias.push({ campo: "sujeição a ST", motivo: "não confirmada para o NCM no destino" });
+    pendencias.push({ campo: T("antecipação de ST", "предоплата ST"), motivo: T("não confirmada no destino", "не подтверждено в пункте назначения") });
+  if (p.sujeito_st === null) pendencias.push({ campo: T("sujeição a ST", "обложение ST"), motivo: T("não confirmada para o NCM no destino", "не подтверждено для NCM в пункте назначения") });
 
   const provisorio = pendencias.length > 0;
 
   // --- alertas educativos (linguagem simples) ---
   if (precisaAntecip && !(mva > 0))
-    alertas.push({ nivel: "atencao", texto: "Produto na lista de ST sem retenção: há recolhimento antecipado na entrada. Informe a MVA ou envie o XML." });
+    alertas.push({ nivel: "atencao", texto: T("Produto na lista de ST sem retenção: há recolhimento antecipado na entrada. Informe a MVA ou envie o XML.", "Товар в списке ST без удержания: есть предоплата на входе. Укажите MVA или загрузите XML.") });
   if (e.regime_fornecedor === "simples" && mSimples === 0 && !empresaSimples && !e.st_retida)
-    alertas.push({ nivel: "atencao", texto: "Fornecedor do Simples sem % de crédito na nota: crédito ZERO (LC 123, art. 23)." });
+    alertas.push({ nivel: "atencao", texto: T("Fornecedor do Simples sem % de crédito na nota: crédito ZERO (LC 123, art. 23).", "Поставщик Simples без % кредита в накладной: кредит НОЛЬ (LC 123, ст. 23).") });
   if (e.pis_cofins === "monofasico")
-    alertas.push({ nivel: "info", texto: "Monofásico: sem crédito na compra e alíquota zero na venda de PIS/COFINS." });
+    alertas.push({ nivel: "info", texto: T("Monofásico: sem crédito na compra e alíquota zero na venda de PIS/COFINS.", "Монофазный режим: без кредита при покупке и нулевая ставка PIS/COFINS при продаже.") });
   if (temST)
-    alertas.push({ nivel: "info", texto: "ST: imposto da cadeia já pago. Não some diferenças ao custo; sem ICMS próprio na revenda." });
+    alertas.push({ nivel: "info", texto: T("ST: imposto da cadeia já pago. Não some diferenças ao custo; sem ICMS próprio na revenda.", "ST: налог цепочки уже уплачен. Не добавляйте разницы к стоимости; нет собственного ICMS при перепродаже.") });
   if (interestadual && e.finalidade === "revenda" && !empresaSimples && !e.st_retida && gap > 0)
-    alertas.push({ nivel: "info", texto: `A diferença ${pctStr(taxaDestaque)} → ${pctStr(interna)} NÃO é custo: entrada gera crédito, saída incide sobre a venda.` });
+    alertas.push({ nivel: "info", texto: `${T("A diferença", "Разница")} ${pctStr(taxaDestaque)} → ${pctStr(interna)} ${T("NÃO é custo: entrada gera crédito, saída incide sobre a venda.", "НЕ является затратой: вход даёт кредит, выход начисляется на продажу.")}` });
 
   return {
     custo_aquisicao: preco,
