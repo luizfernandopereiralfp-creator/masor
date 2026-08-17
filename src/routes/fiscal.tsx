@@ -44,6 +44,15 @@ function Fiscal() {
   const [carregando, setCarregando] = useState(false);
   const [buscando, setBuscando] = useState(false);
   const [msg, setMsg] = useState<{ tipo: "ok" | "erro"; texto: string } | null>(null);
+  const [proxima, setProxima] = useState<number | null>(null); // próxima janela permitida (ms epoch)
+  const [agora, setAgora] = useState(0);
+
+  // tick para a contagem regressiva do botão (evita 656 por cliques repetidos)
+  useEffect(() => {
+    setAgora(Date.now());
+    const t = setInterval(() => setAgora(Date.now()), 30000);
+    return () => clearInterval(t);
+  }, []);
 
   const token = useCallback(async () => {
     if (!supabase) return null;
@@ -54,6 +63,7 @@ function Fiscal() {
     if (!ativo) {
       setCert(null);
       setDocs([]);
+      setProxima(null);
       return;
     }
     setCarregando(true);
@@ -66,13 +76,21 @@ function Fiscal() {
         setCofreOk(d.cofre_ok !== false);
       }
       if (supabase) {
-        const { data } = await supabase
-          .from("masor_dfe_documentos")
-          .select("id,nsu,chave44,tipo,resumo,capturado_em")
-          .eq("cliente_id", ativo)
-          .order("capturado_em", { ascending: false })
-          .limit(50);
+        const [{ data }, { data: fc }] = await Promise.all([
+          supabase
+            .from("masor_dfe_documentos")
+            .select("id,nsu,chave44,tipo,resumo,capturado_em")
+            .eq("cliente_id", ativo)
+            .order("capturado_em", { ascending: false })
+            .limit(50),
+          supabase.from("masor_fiscal_config").select("atualizado_em,bloqueado_ate").eq("cliente_id", ativo).maybeSingle(),
+        ]);
         setDocs((data as Doc[]) ?? []);
+        const cfg = fc as { atualizado_em?: string | null; bloqueado_ate?: string | null } | null;
+        let p = 0;
+        if (cfg?.atualizado_em) p = new Date(cfg.atualizado_em).getTime() + 60 * 60 * 1000;
+        if (cfg?.bloqueado_ate) p = Math.max(p, new Date(cfg.bloqueado_ate).getTime());
+        setProxima(p || null);
       }
     } finally {
       setCarregando(false);
@@ -95,6 +113,7 @@ function Fiscal() {
         body: JSON.stringify({ cliente_id: ativo }),
       });
       const d = await r.json();
+      if (d.proxima_busca) setProxima(new Date(d.proxima_busca).getTime());
       if (!d.ok) setMsg({ tipo: "erro", texto: d.erro ?? d.aviso ?? tx("Falha na busca.", "Ошибка.") });
       else setMsg({ tipo: "ok", texto: d.aviso ?? tx(`${d.capturados} documento(s) novo(s).`, `Получено: ${d.capturados}.`) });
       await carregar();
@@ -113,6 +132,8 @@ function Fiscal() {
     );
 
   const diasParaVencer = cert?.validade_ate ? Math.ceil((new Date(cert.validade_ate).getTime() - Date.now()) / 864e5) : null;
+  const emEspera = proxima != null && agora > 0 && agora < proxima;
+  const minEspera = emEspera ? Math.ceil((proxima! - agora) / 60000) : 0;
 
   return (
     <div className="min-h-screen" style={{ background: "var(--app-bg,#eef1f6)" }}>
@@ -198,9 +219,11 @@ function Fiscal() {
                   <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: NAVY }}>{tx("Buscar notas na SEFAZ", "Получить накладные")}</h2>
                   <p className="mt-1 text-xs" style={{ color: "#6b7488" }}>{tx("NF-e emitidas contra o CNPJ. A SEFAZ limita a frequência — aguarde 1 hora entre buscas.", "Не чаще 1 раза в час.")}</p>
                 </div>
-                <button type="button" onClick={buscarNotas} disabled={!cert || buscando} className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold text-white disabled:opacity-40" style={{ background: NAVY }}>
+                <button type="button" onClick={buscarNotas} disabled={!cert || buscando || emEspera} className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold text-white disabled:opacity-40" style={{ background: NAVY }}>
                   {buscando ? <Loader2 size={15} className="animate-spin" /> : <RefreshCw size={15} />}
-                  {tx("Buscar notas", "Получить")}
+                  {emEspera
+                    ? tx(`Disponível em ${minEspera} min`, `Доступно через ${minEspera} мин`)
+                    : tx("Buscar notas", "Получить")}
                 </button>
               </div>
             </section>

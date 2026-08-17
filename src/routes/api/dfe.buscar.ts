@@ -22,6 +22,9 @@ import { parseRetornoDFe, CSTAT } from "@/lib/fiscal/dfe-parser";
 
 const LIMITE_LOTES = 50; // trava de segurança contra loop infinito
 const INTERVALO_MIN_MS = 60 * 60 * 1000; // 1h entre ciclos completos
+const COOLDOWN_656_MS = 75 * 60 * 1000; // após 656, esperar mais que 1h (algumas UFs punem além disso)
+const DELAY_LOTE_MS = 300; // pausa entre lotes p/ evitar rajada (throttling da SEFAZ)
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export const Route = createFileRoute("/api/dfe/buscar")({
   server: {
@@ -59,21 +62,26 @@ export const Route = createFileRoute("/api/dfe/buscar")({
         // --- config / checkpoint ---
         const { data: cfg } = await admin
           .from("masor_fiscal_config")
-          .select("ult_nsu,atualizado_em")
+          .select("ult_nsu,atualizado_em,bloqueado_ate")
           .eq("cliente_id", clienteId)
           .maybeSingle();
 
+        // Próxima janela permitida = max(último ciclo + 1h, bloqueio do 656).
+        const agora = Date.now();
+        let proximaMs = 0;
+        if (cfg?.atualizado_em) proximaMs = new Date(cfg.atualizado_em).getTime() + INTERVALO_MIN_MS;
+        if (cfg?.bloqueado_ate) proximaMs = Math.max(proximaMs, new Date(cfg.bloqueado_ate).getTime());
+
         // Respeita o intervalo mínimo (evita cStat 656 / bloqueio do CNPJ).
-        if (!corpo.forcar && cfg?.atualizado_em) {
-          const desde = Date.now() - new Date(cfg.atualizado_em).getTime();
-          if (desde < INTERVALO_MIN_MS)
-            return Response.json(
-              {
-                ok: false,
-                erro: `Aguarde ${Math.ceil((INTERVALO_MIN_MS - desde) / 60000)} min. A SEFAZ bloqueia consultas frequentes (consumo indevido).`,
-              },
-              { status: 429 },
-            );
+        if (!corpo.forcar && proximaMs > agora) {
+          return Response.json(
+            {
+              ok: false,
+              erro: `Aguarde ${Math.ceil((proximaMs - agora) / 60000)} min. A SEFAZ bloqueia consultas frequentes (consumo indevido).`,
+              proxima_busca: new Date(proximaMs).toISOString(),
+            },
+            { status: 429 },
+          );
         }
 
         // --- UF + CNPJ do cliente (do Lior) — UF em clientes.endereco (jsonb) ---
@@ -109,6 +117,7 @@ export const Route = createFileRoute("/api/dfe/buscar")({
         try {
           while (lotes < LIMITE_LOTES) {
             lotes++;
+            if (lotes > 1) await sleep(DELAY_LOTE_MS); // evita rajada entre lotes
             const envelope = envelopeDistDFe({ tpAmb, uf, cnpj, consulta: { modo: "distNSU", ultNSU } });
             const resp = await soapPost(endpoint, envelope, agent);
             if (resp.status !== 200) {
@@ -160,20 +169,30 @@ export const Route = createFileRoute("/api/dfe/buscar")({
           senha = "";
         }
 
+        // Consumo indevido (656): impõe cooldown maior que o intervalo normal.
+        const bloqueio656 = cStat === CSTAT.CONSUMO_INDEVIDO;
+        if (bloqueio656) {
+          await admin.from("masor_fiscal_config").upsert(
+            { cliente_id: clienteId, bloqueado_ate: new Date(Date.now() + COOLDOWN_656_MS).toISOString(), atualizado_em: new Date().toISOString() },
+            { onConflict: "cliente_id" },
+          );
+        }
+        const proximaBusca = new Date(Date.now() + (bloqueio656 ? COOLDOWN_656_MS : INTERVALO_MIN_MS)).toISOString();
+
         return Response.json({
-          ok: cStat !== CSTAT.CONSUMO_INDEVIDO,
+          ok: !bloqueio656,
           capturados,
           lotes,
           ultNSU,
           maxNSU,
           cStat,
           xMotivo,
-          aviso:
-            cStat === CSTAT.CONSUMO_INDEVIDO
-              ? "A SEFAZ sinalizou consumo indevido (656). Aguarde pelo menos 1 hora antes de tentar de novo."
-              : cStat === CSTAT.NENHUM_DOCUMENTO
-                ? "Nenhum documento novo."
-                : null,
+          proxima_busca: proximaBusca,
+          aviso: bloqueio656
+            ? "A SEFAZ sinalizou consumo indevido (656). Aguarde pelo menos 1 hora antes de tentar de novo."
+            : cStat === CSTAT.NENHUM_DOCUMENTO
+              ? "Nenhum documento novo."
+              : null,
         });
       },
     },
