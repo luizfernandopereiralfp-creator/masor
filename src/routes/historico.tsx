@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Loader2, PackageSearch, Download } from "lucide-react";
+import { Loader2, PackageSearch, Download } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
 import { Protegido } from "@/components/Protegido";
+import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { exportarHistoricoXlsx } from "@/lib/export/planilha";
@@ -58,35 +59,29 @@ function Historico() {
   }, [perfil?.user_id]);
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--app-bg,#eef1f6)" }}>
-      <header className="flex items-center gap-3 px-5 py-3" style={{ background: NAVY }}>
-        <Link to="/" className="text-white/80 hover:text-white">
-          <ArrowLeft size={18} />
-        </Link>
-        <img src="/masor-logo.png" alt="Masor" className="h-6 w-auto rounded bg-white px-2 py-1" />
-        <span className="text-sm font-bold text-white">· {tx("Histórico", "История")}</span>
+    <AppShell>
+      <div className="mx-auto max-w-5xl">
         {regs && regs.length > 0 && (
-          <button
-            type="button"
-            onClick={() =>
-              exportarHistoricoXlsx(
-                regs.map((r) => ({
-                  criado_em: r.created_at,
-                  origem: r.origem,
-                  payload: r.payload,
-                  analise: r.analise as unknown as AnaliseFiscal,
-                })),
-              )
-            }
-            className="ml-auto inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold"
-            style={{ background: AMBER, color: NAVY }}
-          >
-            <Download size={13} /> {tx("Exportar", "Экспорт")}
-          </button>
+          <div className="mb-4 flex justify-end">
+            <button
+              type="button"
+              onClick={() =>
+                exportarHistoricoXlsx(
+                  regs.map((r) => ({
+                    criado_em: r.created_at,
+                    origem: r.origem,
+                    payload: r.payload,
+                    analise: r.analise as unknown as AnaliseFiscal,
+                  })),
+                )
+              }
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold"
+              style={{ background: AMBER, color: NAVY }}
+            >
+              <Download size={13} /> {tx("Exportar", "Экспорт")}
+            </button>
+          </div>
         )}
-      </header>
-
-      <main className="mx-auto max-w-5xl p-4 md:p-6">
         {regs === null ? (
           <div className="flex justify-center py-16">
             <Loader2 className="animate-spin" style={{ color: AMBER }} />
@@ -140,7 +135,7 @@ function Historico() {
             </table>
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }

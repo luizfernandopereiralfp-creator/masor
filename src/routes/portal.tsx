@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
-import { Loader2, Building2, LogOut, FileText, Search, FileUp, RefreshCw, ArrowRight, Boxes } from "lucide-react";
+import { Loader2, Building2, FileText, Search, FileUp, RefreshCw, ArrowRight, Boxes } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { Protegido } from "@/components/Protegido";
-import { supabase } from "@/integrations/supabase/client";
+import { AppShell } from "@/components/AppShell";
 import { meuCliente, minhasAnalises, type MeuCliente, type MinhaAnalise } from "@/lib/portal";
 
 export const Route = createFileRoute("/portal")({
@@ -51,22 +51,8 @@ function PortalConteudo() {
   const semVinculo = !carregando && !empresa;
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--app-bg,#eef1f6)" }}>
-      <header className="flex items-center justify-between px-5 py-3" style={{ background: NAVY }}>
-        <div className="flex items-center gap-3">
-          <img src="/masor-logo.png" alt="Masor" className="h-6 w-auto rounded bg-white px-2 py-1" />
-          <span className="text-sm font-bold text-white">· {tx("Portal do cliente", "Портал клиента")}</span>
-        </div>
-        <button
-          type="button"
-          onClick={() => supabase?.auth.signOut()}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-white/85 hover:text-white"
-        >
-          <LogOut size={14} /> {tx("Sair", "Выйти")}
-        </button>
-      </header>
-
-      <main className="mx-auto max-w-3xl p-4 md:p-6">
+    <AppShell>
+      <div className="mx-auto max-w-3xl">
         {carregando ? (
           <div className="flex justify-center py-16"><Loader2 className="animate-spin" style={{ color: AMBER }} /></div>
         ) : semVinculo ? (
@@ -151,8 +137,8 @@ function PortalConteudo() {
             )}
           </>
         )}
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }
 

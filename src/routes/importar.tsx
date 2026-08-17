@@ -1,10 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
-import { ArrowLeft, Upload, Loader2, TriangleAlert, FileSpreadsheet, FileText } from "lucide-react";
+import { Upload, Loader2, TriangleAlert, FileSpreadsheet, FileText } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { Protegido } from "@/components/Protegido";
+import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { parseNFe, itemParaOperacao, type NFeParsed, type NFeItem } from "@/lib/nfe/parse-nfe";
 import { parseXlsx, linhaParaOperacao, type LinhaPlanilha } from "@/lib/planilha/parse-xlsx";
@@ -187,16 +188,8 @@ function ImportarConteudo() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--app-bg, #eef1f6)" }}>
-      <header className="flex items-center gap-3 px-5 py-3" style={{ background: NAVY }}>
-        <Link to="/" className="text-white/80 hover:text-white">
-          <ArrowLeft size={18} />
-        </Link>
-        <img src="/masor-logo.png" alt="Masor" className="h-6 w-auto rounded bg-white px-2 py-1" />
-        <h1 className="text-sm font-bold tracking-wide text-white">· {tx("Importar em lote", "Массовый импорт")}</h1>
-      </header>
-
-      <main className="mx-auto max-w-6xl p-4 md:p-6">
+    <AppShell>
+      <div className="mx-auto max-w-6xl">
         {/* upload */}
         <section className="grid gap-4 rounded-2xl border bg-white p-5" style={{ borderColor: "var(--border,#e2e8f0)" }}>
           <div className="flex flex-wrap items-end gap-4">
@@ -400,8 +393,8 @@ function ImportarConteudo() {
             </p>
           </section>
         )}
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }
 

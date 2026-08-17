@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
-import { ArrowLeft, Loader2, Check, Building2, Plus, Pencil, Search, X, ShieldCheck, Upload, UserPlus, Copy, Trash2 } from "lucide-react";
+import { Loader2, Check, Building2, Plus, Pencil, Search, X, ShieldCheck, Upload, UserPlus, Copy, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { Protegido } from "@/components/Protegido";
+import { AppShell } from "@/components/AppShell";
 import { useEmpresa, useClientesFiscais } from "@/lib/empresa";
 import { useClienteAtivo } from "@/lib/cliente-ativo";
 import {
@@ -89,16 +90,8 @@ function EmpresaConteudo() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--app-bg,#eef1f6)" }}>
-      <header className="flex items-center gap-3 px-5 py-3" style={{ background: NAVY }}>
-        <Link to="/" className="text-white/80 hover:text-white">
-          <ArrowLeft size={18} />
-        </Link>
-        <img src="/masor-logo.png" alt="Masor" className="h-6 w-auto rounded bg-white px-2 py-1" />
-        <span className="text-sm font-bold text-white">· {tx("Clientes — cadastro e configuração", "Клиенты")}</span>
-      </header>
-
-      <main className="mx-auto max-w-2xl p-4 md:p-6">
+    <AppShell>
+      <div className="mx-auto max-w-2xl">
         {!staff ? (
           <div className="rounded-2xl border bg-white p-8 text-center text-sm" style={{ borderColor: "var(--border,#e2e8f0)", color: "#8892A4" }}>
             {tx("Apenas a equipe acessa o cadastro de clientes.", "Только команда.")}
@@ -242,10 +235,10 @@ function EmpresaConteudo() {
             )}
           </>
         )}
-      </main>
+      </div>
 
       <style>{`.ipt{width:100%;border:1px solid #e3e7ef;border-radius:.6rem;padding:.55rem .75rem;font-size:.875rem;color:var(--navy);outline:none;background:#fff}.ipt:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(233,167,74,.16)}`}</style>
-    </div>
+    </AppShell>
   );
 }
 

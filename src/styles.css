@@ -78,6 +78,21 @@
   --app-bg: #eef1f6;
   --app-surface: #f6f8fb;
 
+  /* Handoff design system (app shell) — tokens hex (namespaced p/ não colidir com shadcn) */
+  --bulb: #FDBD58;          /* âmbar do bulbo (logo) */
+  --coral: #FF954F;
+  --warnbg: #FBEEDC;
+  --successbg: #E4F2EC;
+  --infobg: #E7EEF9;
+  --app-ink: #14203F;       /* texto primário */
+  --app-muted: #6B7488;     /* texto secundário */
+  --app-faint: #8892A4;     /* texto terciário / caption */
+  --app-line: #E2E8F0;      /* bordas */
+  --app-bg2: #F6F8FB;       /* fundo sutil (headers de tabela, hover, inputs) */
+  --sidebar-ink: #AEB8D4;   /* texto da sidebar (inativo) */
+  --nav-active: #18264F;    /* fundo do item de nav ativo */
+  --shadow-app: 0 1px 2px rgba(13,25,64,.04), 0 8px 24px rgba(13,25,64,.06);
+
 
   /* Status (no red) */
   --warn: oklch(0.72 0.16 60);             /* âmbar mais quente p/ atrasos */
@@ -156,6 +171,17 @@
   background-image: var(--gradient-amber);
 }
 
+
+/* App shell / design system (handoff) */
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.app-card { background: var(--card); border: 1px solid var(--app-line); border-radius: 20px; box-shadow: var(--shadow-app); }
+.app-nav { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; color: var(--sidebar-ink); font-size: 14px; font-weight: 500; transition: background .15s, color .15s; white-space: nowrap; cursor: pointer; }
+.app-nav:hover { background: rgba(255,255,255,.06); color: #fff; }
+.app-nav[data-active="true"] { background: var(--nav-active); color: #fff; }
+.app-nav[data-active="true"] .app-nav-ic { color: var(--amber); }
+.app-nav-ic { color: var(--sidebar-ink); flex: 0 0 auto; display: flex; }
+.app-row { transition: background .12s; }
+.app-row:hover { background: var(--app-bg2); }
 
 /* Inputs numéricos sem setas (spinner) em todos os navegadores */
 .no-spinner {

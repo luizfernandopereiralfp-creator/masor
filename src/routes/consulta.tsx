@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { ArrowLeft, Loader2, ShieldCheck, TriangleAlert, ExternalLink, Upload, ChevronDown, Download } from "lucide-react";
+import { Loader2, ShieldCheck, TriangleAlert, ExternalLink, Upload, ChevronDown, Download } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { Protegido } from "@/components/Protegido";
+import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useEmpresa } from "@/lib/empresa";
 import { parseNFe } from "@/lib/nfe/parse-nfe";
@@ -253,23 +254,8 @@ function ConsultaConteudo() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--app-bg, #eef1f6)" }}>
-      <header
-        className="flex items-center justify-between gap-3 px-5 py-3"
-        style={{ background: NAVY }}
-      >
-        <div className="flex items-center gap-3">
-          <Link to="/" className="text-white/80 hover:text-white">
-            <ArrowLeft size={18} />
-          </Link>
-          <img src="/masor-logo.png" alt="Masor" className="h-6 w-auto rounded bg-white px-2 py-1" />
-          <h1 className="text-sm font-bold tracking-wide text-white">
-            · {tx("Analisar um produto", "Анализ товара")}
-          </h1>
-        </div>
-      </header>
-
-      <main className="mx-auto grid max-w-6xl gap-6 p-4 md:p-6 lg:grid-cols-[1fr_420px]">
+    <AppShell>
+      <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1fr_420px]">
         {/* ---------- formulário guiado ---------- */}
         <div className="grid gap-4">
           <Bloco n="01" titulo={tx("Operação", "Операция")}>
@@ -536,7 +522,7 @@ function ConsultaConteudo() {
             </>
           )}
         </aside>
-      </main>
+      </div>
 
       {/* caixa de IA sempre disponível */}
       <ChatDock
@@ -545,7 +531,7 @@ function ConsultaConteudo() {
         onDiretriz={aplicarView}
         onExport={analise ? exportar : undefined}
       />
-    </div>
+    </AppShell>
   );
 }
 

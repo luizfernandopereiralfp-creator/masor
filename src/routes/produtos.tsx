@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
-import { ArrowLeft, Loader2, Plus, Pencil, Trash2, Boxes, Sparkles, Check, X, PackagePlus, PackageMinus, SlidersHorizontal } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, Boxes, Sparkles, Check, X, PackagePlus, PackageMinus, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { Protegido } from "@/components/Protegido";
+import { AppShell } from "@/components/AppShell";
 import { useEmpresa, useClientesFiscais } from "@/lib/empresa";
 import { useClienteAtivo } from "@/lib/cliente-ativo";
 import {
@@ -118,16 +119,8 @@ function Produtos() {
   const set = <K extends keyof ProdutoForm>(k: K, v: ProdutoForm[K]) => setForm((s) => ({ ...s, [k]: v }));
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--app-bg,#eef1f6)" }}>
-      <header className="flex items-center gap-3 px-5 py-3" style={{ background: NAVY }}>
-        <Link to={staff ? "/" : "/portal"} className="text-white/80 hover:text-white">
-          <ArrowLeft size={18} />
-        </Link>
-        <img src="/masor-logo.png" alt="Masor" className="h-6 w-auto rounded bg-white px-2 py-1" />
-        <span className="text-sm font-bold text-white">· {tx("Produtos e estoque", "Товары и склад")}</span>
-      </header>
-
-      <main className="mx-auto max-w-5xl p-4 md:p-6">
+    <AppShell>
+      <div className="mx-auto max-w-5xl">
         {/* seletor de cliente (só equipe) */}
         {staff && (
           <div className="mb-4 rounded-2xl border bg-white p-4" style={{ borderColor: "var(--border,#e2e8f0)" }}>
@@ -221,7 +214,7 @@ function Produtos() {
             )}
           </>
         )}
-      </main>
+      </div>
 
       {estoqueDe && clienteId && (
         <EstoqueDialog tx={tx} produto={estoqueDe} clienteId={clienteId} onFechar={() => { setEstoqueDe(null); void carregar(); }} />
@@ -232,7 +225,7 @@ function Produtos() {
       )}
 
       <style>{`.ipt{width:100%;border:1px solid #e3e7ef;border-radius:.6rem;padding:.55rem .75rem;font-size:.875rem;color:var(--navy);outline:none;background:#fff}.ipt:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(233,167,74,.16)}`}</style>
-    </div>
+    </AppShell>
   );
 }
 

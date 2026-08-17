@@ -1,9 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, Loader2, ShieldCheck, TriangleAlert, RefreshCw, FileText, ExternalLink } from "lucide-react";
+import { Loader2, ShieldCheck, TriangleAlert, RefreshCw, FileText, ExternalLink } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
 import { Protegido } from "@/components/Protegido";
+import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useClienteAtivo } from "@/lib/cliente-ativo";
@@ -134,16 +135,8 @@ function Fiscal() {
   const minEspera = emEspera ? Math.ceil((proxima! - agora) / 60000) : 0;
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--app-bg,#eef1f6)" }}>
-      <header className="flex items-center gap-3 px-5 py-3" style={{ background: NAVY }}>
-        <Link to="/" className="text-white/80 hover:text-white">
-          <ArrowLeft size={18} />
-        </Link>
-        <img src="/masor-logo.png" alt="Masor" className="h-6 w-auto rounded bg-white px-2 py-1" />
-        <span className="text-sm font-bold text-white">· {tx("Notas fiscais (SEFAZ)", "Накладные (SEFAZ)")}</span>
-      </header>
-
-      <main className="mx-auto max-w-4xl p-4 md:p-6">
+    <AppShell>
+      <div className="mx-auto max-w-4xl">
         {/* seletor de cliente (só equipe; cliente é travado na própria empresa) */}
         {staff && (
         <div className="mb-4 rounded-2xl border bg-white p-4" style={{ borderColor: "var(--border,#e2e8f0)" }}>
@@ -261,7 +254,7 @@ function Fiscal() {
             )}
           </>
         )}
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }

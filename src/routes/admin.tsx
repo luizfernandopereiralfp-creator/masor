@@ -1,9 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
-import { ArrowLeft, Loader2, Plus, Check, ExternalLink } from "lucide-react";
+import { Loader2, Plus, Check, ExternalLink } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
 import { Protegido } from "@/components/Protegido";
+import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
@@ -107,16 +108,8 @@ function Admin() {
     );
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--app-bg,#eef1f6)" }}>
-      <header className="flex items-center gap-3 px-5 py-3" style={{ background: NAVY }}>
-        <Link to="/" className="text-white/80 hover:text-white">
-          <ArrowLeft size={18} />
-        </Link>
-        <img src="/masor-logo.png" alt="Masor" className="h-6 w-auto rounded bg-white px-2 py-1" />
-        <span className="text-sm font-bold text-white">· {tx("Configuração tributária", "Настройки")}</span>
-      </header>
-
-      <main className="mx-auto max-w-5xl p-4 md:p-6">
+    <AppShell>
+      <div className="mx-auto max-w-5xl">
         {/* Adicionar UF */}
         <div className="mb-4 flex items-end gap-2">
           <label className="grid gap-1">
@@ -214,10 +207,10 @@ function Admin() {
             </table>
           </div>
         )}
-      </main>
+      </div>
 
       <style>{`.ipt{width:100%;border:1px solid #e3e7ef;border-radius:.5rem;padding:.4rem .6rem;font-size:.85rem;color:var(--navy);outline:none;background:#fff}.ipt:focus{border-color:var(--amber)}`}</style>
-    </div>
+    </AppShell>
   );
 }
 
