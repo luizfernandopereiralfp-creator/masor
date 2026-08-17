@@ -41,17 +41,19 @@ export type ClienteResumo = { id: string; razao_social: string | null; nome_fant
 export function useClientesFiscais() {
   const [clientes, setClientes] = useState<ClienteResumo[]>([]);
   const [carregando, setCarregando] = useState(true);
-  useEffect(() => {
-    void (async () => {
-      if (!supabase) return setCarregando(false);
-      const { data } = await supabase.rpc("masor_clientes_fiscais");
-      const lista = (Array.isArray(data) ? data : []) as ClienteResumo[];
-      lista.sort((a, b) => (a.razao_social ?? "").localeCompare(b.razao_social ?? ""));
-      setClientes(lista);
-      setCarregando(false);
-    })();
+  const recarregar = useCallback(async () => {
+    if (!supabase) return setCarregando(false);
+    setCarregando(true);
+    const { data } = await supabase.rpc("masor_clientes_fiscais");
+    const lista = (Array.isArray(data) ? data : []) as ClienteResumo[];
+    lista.sort((a, b) => (a.razao_social ?? "").localeCompare(b.razao_social ?? ""));
+    setClientes(lista);
+    setCarregando(false);
   }, []);
-  return { clientes, carregando };
+  useEffect(() => {
+    void recarregar();
+  }, [recarregar]);
+  return { clientes, carregando, recarregar };
 }
 
 export function useEmpresa(clienteId?: string | null) {
