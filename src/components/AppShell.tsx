@@ -21,6 +21,7 @@ import {
 
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
+import { ChatDock } from "@/components/ChatDock";
 
 /* ============================================================
    Masor — App Shell (sidebar + top bar)
@@ -180,6 +181,12 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <main className="px-4 py-6 md:px-8 md:py-8">{children}</main>
       </div>
+
+      {/* IA sempre disponível (flutuante). A /consulta tem a sua própria (ligada
+          à análise da tela), então aqui suprimimos para não duplicar. */}
+      {path !== "/consulta" && (
+        <ChatDock contexto={{ rota: path }} onDiretriz={() => {}} idioma={lang} />
+      )}
     </div>
   );
 }
