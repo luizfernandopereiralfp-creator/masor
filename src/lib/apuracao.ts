@@ -163,6 +163,24 @@ export function apurarSaidas(xmls: string[]): SaidaResumo {
   return r;
 }
 
+/* ---------- Radar de crédito recuperável (#3) ---------- */
+
+export type CreditoTipo = "ressarcimento_st" | "credito_icms" | "credito_pis_cofins" | "despesas_pis_cofins";
+export type OportunidadeCredito = { tipo: CreditoTipo; valor: number | null };
+
+/** A partir da apuração das entradas, lista o crédito recuperável / não aproveitado.
+ *  valor null = lembrete estrutural (sem valor calculável a partir da NF-e). */
+export function radarCredito(ap: Apuracao): OportunidadeCredito[] {
+  const ops: OportunidadeCredito[] = [];
+  if (ap.stRetido > 0) ops.push({ tipo: "ressarcimento_st", valor: ap.stRetido });
+  if (ap.creditoICMS > 0) ops.push({ tipo: "credito_icms", valor: ap.creditoICMS });
+  if (ap.creditoPisCofins > 0) ops.push({ tipo: "credito_pis_cofins", valor: ap.creditoPisCofins });
+  // Estrutural — quase sempre esquecido pelo varejo: crédito de PIS/COFINS sobre
+  // energia, aluguel PJ e fretes. Não sai da NF-e de mercadoria; fica como lembrete.
+  ops.push({ tipo: "despesas_pis_cofins", valor: null });
+  return ops;
+}
+
 /** Rótulo didático (leigo) dos CFOPs de entrada mais comuns em supermercado. */
 export function rotuloCFOP(cfop: string): string {
   const c = cfop.replace(/\D/g, "");

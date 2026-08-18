@@ -7,7 +7,7 @@ import { Protegido } from "@/components/Protegido";
 import { AppShell } from "@/components/AppShell";
 import { useEmpresa, useClientesFiscais } from "@/lib/empresa";
 import { useClienteAtivo } from "@/lib/cliente-ativo";
-import { apurarEntradas, apurarSaidas, rotuloCFOP, type Apuracao, type SaidaResumo } from "@/lib/apuracao";
+import { apurarEntradas, apurarSaidas, radarCredito, rotuloCFOP, type Apuracao, type SaidaResumo, type CreditoTipo } from "@/lib/apuracao";
 
 export const Route = createFileRoute("/apuracao")({
   component: () => (
@@ -273,6 +273,8 @@ function Resultado({ ap, tx }: { ap: Apuracao; tx: (pt: string, ru: string) => s
         </p>
       )}
 
+      <RadarCredito ap={ap} tx={tx} />
+
       {/* Tabela por CFOP */}
       <h2 className="mb-2 mt-6 text-sm font-bold uppercase tracking-wide" style={{ color: INK }}>
         {tx("Entradas por CFOP", "Закупки по CFOP")}
@@ -303,6 +305,83 @@ function Resultado({ ap, tx }: { ap: Apuracao; tx: (pt: string, ru: string) => s
         </table>
       </div>
     </>
+  );
+}
+
+function RadarCredito({ ap, tx }: { ap: Apuracao; tx: (pt: string, ru: string) => string }) {
+  const ops = radarCredito(ap);
+  if (ops.length === 0) return null;
+  const info = (tipo: CreditoTipo) => {
+    switch (tipo) {
+      case "ressarcimento_st":
+        return {
+          titulo: tx("Ressarcimento de ICMS-ST", "Возврат ICMS-ST"),
+          oQueE: tx(
+            "Você já pagou esse ICMS adiantado (ST) na compra. Se vender abaixo do preço de referência do governo (PMPF), pagou imposto a mais e tem direito à diferença de volta.",
+            "Вы уже уплатили ICMS-ST при покупке. Если продаёте ниже эталонной цены, часть можно вернуть.",
+          ),
+          como: tx("O seu contador pede de volta a diferença todo mês, com base nas suas vendas reais.", "Бухгалтер запрашивает возврат ежемесячно."),
+          base: "art. 269 do RICMS/SP · Portaria CAT 42/2018",
+        };
+      case "credito_icms":
+        return {
+          titulo: tx("Crédito de ICMS na entrada", "Кредит ICMS"),
+          oQueE: tx("O ICMS destacado nas compras tributadas abate o ICMS que você deve nas vendas.", "ICMS с облагаемых покупок уменьшает ICMS с продаж."),
+          como: tx("Garanta que está sendo lançado na apuração de ICMS (E110) todo mês.", "Убедитесь, что учтено в расчёте ICMS каждый месяц."),
+          base: "LC 87/1996 (Lei Kandir)",
+        };
+      case "credito_pis_cofins":
+        return {
+          titulo: tx("Crédito de PIS/COFINS", "Кредит PIS/COFINS"),
+          oQueE: tx("9,25% das compras tributadas viram crédito que abate o PIS/COFINS das vendas.", "9,25% с облагаемых покупок — кредит."),
+          como: tx("Confirme com o contador o lançamento na EFD-Contribuições.", "Проверьте учёт в EFD-Contribuições."),
+          base: "Leis 10.637/2002 e 10.833/2003",
+        };
+      case "despesas_pis_cofins":
+        return {
+          titulo: tx("Créditos que o varejo esquece", "Забытые кредиты"),
+          oQueE: tx(
+            "Energia elétrica, aluguel (de empresa) e fretes também geram crédito de PIS/COFINS — 9,25% dessas despesas. É o valor mais esquecido.",
+            "Электроэнергия, аренда и доставка тоже дают кредит PIS/COFINS.",
+          ),
+          como: tx("Some essas despesas do mês e credite junto com as compras.", "Сложите эти расходы и зачтите."),
+          base: "art. 3º das Leis 10.637/2002 e 10.833/2003",
+        };
+    }
+  };
+  return (
+    <section className="mt-6">
+      <h2 className="mb-2 text-sm font-bold uppercase tracking-wide" style={{ color: INK }}>
+        {tx("Radar de crédito recuperável", "Радар возвратного кредита")}
+      </h2>
+      <div className="grid gap-3">
+        {ops.map((o, i) => {
+          const t = info(o.tipo);
+          return (
+            <div key={i} className="app-card p-4">
+              <div className="flex items-start justify-between gap-3">
+                <p className="text-sm font-bold" style={{ color: INK }}>{t.titulo}</p>
+                {o.valor != null && (
+                  <span
+                    className="whitespace-nowrap rounded-lg px-2.5 py-1 text-sm font-bold"
+                    style={{ background: "var(--successbg)", color: "var(--success)", fontFamily: MONO }}
+                  >
+                    ~{brl(o.valor)}
+                  </span>
+                )}
+              </div>
+              <p className="mt-1 text-[13px]" style={{ color: MUTED }}>{t.oQueE}</p>
+              <p className="mt-1 text-[13px]" style={{ color: INK }}>
+                <b>{tx("Como recuperar:", "Как вернуть:")}</b> {t.como}
+              </p>
+              <p className="mt-1 text-[10px]" style={{ color: MUTED }}>
+                {tx("Base legal:", "Основание:")} {t.base}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
