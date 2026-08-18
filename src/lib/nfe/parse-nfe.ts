@@ -21,6 +21,8 @@ export type NFeItem = {
   vIPI: number | null;
   orig: string | null; // origem da mercadoria (0..8)
   cst_icms: string | null; // CST ou CSOSN de ICMS
+  vBC: number | null; // base de cálculo do ICMS próprio
+  vICMS: number | null; // ICMS próprio destacado (crédito potencial na entrada)
   vICMSST: number | null;
   cst_pis: string | null;
   cst_cofins: string | null;
@@ -97,6 +99,8 @@ export function parseNFe(xml: string): NFeParsed {
       vIPI: ipi ? num(txt(ipi, "vIPI")) : null,
       orig: icmsInner ? txt(icmsInner, "orig") : null,
       cst_icms: icmsInner ? txt(icmsInner, "CST") ?? txt(icmsInner, "CSOSN") : null,
+      vBC: icmsInner ? num(txt(icmsInner, "vBC")) : null,
+      vICMS: icmsInner ? num(txt(icmsInner, "vICMS")) : null,
       vICMSST: icmsInner ? num(txt(icmsInner, "vICMSST")) : null,
       cst_pis: pis ? txt(pis, "CST") : null,
       cst_cofins: cofins ? txt(cofins, "CST") : null,

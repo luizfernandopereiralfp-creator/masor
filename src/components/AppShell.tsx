@@ -49,7 +49,7 @@ const NAV_STAFF: NavItem[] = [
   { to: "/historico", icon: History, pt: "Histórico", ru: "История" },
   { to: "/pendencias", icon: ClipboardList, pt: "Pendências", ru: "Очередь" },
   { to: "/admin", icon: Settings2, pt: "Admin", ru: "Админ" },
-  { to: "__apuracao", icon: Calculator, pt: "Apuração", ru: "Расчёт", soon: true },
+  { to: "/apuracao", icon: Calculator, pt: "Apuração", ru: "Расчёт" },
 ];
 
 const NAV_CLIENTE: NavItem[] = [
