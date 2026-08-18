@@ -377,10 +377,17 @@ function EstoqueDialog({ tx, produto, clienteId, onFechar }: { tx: (pt: string, 
 type AnaliseView = {
   provisorio?: boolean;
   formacao_preco?: {
-    preco_venda_sugerido?: number | null;
+    custo_aquisicao?: number | null;
+    frete_despesas?: number | null;
+    creditos_tributarios?: number | null;
+    custo_tributario_liquido?: number | null;
     debitos_saida_percent?: number | null;
+    markup_percent?: number | null;
     margem_estimada_percent?: number | null;
+    preco_venda_sugerido?: number | null;
+    formulas?: string[];
   };
+  memoria_calculo?: { rotulo?: string; formula?: string | null; resultado?: number | null; unidade?: string }[];
   resumo_executivo?: string;
   oportunidades_economia?: string[];
   fontes_oficiais?: { url: string }[];
@@ -430,6 +437,64 @@ function ResultadoAnaliseModal({
           <div className="mt-4 rounded-xl border p-4 text-sm" style={{ borderColor: "var(--border,#e2e8f0)", color: INK }}>{a.resumo_executivo}</div>
         )}
 
+        {/* Memória de cálculo — formação de preço passo a passo (prova real na calculadora) */}
+        <div className="mt-4 rounded-xl border p-4" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+          <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--app-muted)" }}>
+            {tx("Memória de cálculo — como chegamos no preço", "Расчёт — как получена цена")}
+          </p>
+          <div className="mt-2 grid gap-1 text-sm">
+            <LinhaCalc rot={tx("Custo de compra (na nota)", "Стоимость закупки")} val={brl(fp.custo_aquisicao)} />
+            {fp.frete_despesas ? <LinhaCalc op="+" rot={tx("Frete e despesas", "Доставка и расходы")} val={brl(fp.frete_despesas)} /> : null}
+            {fp.creditos_tributarios ? (
+              <LinhaCalc op="−" rot={tx("Créditos de imposto (você recupera)", "Налоговые кредиты")} val={brl(fp.creditos_tributarios)} />
+            ) : null}
+            <LinhaCalc destaque op="=" rot={tx("Custo real depois dos impostos", "Реальная себестоимость")} val={brl(fp.custo_tributario_liquido)} />
+            {carga != null ? <LinhaCalc rot={tx("Imposto sobre a venda", "Налог с продажи")} val={pct(carga)} /> : null}
+            {fp.margem_estimada_percent != null ? (
+              <LinhaCalc rot={tx("Margem desejada", "Желаемая маржа")} val={pct(fp.margem_estimada_percent)} />
+            ) : null}
+            <LinhaCalc destaque op="=" rot={tx("Preço mínimo de venda", "Мин. цена продажи")} val={brl(fp.preco_venda_sugerido)} />
+          </div>
+          {fp.formulas && fp.formulas.length > 0 && (
+            <div className="mt-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--app-muted)" }}>
+                {tx("Fórmulas usadas", "Использованные формулы")}
+              </p>
+              <ul className="mt-1 grid gap-0.5">
+                {fp.formulas.map((f, i) => (
+                  <li key={i} className="text-[11px]" style={{ color: "var(--app-muted)", fontFamily: MONO }}>• {f}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {a.memoria_calculo && a.memoria_calculo.length > 0 && (
+            <div className="mt-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--app-muted)" }}>
+                {tx("Passo a passo", "Шаг за шагом")}
+              </p>
+              <div className="mt-1 grid gap-1">
+                {a.memoria_calculo.map((p, i) => (
+                  <div key={i} className="flex items-baseline justify-between gap-2 text-xs" style={{ color: INK }}>
+                    <span>
+                      {p.rotulo}
+                      {p.formula ? <span style={{ color: "var(--app-muted)" }}> · {p.formula}</span> : null}
+                    </span>
+                    <span style={{ fontFamily: MONO, whiteSpace: "nowrap" }}>
+                      {p.unidade === "%" ? pct(p.resultado) : brl(p.resultado)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          <p className="mt-3 text-[10px]" style={{ color: "var(--app-muted)" }}>
+            {tx(
+              "Confira na calculadora: cada linha é um passo. Precisa ajustar custo ou margem? Edite o produto e reanalise.",
+              "Проверьте на калькуляторе: каждая строка — шаг. Нужно изменить? Отредактируйте товар и пересчитайте.",
+            )}
+          </p>
+        </div>
+
         {a.oportunidades_economia && a.oportunidades_economia.length > 0 && (
           <div className="mt-3">
             <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "#0f7a57" }}>{tx("Oportunidades de economia", "Возможности экономии")}</p>
@@ -450,6 +515,18 @@ function ResultadoAnaliseModal({
           <Link to="/consulta" className="text-xs font-semibold" style={{ color: INK }}>{tx("Refazer na consulta →", "В консультацию →")}</Link>
         </div>
       </div>
+    </div>
+  );
+}
+
+function LinhaCalc({ rot, val, op, destaque }: { rot: string; val: string; op?: string; destaque?: boolean }) {
+  return (
+    <div className="flex items-baseline justify-between gap-2" style={destaque ? { fontWeight: 700 } : undefined}>
+      <span style={{ color: destaque ? INK : "var(--app-muted)" }}>
+        {op ? <b style={{ color: "var(--app-muted)" }}>{op} </b> : null}
+        {rot}
+      </span>
+      <span style={{ fontFamily: MONO, whiteSpace: "nowrap", color: INK }}>{val}</span>
     </div>
   );
 }

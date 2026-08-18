@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Loader2, ShieldCheck, TriangleAlert, ExternalLink, Upload, ChevronDown, Download } from "lucide-react";
+import { Loader2, ShieldCheck, TriangleAlert, ExternalLink, Upload, ChevronDown, Download, RefreshCw } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
@@ -636,6 +636,54 @@ function Relatorio({
           <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--app-muted)" }}>{frase}</p>
         </div>
       </div>
+
+      {/* SIMULADOR DA REFORMA — preço mínimo hoje × pós-CBS/IBS/IS */}
+      {(() => {
+        const futuro = a.cenarios.find((c) => c.fase === "futuro" && c.preco_venda_sugerido != null);
+        const hoje = fp.preco_venda_sugerido;
+        if (!futuro || hoje == null || futuro.preco_venda_sugerido == null) return null;
+        const pv2 = futuro.preco_venda_sugerido;
+        const delta = pv2 - hoje;
+        const pct = hoje > 0 ? Math.round((delta / hoje) * 1000) / 10 : null;
+        const sobe = delta > 0.005;
+        const desce = delta < -0.005;
+        const cor = sobe ? "var(--warn,#b45309)" : desce ? "var(--success,#1f9d55)" : "var(--app-muted)";
+        return (
+          <div className="overflow-hidden rounded-2xl border bg-[var(--card)]" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+            <div className="flex items-center gap-2 px-4 py-2.5" style={{ background: "var(--info,#0047AA)" }}>
+              <RefreshCw size={13} className="text-white" />
+              <span className="text-xs font-bold uppercase tracking-widest text-white">
+                {tx("Simulador da Reforma", "Симулятор реформы")}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-3 p-4">
+              <div className="rounded-xl p-3 text-center" style={{ background: "var(--app-bg2)" }}>
+                <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--app-muted)" }}>
+                  {tx("Preço mínimo hoje", "Мин. цена сегодня")}
+                </p>
+                <p className="text-2xl font-black" style={{ color: INK, fontFamily: MONO }}>{brl(hoje)}</p>
+              </div>
+              <div className="rounded-xl p-3 text-center" style={{ background: "var(--app-bg2)" }}>
+                <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--app-muted)" }}>
+                  {tx("Pós-Reforma (CBS/IBS/IS)", "После реформы")}
+                </p>
+                <p className="text-2xl font-black" style={{ color: INK, fontFamily: MONO }}>{brl(pv2)}</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-center gap-2 pb-2 text-sm font-bold" style={{ color: cor, fontFamily: MONO }}>
+              {sobe ? "▲" : desce ? "▼" : "="} {brl(Math.abs(delta))}
+              {pct != null ? ` (${pct > 0 ? "+" : ""}${pct}%)` : ""}
+            </div>
+            <p className="px-4 pb-4 text-[11px] leading-relaxed" style={{ color: "var(--app-muted)" }}>
+              ⚠{" "}
+              {tx(
+                `Estimativa — a Reforma (CBS/IBS/IS) está em transição${futuro.vigencia ? `, ${futuro.vigencia}` : ""} (base LC 214/2025 e EC 132/2023). ${futuro.resumo ?? ""}`,
+                `Оценка — реформа (CBS/IBS/IS) в переходном периоде. ${futuro.resumo ?? ""}`,
+              )}
+            </p>
+          </div>
+        );
+      })()}
 
       {/* avisos + pendências — sempre visíveis (anti-invenção) */}
       {avisos.map((av, i) => (
