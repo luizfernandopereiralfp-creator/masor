@@ -11,11 +11,13 @@ import {
   apurarEntradas,
   apurarSaidas,
   apurarST,
+  apurarRessarcimentoST,
   radarCredito,
   rotuloCFOP,
   type Apuracao,
   type SaidaResumo,
   type ResumoST,
+  type ResumoRessarcimento,
   type CreditoTipo,
 } from "@/lib/apuracao";
 
@@ -46,6 +48,7 @@ function ApuracaoPage() {
   const [st, setSt] = useState<ResumoST | null>(null);
   const [carregando, setCarregando] = useState(false);
   const [saida, setSaida] = useState<SaidaResumo | null>(null);
+  const [ressarc, setRessarc] = useState<ResumoRessarcimento | null>(null);
   const [processando, setProcessando] = useState(false);
 
   async function onCupons(e: React.ChangeEvent<HTMLInputElement>) {
@@ -55,6 +58,7 @@ function ApuracaoPage() {
     setProcessando(true);
     const xmls = await Promise.all(files.map((f) => f.text()));
     setSaida(apurarSaidas(xmls));
+    if (clienteId) setRessarc(await apurarRessarcimentoST(clienteId, xmls));
     setProcessando(false);
   }
 
@@ -161,6 +165,7 @@ function ApuracaoPage() {
               </div>
             </div>
             {saida && <SaidaBlock saida={saida} entrada={ap} tx={tx} />}
+            {ressarc && <RessarcimentoBlock ressarc={ressarc} tx={tx} />}
           </section>
         )}
       </div>
@@ -320,6 +325,76 @@ function Resultado({ ap, tx }: { ap: Apuracao; tx: (pt: string, ru: string) => s
           </tbody>
         </table>
       </div>
+    </>
+  );
+}
+
+function RessarcimentoBlock({ ressarc, tx }: { ressarc: ResumoRessarcimento; tx: (pt: string, ru: string) => string }) {
+  if (ressarc.itens === 0 && ressarc.pendencias.length === 0) return null;
+  const liquido = ressarc.ressarcivel - ressarc.complemento;
+  return (
+    <>
+      <h3 className="mb-2 mt-5 text-sm font-bold uppercase tracking-wide" style={{ color: INK }}>
+        {tx("Ressarcimento × Complemento de ST", "Возврат × Доплата ST")}
+      </h3>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Kpi
+          destaque
+          titulo={tx("ST a recuperar", "К возврату")}
+          valor={brl(ressarc.ressarcivel)}
+          sub={tx("vendido abaixo da base retida", "продано ниже базы")}
+          icon={<TrendingDown size={18} />}
+        />
+        <Kpi
+          titulo={tx("ST a complementar", "К доплате")}
+          valor={brl(ressarc.complemento)}
+          sub={tx("vendido acima da base", "продано выше базы")}
+          icon={<TrendingUp size={18} />}
+        />
+        <Kpi
+          titulo={tx("Resultado líquido", "Итог")}
+          valor={(liquido >= 0 ? tx("recupera ", "возврат ") : tx("paga ", "доплата ")) + brl(Math.abs(liquido))}
+          icon={<Scale size={18} />}
+        />
+      </div>
+      {ressarc.porNCM.length > 0 && (
+        <div className="app-card mt-3 overflow-x-auto p-0">
+          <table className="w-full text-sm" style={{ color: INK }}>
+            <thead>
+              <tr style={{ borderBottom: "2px solid var(--app-line)" }}>
+                {["NCM", tx("Produto", "Товар"), tx("Qtd", "Кол-во"), tx("Ressarcível", "Возврат"), tx("Complemento", "Доплата")].map((h, i) => (
+                  <th key={i} className="whitespace-nowrap px-3 py-2 text-[10px] font-bold uppercase tracking-wider" style={{ color: MUTED }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {ressarc.porNCM.slice(0, 15).map((l, i) => (
+                <tr key={i} style={{ borderBottom: "1px solid var(--app-line)" }}>
+                  <td className="px-3 py-2" style={{ fontFamily: MONO }}>{l.ncm}</td>
+                  <td className="px-3 py-2" style={{ color: MUTED }}>{l.xProd}</td>
+                  <td className="px-3 py-2" style={{ fontFamily: MONO }}>{l.qtd.toLocaleString("pt-BR")}</td>
+                  <td className="px-3 py-2" style={{ fontFamily: MONO, color: "var(--success)" }}>{l.ressarcivel > 0 ? brl(l.ressarcivel) : "—"}</td>
+                  <td className="px-3 py-2" style={{ fontFamily: MONO, color: "var(--warn)" }}>{l.complemento > 0 ? brl(l.complemento) : "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {ressarc.pendencias.length > 0 && (
+        <p className="mt-2 text-[11px]" style={{ color: MUTED }}>
+          {tx(
+            `${ressarc.pendencias.length} produto(s) vendido(s) sem rastreio da ST retida na compra — não apurável sem a nota de entrada correspondente.`,
+            `${ressarc.pendencias.length} товар(ов) без данных о ST при покупке.`,
+          )}
+        </p>
+      )}
+      <p className="mt-2 text-[11px]" style={{ color: MUTED }}>
+        {tx(
+          "Base: art. 269 (ressarcimento) e 265 (complemento) do RICMS/SP; apuração CAT 42/2018 por custo médio, casando compra × venda por NCM.",
+          "Основание: RICMS/SP (ст. 269/265); CAT 42/2018.",
+        )}
+      </p>
     </>
   );
 }

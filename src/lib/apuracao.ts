@@ -248,6 +248,77 @@ export async function apurarST(clienteId: string): Promise<ResumoST> {
   return r;
 }
 
+/* ---------- Fase 7c: ressarcimento / complemento de ST (entrada × saída) ---------- */
+
+export type ResumoRessarcimento = {
+  ressarcivel: number; // ST paga a mais na compra, recuperável (venda abaixo da base retida)
+  complemento: number; // ST a complementar (venda acima da base retida)
+  itens: number;
+  porNCM: { ncm: string; xProd: string; ressarcivel: number; complemento: number; qtd: number }[];
+  pendencias: { ncm: string; motivo: string }[];
+};
+
+/** Casa as ENTRADAS (NF-e, com ICMS-ST retido por NCM) com as SAÍDAS (cupons),
+ *  por custo médio por NCM, e apura o ressarcimento (art. 269/CAT 42/2018) e o
+ *  complemento (art. 265) de ST. Venda sem rastreio da ST retida = pendência. */
+export async function apurarRessarcimentoST(clienteId: string, xmlsSaida: string[]): Promise<ResumoRessarcimento> {
+  const r: ResumoRessarcimento = { ressarcivel: 0, complemento: 0, itens: 0, porNCM: [], pendencias: [] };
+  if (!supabase) return r;
+
+  // Entradas: ST retido + quantidade por NCM.
+  const { data } = await supabase.from("masor_dfe_documentos").select("xml").eq("cliente_id", clienteId).eq("tipo", "procNFe");
+  const entrada = new Map<string, { stRetido: number; qtd: number }>();
+  for (const d of (data as { xml: string }[]) ?? []) {
+    const nf = parseNFe(d.xml);
+    if (!nf.ok) continue;
+    for (const it of nf.itens) {
+      const ncm = (it.ncm ?? "").replace(/\D/g, "");
+      if (!ncm) continue;
+      const e = entrada.get(ncm) ?? { stRetido: 0, qtd: 0 };
+      e.stRetido += it.vICMSST ?? 0;
+      e.qtd += it.qCom ?? 0;
+      entrada.set(ncm, e);
+    }
+  }
+
+  // Saídas: quantidade + ICMS efetivo + receita por NCM.
+  const saida = new Map<string, { qtd: number; imposto: number; receita: number; xProd: string }>();
+  for (const xml of xmlsSaida) {
+    const c = parseCupom(xml);
+    if (!c.ok) continue;
+    for (const it of c.itens) {
+      const ncm = (it.ncm ?? "").replace(/\D/g, "");
+      if (!ncm) continue;
+      const s = saida.get(ncm) ?? { qtd: 0, imposto: 0, receita: 0, xProd: it.xProd ?? ncm };
+      s.qtd += it.qCom ?? 0;
+      s.imposto += it.vICMS ?? 0;
+      s.receita += it.vProd ?? 0;
+      saida.set(ncm, s);
+    }
+  }
+
+  for (const [ncm, s] of saida) {
+    const e = entrada.get(ncm);
+    if (!e || e.stRetido <= 0 || e.qtd <= 0) {
+      if (s.qtd > 0)
+        r.pendencias.push({ ncm, motivo: "Venda sem rastreio da ST retida na compra — ressarcimento/complemento não apurável (CAT 42/2018)." });
+      continue;
+    }
+    const stRetidoUnit = e.stRetido / e.qtd; // ST presumido retido por unidade
+    const impostoVendaUnit = s.qtd > 0 ? s.imposto / s.qtd : 0; // ICMS efetivo por unidade vendida
+    const qtd = Math.min(s.qtd, e.qtd); // só unidades vendidas E compradas
+    const difUnit = stRetidoUnit - impostoVendaUnit;
+    const ress = Math.max(0, difUnit) * qtd;
+    const comp = Math.max(0, -difUnit) * qtd;
+    r.ressarcivel += ress;
+    r.complemento += comp;
+    r.itens += 1;
+    r.porNCM.push({ ncm, xProd: s.xProd, ressarcivel: ress, complemento: comp, qtd });
+  }
+  r.porNCM.sort((a, b) => b.ressarcivel - b.complemento - (a.ressarcivel - a.complemento));
+  return r;
+}
+
 /** Rótulo didático (leigo) dos CFOPs de entrada mais comuns em supermercado. */
 export function rotuloCFOP(cfop: string): string {
   const c = cfop.replace(/\D/g, "");

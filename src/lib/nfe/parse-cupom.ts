@@ -14,6 +14,7 @@ export type CupomItem = {
   cfop: string | null;
   ncm: string | null;
   xProd: string | null;
+  qCom: number | null; // quantidade vendida
   vProd: number | null;
   vICMS: number | null; // ICMS próprio destacado (débito na saída)
   vICMSST: number | null;
@@ -86,6 +87,7 @@ export function parseCupom(xml: string): CupomParsed {
         cfop: it.cfop,
         ncm: it.ncm,
         xProd: it.xProd,
+        qCom: it.qCom,
         vProd: it.vProd,
         vICMS: it.vICMS,
         vICMSST: it.vICMSST,
@@ -119,6 +121,7 @@ function parseCFeSAT(doc: Document): CupomParsed {
       cfop: prod ? txt(prod, "CFOP") : null,
       ncm: prod ? txt(prod, "NCM") : null,
       xProd: prod ? txt(prod, "xProd") : null,
+      qCom: prod ? num(txt(prod, "qCom")) : null,
       vProd: prod ? num(txt(prod, "vProd")) : null,
       vICMS: icms ? num(txt(icms, "vICMS")) : null,
       vICMSST: icms ? num(txt(icms, "vICMSST")) : null,
