@@ -165,9 +165,12 @@ export async function buscarReceitaCNPJ(cnpj: string): Promise<{ dados?: Partial
   const doc = onlyDigits(cnpj);
   if (doc.length !== 14) return { erro: "Informe um CNPJ com 14 dígitos." };
   try {
-    const r = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${doc}`);
-    if (!r.ok) return { erro: r.status === 404 ? "CNPJ não encontrado na Receita." : `Falha na consulta (${r.status}).` };
-    const d = (await r.json()) as ReceitaResp;
+    // Consulta server-side (evita CORS/CSP no navegador e mantém a Receita fora do cliente).
+    const tok = supabase ? (await supabase.auth.getSession()).data.session?.access_token : null;
+    const r = await fetch(`/api/receita?cnpj=${doc}`, { headers: tok ? { authorization: `Bearer ${tok}` } : {} });
+    const j = (await r.json().catch(() => ({}))) as { ok?: boolean; erro?: string; dados?: ReceitaResp };
+    if (!r.ok || j.ok === false) return { erro: j.erro ?? `Falha na consulta (${r.status}).` };
+    const d = (j.dados ?? {}) as ReceitaResp;
     const regime = d.opcao_pelo_mei ? "Simples Nacional (MEI)" : d.opcao_pelo_simples ? "Simples Nacional" : "";
     return {
       dados: {

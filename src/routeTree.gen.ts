@@ -29,6 +29,7 @@ import { Route as ApiCertificadoRouteImport } from './routes/api/certificado'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiNcmBuscaRouteImport } from './routes/api/ncm-busca'
 import { Route as ApiPortalAcessoRouteImport } from './routes/api/portal-acesso'
+import { Route as ApiReceitaRouteImport } from './routes/api/receita'
 import { Route as ApiDfeBuscarRouteImport } from './routes/api/dfe.buscar'
 
 const IndexRoute = IndexRouteImport.update({
@@ -131,6 +132,11 @@ const ApiPortalAcessoRoute = ApiPortalAcessoRouteImport.update({
   path: '/api/portal-acesso',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiReceitaRoute = ApiReceitaRouteImport.update({
+  id: '/api/receita',
+  path: '/api/receita',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiDfeBuscarRoute = ApiDfeBuscarRouteImport.update({
   id: '/api/dfe/buscar',
   path: '/api/dfe/buscar',
@@ -158,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/api/ncm-busca': typeof ApiNcmBuscaRoute
   '/api/portal-acesso': typeof ApiPortalAcessoRoute
+  '/api/receita': typeof ApiReceitaRoute
   '/api/dfe/buscar': typeof ApiDfeBuscarRoute
 }
 export interface FileRoutesByTo {
@@ -181,6 +188,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/api/ncm-busca': typeof ApiNcmBuscaRoute
   '/api/portal-acesso': typeof ApiPortalAcessoRoute
+  '/api/receita': typeof ApiReceitaRoute
   '/api/dfe/buscar': typeof ApiDfeBuscarRoute
 }
 export interface FileRoutesById {
@@ -205,6 +213,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/api/ncm-busca': typeof ApiNcmBuscaRoute
   '/api/portal-acesso': typeof ApiPortalAcessoRoute
+  '/api/receita': typeof ApiReceitaRoute
   '/api/dfe/buscar': typeof ApiDfeBuscarRoute
 }
 export interface FileRouteTypes {
@@ -230,6 +239,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/ncm-busca'
     | '/api/portal-acesso'
+    | '/api/receita'
     | '/api/dfe/buscar'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -253,6 +263,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/ncm-busca'
     | '/api/portal-acesso'
+    | '/api/receita'
     | '/api/dfe/buscar'
   id:
     | '__root__'
@@ -276,6 +287,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/ncm-busca'
     | '/api/portal-acesso'
+    | '/api/receita'
     | '/api/dfe/buscar'
   fileRoutesById: FileRoutesById
 }
@@ -300,6 +312,7 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   ApiNcmBuscaRoute: typeof ApiNcmBuscaRoute
   ApiPortalAcessoRoute: typeof ApiPortalAcessoRoute
+  ApiReceitaRoute: typeof ApiReceitaRoute
   ApiDfeBuscarRoute: typeof ApiDfeBuscarRoute
 }
 
@@ -445,6 +458,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPortalAcessoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/receita': {
+      id: '/api/receita'
+      path: '/api/receita'
+      fullPath: '/api/receita'
+      preLoaderRoute: typeof ApiReceitaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/dfe/buscar': {
       id: '/api/dfe/buscar'
       path: '/api/dfe/buscar'
@@ -476,6 +496,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   ApiNcmBuscaRoute: ApiNcmBuscaRoute,
   ApiPortalAcessoRoute: ApiPortalAcessoRoute,
+  ApiReceitaRoute: ApiReceitaRoute,
   ApiDfeBuscarRoute: ApiDfeBuscarRoute,
 }
 export const routeTree = rootRouteImport
