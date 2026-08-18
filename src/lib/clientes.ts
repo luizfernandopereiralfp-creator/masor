@@ -94,8 +94,10 @@ export async function carregarClienteParaEdicao(id: string): Promise<{ form?: Cl
   };
 }
 
-/** INSERT (id vazio) ou UPDATE em public.clientes. Devolve o id salvo. */
-export async function salvarCliente(f: ClienteForm): Promise<{ id?: string; erro?: string }> {
+/** INSERT (id vazio) ou UPDATE em public.clientes. Devolve o id salvo.
+ *  Se o CNPJ já existir na base única (Lior), carrega o registro existente
+ *  (jaExistia=true) em vez de falhar. */
+export async function salvarCliente(f: ClienteForm): Promise<{ id?: string; erro?: string; jaExistia?: boolean }> {
   if (!supabase) return { erro: "Supabase indisponível." };
   const razao = f.razao_social.trim();
   if (!razao) return { erro: "Razão social é obrigatória." };
@@ -133,7 +135,13 @@ export async function salvarCliente(f: ClienteForm): Promise<{ id?: string; erro
 
   if (res.error) {
     const m = res.error.message;
-    if (m.includes("duplicate") || m.includes("unique") || m.includes("clientes_cnpj_cpf")) return { erro: "Já existe um cliente com este CNPJ/CPF." };
+    if (m.includes("duplicate") || m.includes("unique") || m.includes("clientes_cnpj_cpf")) {
+      // CNPJ já existe na base única — carrega o registro existente em vez de falhar.
+      const { data: ex } = await supabase.from("clientes").select("id").eq("cnpj_cpf", doc).maybeSingle();
+      const exId = (ex as { id?: string } | null)?.id;
+      if (exId) return { id: exId, jaExistia: true };
+      return { erro: "Já existe um cliente com este CNPJ/CPF." };
+    }
     if (m.includes("row-level security")) return { erro: "Sem permissão para salvar cliente (necessário admin ou acesso a honorários)." };
     return { erro: m };
   }

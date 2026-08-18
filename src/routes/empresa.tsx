@@ -323,6 +323,8 @@ function CadastroCliente({
       setErro(r.erro ?? tx("Falha ao salvar.", "Ошибка."));
       return;
     }
+    if (r.jaExistia)
+      toast.success(tx("Este CNPJ já estava cadastrado — carreguei o registro existente.", "Этот CNPJ уже был — загружен существующий."));
     onSalvo(r.id);
   }
 
