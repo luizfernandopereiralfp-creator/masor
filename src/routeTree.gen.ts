@@ -19,6 +19,7 @@ import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as FiscalRouteImport } from './routes/fiscal'
 import { Route as HistoricoRouteImport } from './routes/historico'
 import { Route as ImportarRouteImport } from './routes/importar'
+import { Route as NcmRouteImport } from './routes/ncm'
 import { Route as PendenciasRouteImport } from './routes/pendencias'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as ProdutosRouteImport } from './routes/produtos'
@@ -26,6 +27,7 @@ import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as ApiAnalisarRouteImport } from './routes/api/analisar'
 import { Route as ApiCertificadoRouteImport } from './routes/api/certificado'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiNcmBuscaRouteImport } from './routes/api/ncm-busca'
 import { Route as ApiPortalAcessoRouteImport } from './routes/api/portal-acesso'
 import { Route as ApiDfeBuscarRouteImport } from './routes/api/dfe.buscar'
 
@@ -79,6 +81,11 @@ const ImportarRoute = ImportarRouteImport.update({
   path: '/importar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NcmRoute = NcmRouteImport.update({
+  id: '/ncm',
+  path: '/ncm',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PendenciasRoute = PendenciasRouteImport.update({
   id: '/pendencias',
   path: '/pendencias',
@@ -114,6 +121,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiNcmBuscaRoute = ApiNcmBuscaRouteImport.update({
+  id: '/api/ncm-busca',
+  path: '/api/ncm-busca',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPortalAcessoRoute = ApiPortalAcessoRouteImport.update({
   id: '/api/portal-acesso',
   path: '/api/portal-acesso',
@@ -136,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/fiscal': typeof FiscalRoute
   '/historico': typeof HistoricoRoute
   '/importar': typeof ImportarRoute
+  '/ncm': typeof NcmRoute
   '/pendencias': typeof PendenciasRoute
   '/portal': typeof PortalRoute
   '/produtos': typeof ProdutosRoute
@@ -143,6 +156,7 @@ export interface FileRoutesByFullPath {
   '/api/analisar': typeof ApiAnalisarRoute
   '/api/certificado': typeof ApiCertificadoRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/ncm-busca': typeof ApiNcmBuscaRoute
   '/api/portal-acesso': typeof ApiPortalAcessoRoute
   '/api/dfe/buscar': typeof ApiDfeBuscarRoute
 }
@@ -157,6 +171,7 @@ export interface FileRoutesByTo {
   '/fiscal': typeof FiscalRoute
   '/historico': typeof HistoricoRoute
   '/importar': typeof ImportarRoute
+  '/ncm': typeof NcmRoute
   '/pendencias': typeof PendenciasRoute
   '/portal': typeof PortalRoute
   '/produtos': typeof ProdutosRoute
@@ -164,6 +179,7 @@ export interface FileRoutesByTo {
   '/api/analisar': typeof ApiAnalisarRoute
   '/api/certificado': typeof ApiCertificadoRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/ncm-busca': typeof ApiNcmBuscaRoute
   '/api/portal-acesso': typeof ApiPortalAcessoRoute
   '/api/dfe/buscar': typeof ApiDfeBuscarRoute
 }
@@ -179,6 +195,7 @@ export interface FileRoutesById {
   '/fiscal': typeof FiscalRoute
   '/historico': typeof HistoricoRoute
   '/importar': typeof ImportarRoute
+  '/ncm': typeof NcmRoute
   '/pendencias': typeof PendenciasRoute
   '/portal': typeof PortalRoute
   '/produtos': typeof ProdutosRoute
@@ -186,6 +203,7 @@ export interface FileRoutesById {
   '/api/analisar': typeof ApiAnalisarRoute
   '/api/certificado': typeof ApiCertificadoRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/ncm-busca': typeof ApiNcmBuscaRoute
   '/api/portal-acesso': typeof ApiPortalAcessoRoute
   '/api/dfe/buscar': typeof ApiDfeBuscarRoute
 }
@@ -202,6 +220,7 @@ export interface FileRouteTypes {
     | '/fiscal'
     | '/historico'
     | '/importar'
+    | '/ncm'
     | '/pendencias'
     | '/portal'
     | '/produtos'
@@ -209,6 +228,7 @@ export interface FileRouteTypes {
     | '/api/analisar'
     | '/api/certificado'
     | '/api/chat'
+    | '/api/ncm-busca'
     | '/api/portal-acesso'
     | '/api/dfe/buscar'
   fileRoutesByTo: FileRoutesByTo
@@ -223,6 +243,7 @@ export interface FileRouteTypes {
     | '/fiscal'
     | '/historico'
     | '/importar'
+    | '/ncm'
     | '/pendencias'
     | '/portal'
     | '/produtos'
@@ -230,6 +251,7 @@ export interface FileRouteTypes {
     | '/api/analisar'
     | '/api/certificado'
     | '/api/chat'
+    | '/api/ncm-busca'
     | '/api/portal-acesso'
     | '/api/dfe/buscar'
   id:
@@ -244,6 +266,7 @@ export interface FileRouteTypes {
     | '/fiscal'
     | '/historico'
     | '/importar'
+    | '/ncm'
     | '/pendencias'
     | '/portal'
     | '/produtos'
@@ -251,6 +274,7 @@ export interface FileRouteTypes {
     | '/api/analisar'
     | '/api/certificado'
     | '/api/chat'
+    | '/api/ncm-busca'
     | '/api/portal-acesso'
     | '/api/dfe/buscar'
   fileRoutesById: FileRoutesById
@@ -266,6 +290,7 @@ export interface RootRouteChildren {
   FiscalRoute: typeof FiscalRoute
   HistoricoRoute: typeof HistoricoRoute
   ImportarRoute: typeof ImportarRoute
+  NcmRoute: typeof NcmRoute
   PendenciasRoute: typeof PendenciasRoute
   PortalRoute: typeof PortalRoute
   ProdutosRoute: typeof ProdutosRoute
@@ -273,6 +298,7 @@ export interface RootRouteChildren {
   ApiAnalisarRoute: typeof ApiAnalisarRoute
   ApiCertificadoRoute: typeof ApiCertificadoRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiNcmBuscaRoute: typeof ApiNcmBuscaRoute
   ApiPortalAcessoRoute: typeof ApiPortalAcessoRoute
   ApiDfeBuscarRoute: typeof ApiDfeBuscarRoute
 }
@@ -349,6 +375,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ImportarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ncm': {
+      id: '/ncm'
+      path: '/ncm'
+      fullPath: '/ncm'
+      preLoaderRoute: typeof NcmRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pendencias': {
       id: '/pendencias'
       path: '/pendencias'
@@ -398,6 +431,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/ncm-busca': {
+      id: '/api/ncm-busca'
+      path: '/api/ncm-busca'
+      fullPath: '/api/ncm-busca'
+      preLoaderRoute: typeof ApiNcmBuscaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/portal-acesso': {
       id: '/api/portal-acesso'
       path: '/api/portal-acesso'
@@ -426,6 +466,7 @@ const rootRouteChildren: RootRouteChildren = {
   FiscalRoute: FiscalRoute,
   HistoricoRoute: HistoricoRoute,
   ImportarRoute: ImportarRoute,
+  NcmRoute: NcmRoute,
   PendenciasRoute: PendenciasRoute,
   PortalRoute: PortalRoute,
   ProdutosRoute: ProdutosRoute,
@@ -433,6 +474,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAnalisarRoute: ApiAnalisarRoute,
   ApiCertificadoRoute: ApiCertificadoRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiNcmBuscaRoute: ApiNcmBuscaRoute,
   ApiPortalAcessoRoute: ApiPortalAcessoRoute,
   ApiDfeBuscarRoute: ApiDfeBuscarRoute,
 }

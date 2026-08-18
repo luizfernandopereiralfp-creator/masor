@@ -3,6 +3,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Package,
   PackageSearch,
+  Search,
   Upload,
   ShieldCheck,
   Building2,
@@ -43,6 +44,7 @@ const NAV_STAFF: NavItem[] = [
   { to: "/", icon: Home, pt: "Início", ru: "Главная" },
   { to: "/produtos", icon: Package, pt: "Produtos & Estoque", ru: "Товары и склад" },
   { to: "/consulta", icon: PackageSearch, pt: "Consulta", ru: "Проверка" },
+  { to: "/ncm", icon: Search, pt: "Buscar NCM", ru: "Поиск NCM" },
   { to: "/importar", icon: Upload, pt: "Importar", ru: "Импорт" },
   { to: "/fiscal", icon: ShieldCheck, pt: "SEFAZ", ru: "SEFAZ" },
   { to: "/empresa", icon: Building2, pt: "Empresa", ru: "Компания" },
@@ -56,6 +58,7 @@ const NAV_CLIENTE: NavItem[] = [
   { to: "/portal", icon: Home, pt: "Início", ru: "Главная" },
   { to: "/produtos", icon: Package, pt: "Meus produtos", ru: "Мои товары" },
   { to: "/consulta", icon: PackageSearch, pt: "Analisar", ru: "Анализ" },
+  { to: "/ncm", icon: Search, pt: "Buscar NCM", ru: "Поиск NCM" },
   { to: "/importar", icon: Upload, pt: "Importar", ru: "Импорт" },
 ];
 
