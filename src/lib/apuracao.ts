@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { parseNFe, type NFeParsed } from "@/lib/nfe/parse-nfe";
 import { parseCupom } from "@/lib/nfe/parse-cupom";
+import { calcularST, resolverRegra, type RegraUF, type RegraCest } from "@/lib/fiscal/motor-st";
 
 /* ============================================================
    Masor — Apuração fiscal / Prova Real (Fase 7) — ENTRADAS.
@@ -179,6 +180,72 @@ export function radarCredito(ap: Apuracao): OportunidadeCredito[] {
   // energia, aluguel PJ e fretes. Não sai da NF-e de mercadoria; fica como lembrete.
   ops.push({ tipo: "despesas_pis_cofins", valor: null });
   return ops;
+}
+
+/* ---------- Motor de ICMS-ST aplicado às entradas capturadas ---------- */
+
+export type ResumoST = {
+  itensComST: number;
+  itensPendentes: number;
+  stDevida: number;
+  antecipacao: number;
+  fcp: number;
+  pendencias: { ncm: string; motivo: string }[];
+};
+
+/** Roda o motor de ST (motor-st.ts) sobre cada item das NF-e de entrada
+ *  capturadas. Resolve a regra da UF/CEST (com cache) e agrega ST devida,
+ *  antecipação e FCP. Item sem regra confirmada vira PENDÊNCIA (não chuta). */
+export async function apurarST(clienteId: string): Promise<ResumoST> {
+  const r: ResumoST = { itensComST: 0, itensPendentes: 0, stDevida: 0, antecipacao: 0, fcp: 0, pendencias: [] };
+  if (!supabase) return r;
+  const { data } = await supabase
+    .from("masor_dfe_documentos")
+    .select("xml")
+    .eq("cliente_id", clienteId)
+    .eq("tipo", "procNFe");
+  const docs = (data as { xml: string }[]) ?? [];
+
+  const cacheUF = new Map<string, RegraUF | null>();
+  const cacheCest = new Map<string, RegraCest | null>(); // chave = uf|ncm
+  const pendVistas = new Set<string>();
+
+  for (const d of docs) {
+    const nf = parseNFe(d.xml);
+    if (!nf.ok || !nf.dest_uf) continue;
+    const uf = nf.dest_uf;
+    for (const it of nf.itens) {
+      const ncm = (it.ncm ?? "").replace(/\D/g, "");
+      const key = `${uf}|${ncm}`;
+      if (!cacheCest.has(key)) {
+        const res = await resolverRegra(ncm, uf);
+        cacheUF.set(uf, res.uf);
+        cacheCest.set(key, res.cest);
+      }
+      const regraUF = cacheUF.get(uf) ?? null;
+      const regraCest = cacheCest.get(key) ?? null;
+      if (!regraUF) continue; // UF sem regra base cadastrada
+      const st = calcularST(it, regraUF, regraCest, { uf_origem: nf.emit_uf, uf_destino: uf });
+      if (!st.aplicavel && st.pendencias.length === 0) continue; // não sujeito a ST
+      if (st.aplicavel) r.itensComST += 1;
+      if (st.provisorio || st.pendencias.length > 0) {
+        if (st.provisorio) r.itensPendentes += 1;
+        for (const p of st.pendencias) {
+          const pk = `${ncm}|${p.campo}`;
+          if (!pendVistas.has(pk)) {
+            pendVistas.add(pk);
+            r.pendencias.push({ ncm: ncm || "—", motivo: p.motivo });
+          }
+        }
+      }
+      if (!st.provisorio) {
+        r.stDevida += st.st_devida ?? 0;
+        r.antecipacao += st.antecipacao_426a ?? 0;
+        r.fcp += st.fcp ?? 0;
+      }
+    }
+  }
+  return r;
 }
 
 /** Rótulo didático (leigo) dos CFOPs de entrada mais comuns em supermercado. */

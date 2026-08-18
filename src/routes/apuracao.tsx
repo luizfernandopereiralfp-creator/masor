@@ -7,7 +7,17 @@ import { Protegido } from "@/components/Protegido";
 import { AppShell } from "@/components/AppShell";
 import { useEmpresa, useClientesFiscais } from "@/lib/empresa";
 import { useClienteAtivo } from "@/lib/cliente-ativo";
-import { apurarEntradas, apurarSaidas, radarCredito, rotuloCFOP, type Apuracao, type SaidaResumo, type CreditoTipo } from "@/lib/apuracao";
+import {
+  apurarEntradas,
+  apurarSaidas,
+  apurarST,
+  radarCredito,
+  rotuloCFOP,
+  type Apuracao,
+  type SaidaResumo,
+  type ResumoST,
+  type CreditoTipo,
+} from "@/lib/apuracao";
 
 export const Route = createFileRoute("/apuracao")({
   component: () => (
@@ -33,6 +43,7 @@ function ApuracaoPage() {
   const clienteId = empresa?.id ?? null;
 
   const [ap, setAp] = useState<Apuracao | null>(null);
+  const [st, setSt] = useState<ResumoST | null>(null);
   const [carregando, setCarregando] = useState(false);
   const [saida, setSaida] = useState<SaidaResumo | null>(null);
   const [processando, setProcessando] = useState(false);
@@ -50,10 +61,13 @@ function ApuracaoPage() {
   const carregar = useCallback(async () => {
     if (!clienteId) {
       setAp(null);
+      setSt(null);
       return;
     }
     setCarregando(true);
-    setAp(await apurarEntradas(clienteId));
+    const [entradas, motorST] = await Promise.all([apurarEntradas(clienteId), apurarST(clienteId)]);
+    setAp(entradas);
+    setSt(motorST);
     setCarregando(false);
   }, [clienteId]);
 
@@ -118,6 +132,8 @@ function ApuracaoPage() {
         ) : (
           <Resultado ap={ap} tx={tx} />
         )}
+
+        {st && ap && ap.totalDocs > 0 && <MotorSTSection st={st} tx={tx} />}
 
         {clienteId && (
           <section className="mt-6">
@@ -305,6 +321,53 @@ function Resultado({ ap, tx }: { ap: Apuracao; tx: (pt: string, ru: string) => s
         </table>
       </div>
     </>
+  );
+}
+
+function MotorSTSection({ st, tx }: { st: ResumoST; tx: (pt: string, ru: string) => string }) {
+  if (st.itensComST === 0 && st.pendencias.length === 0) return null;
+  return (
+    <section className="mt-6">
+      <h2 className="mb-2 text-sm font-bold uppercase tracking-wide" style={{ color: INK }}>
+        {tx("Motor de ICMS-ST (pela regra do estado)", "Движок ICMS-ST")}
+      </h2>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Kpi titulo={tx("Itens sujeitos a ST", "Позиции с ST")} valor={String(st.itensComST)} icon={<Scale size={18} />} />
+        <Kpi destaque titulo={tx("ICMS-ST devido", "ICMS-ST к уплате")} valor={brl(st.stDevida)} icon={<Scale size={18} />} />
+        {st.antecipacao > 0 && (
+          <Kpi titulo={tx("Antecipação (art. 426-A)", "Предоплата 426-A")} valor={brl(st.antecipacao)} icon={<TrendingUp size={18} />} />
+        )}
+        {st.fcp > 0 && <Kpi titulo="FCP-ST" valor={brl(st.fcp)} icon={<Scale size={18} />} />}
+        {st.itensPendentes > 0 && (
+          <Kpi
+            titulo={tx("Itens sem regra cadastrada", "Позиции без правила")}
+            valor={String(st.itensPendentes)}
+            sub={tx("faltou dado oficial", "нет данных")}
+            icon={<TrendingDown size={18} />}
+          />
+        )}
+      </div>
+      {st.pendencias.length > 0 && (
+        <div className="app-card mt-3 p-4">
+          <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--warn,#b45309)" }}>
+            {tx("Pendências — o motor não chuta", "Ожидает правила")}
+          </p>
+          <ul className="mt-1 grid gap-1">
+            {st.pendencias.slice(0, 12).map((p, i) => (
+              <li key={i} className="text-xs" style={{ color: MUTED }}>
+                <b style={{ color: INK, fontFamily: MONO }}>{p.ncm}</b> — {p.motivo}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-[10px]" style={{ color: MUTED }}>
+            {tx(
+              "Cadastre a regra do CEST em Admin (com fonte e vigência) para o motor calcular esses itens.",
+              "Добавьте правило CEST в Админ (с источником и сроком).",
+            )}
+          </p>
+        </div>
+      )}
+    </section>
   );
 }
 
