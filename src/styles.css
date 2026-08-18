@@ -137,39 +137,6 @@
   --sidebar-ring: var(--amber);
 }
 
-/* Modo escuro (opt-in via data-theme="dark" no <html>). Default = claro. */
-:root[data-theme="dark"] {
-  /* superfícies */
-  --app-bg: #060C1F;
-  --app-bg2: #0A1230;
-  --app-surface: #0A1230;
-  --card: #0F1A3C;
-  --card-foreground: #E7ECF7;
-  --popover: #0F1A3C;
-  --popover-foreground: #E7ECF7;
-  --background: #060C1F;
-  --foreground: #E7ECF7;
-  /* texto */
-  --app-ink: #E7ECF7;
-  --app-muted: #9AA6C4;
-  --app-faint: #6E7CA4;
-  --muted-foreground: #9AA6C4;
-  /* linhas / bordas */
-  --app-line: #20305C;
-  --border: #20305C;
-  --input: #20305C;
-  /* sidebar */
-  --sidebar: #060C1F;
-  --nav-active: #16244F;
-  /* status (fundos suaves) */
-  --warnbg: #3A2A12;
-  --successbg: #0F2B22;
-  --infobg: #12213F;
-  --amber-soft: #3A2F16;
-  /* sombra mais forte no escuro */
-  --shadow-app: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
-}
-
 @layer base {
   * {
     border-color: var(--color-border);
