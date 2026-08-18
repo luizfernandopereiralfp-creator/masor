@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useState, useEffect } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Package,
@@ -14,6 +14,8 @@ import {
   Menu,
   X,
   LogOut,
+  Sun,
+  Moon,
   type LucideIcon,
 } from "lucide-react";
 
@@ -69,6 +71,30 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { user, perfil, sair } = useAuth();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const [menuAberto, setMenuAberto] = useState(false);
+  const [tema, setTema] = useState<"light" | "dark">("light");
+
+  useEffect(() => {
+    const salvo = (typeof localStorage !== "undefined" ? localStorage.getItem("masor-tema") : null) as
+      | "light"
+      | "dark"
+      | null;
+    const inicial = salvo === "dark" ? "dark" : "light";
+    setTema(inicial);
+    if (typeof document !== "undefined") document.documentElement.setAttribute("data-theme", inicial);
+  }, []);
+
+  function alternarTema() {
+    setTema((atual) => {
+      const novo = atual === "dark" ? "light" : "dark";
+      if (typeof document !== "undefined") document.documentElement.setAttribute("data-theme", novo);
+      try {
+        localStorage.setItem("masor-tema", novo);
+      } catch {
+        /* ignore */
+      }
+      return novo;
+    });
+  }
 
   const cliente = perfil?.role === "cliente";
   const itens = cliente ? NAV_CLIENTE : NAV_STAFF;
@@ -134,6 +160,16 @@ export function AppShell({ children }: { children: ReactNode }) {
             {titulo}
           </h1>
           <div className="ml-auto flex items-center gap-2 md:gap-3">
+            <button
+              type="button"
+              onClick={alternarTema}
+              className="grid h-9 w-9 place-items-center rounded-lg"
+              style={{ background: "var(--app-bg2)", color: "var(--app-ink)", border: "1px solid var(--app-line)" }}
+              aria-label={tema === "dark" ? "Modo claro" : "Modo escuro"}
+              title={tema === "dark" ? "Modo claro" : "Modo escuro"}
+            >
+              {tema === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
             <PilulaIdioma lang={lang} setLang={setLang} />
             {user?.email && (
               <span className="hidden max-w-[180px] truncate text-xs md:inline" style={{ color: "var(--app-muted)" }}>
