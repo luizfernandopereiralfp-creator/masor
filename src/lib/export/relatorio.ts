@@ -1,4 +1,4 @@
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 
 import type { AnaliseFiscal } from "@/lib/ia/contrato";
 import type { Produto } from "@/lib/produtos";
@@ -123,14 +123,32 @@ export const PRESETS: Preset[] = [
   },
 ];
 
-/* ---------- Formatos de célula ---------- */
+/* ---------- Formatos de célula (numFmt do Excel) ---------- */
 
 const FMT: Record<TipoColuna, string | undefined> = {
-  moeda: "R$ #,##0.00",
+  moeda: '"R$" #,##0.00',
   percent: "0.0%",
   inteiro: "#,##0",
   numero: "#,##0.00",
   texto: undefined,
+};
+
+/* ---------- Paleta da marca (igual ao PDF) ---------- */
+const C = {
+  navy: "FF0B1740",
+  amber: "FFE9A74A",
+  white: "FFFFFFFF",
+  ink: "FF14203F",
+  amberSoft: "FFFDEFD5",
+  metaBg: "FFF6F8FB",
+  metaInk: "FF6B7488",
+  zebra: "FFF9FAFB",
+  border: "FFE2E8F0",
+};
+
+const bordaFina: Partial<ExcelJS.Borders> = {
+  bottom: { style: "thin", color: { argb: C.border } },
+  right: { style: "thin", color: { argb: C.border } },
 };
 
 export type CabecalhoRelatorio = {
@@ -143,94 +161,125 @@ export type CabecalhoRelatorio = {
 };
 
 /**
- * Gera o XLSX do relatório personalizado.
+ * Gera o XLSX do relatório personalizado, com cabeçalho pintado na cor da marca
+ * (navy + âmbar, igual ao PDF). Dispara o download no navegador.
  * @param produtos linhas
  * @param colunasSel chaves das colunas escolhidas, NA ORDEM desejada
  * @param cab cabeçalho (cliente/emissão)
  */
-export function gerarRelatorioXlsx(produtos: Produto[], colunasSel: string[], cab: CabecalhoRelatorio = {}) {
+export async function gerarRelatorioXlsx(produtos: Produto[], colunasSel: string[], cab: CabecalhoRelatorio = {}) {
   const cols = colunasSel.map(porChave).filter((c): c is ColunaRelatorio => !!c);
   if (!cols.length) throw new Error("Selecione ao menos uma coluna.");
+  const nc = cols.length;
 
-  const wb = XLSX.utils.book_new();
-  const aoa: (string | number | null)[][] = [];
+  const wb = new ExcelJS.Workbook();
+  wb.creator = "Masor — G41 Inteligência Contábil";
+  const ws = wb.addWorksheet("Relatório", { views: [{ state: "frozen", ySplit: 4 }] });
 
-  // Banda de cabeçalho (institucional). Sem cor (xlsx community ignora estilo),
-  // mas com título e metadados — layout limpo e identificável.
-  const titulo = cab.titulo || "Masor — Relatório de formação de preço";
-  aoa.push([titulo]);
-  const metaLinha = [
+  // Larguras
+  cols.forEach((c, i) => {
+    ws.getColumn(i + 1).width = c.tipo === "texto" ? (c.chave === "descricao" ? 44 : Math.max(15, c.rotulo.length + 2)) : Math.max(13, c.rotulo.length + 2);
+  });
+
+  // --- Linha 1: banda de título (navy + âmbar) ---
+  ws.mergeCells(1, 1, 1, nc);
+  const t1 = ws.getCell(1, 1);
+  t1.value = cab.titulo || "Masor — Relatório de formação de preço";
+  t1.font = { bold: true, size: 14, color: { argb: C.amber } };
+  t1.fill = { type: "pattern", pattern: "solid", fgColor: { argb: C.navy } };
+  t1.alignment = { vertical: "middle", horizontal: "left", indent: 1 };
+  ws.getRow(1).height = 30;
+
+  // --- Linha 2: metadados (fundo claro) ---
+  ws.mergeCells(2, 1, 2, nc);
+  const meta = [
     cab.cliente ? `Cliente: ${cab.cliente}` : null,
     cab.cnpj ? `CNPJ: ${cab.cnpj}` : null,
     cab.uf ? `UF: ${cab.uf}` : null,
     cab.regime ? `Regime: ${cab.regime}` : null,
     cab.emitidoEm ? `Emitido em: ${String(cab.emitidoEm).slice(0, 10)}` : null,
     `Produtos: ${produtos.length}`,
-  ].filter(Boolean) as string[];
-  aoa.push([metaLinha.join("   ·   ")]);
-  aoa.push([]); // linha em branco
+  ].filter(Boolean).join("   ·   ");
+  const t2 = ws.getCell(2, 1);
+  t2.value = meta;
+  t2.font = { size: 10, color: { argb: C.metaInk } };
+  t2.fill = { type: "pattern", pattern: "solid", fgColor: { argb: C.metaBg } };
+  t2.alignment = { vertical: "middle", horizontal: "left", indent: 1 };
+  ws.getRow(2).height = 20;
 
-  const linhaCabecalho = aoa.length; // índice (0-based) da linha de títulos das colunas
-  aoa.push(cols.map((c) => c.rotulo));
+  // Linha 3 em branco (fina)
+  ws.getRow(3).height = 6;
 
-  // Dados
-  for (const p of produtos) {
+  // --- Linha 4: cabeçalho das colunas (navy, texto branco) ---
+  const hdr = ws.getRow(4);
+  cols.forEach((c, i) => {
+    const cell = hdr.getCell(i + 1);
+    cell.value = c.rotulo;
+    cell.font = { bold: true, size: 10, color: { argb: C.white } };
+    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: C.navy } };
+    cell.alignment = { vertical: "middle", horizontal: c.tipo === "texto" ? "left" : "center", wrapText: true, indent: c.tipo === "texto" ? 1 : 0 };
+    cell.border = { bottom: { style: "medium", color: { argb: C.amber } } };
+  });
+  hdr.height = 26;
+
+  // --- Dados ---
+  produtos.forEach((p, ri) => {
     const a = (p.analise ?? null) as AnaliseParcial;
-    aoa.push(cols.map((c) => c.valor(p, a)));
-  }
-
-  // Linha de TOTAIS (só nas colunas somáveis de moeda)
-  const temSomavel = cols.some((c) => c.somavel);
-  if (temSomavel && produtos.length > 1) {
-    aoa.push([]);
-    const totalRow: (string | number | null)[] = cols.map((c, i) => {
-      if (i === 0) return "TOTAL";
-      if (!c.somavel) return null;
-      const soma = produtos.reduce((s, p) => {
-        const v = c.valor(p, (p.analise ?? null) as AnaliseParcial);
-        return s + (typeof v === "number" ? v : 0);
-      }, 0);
-      return Math.round(soma * 100) / 100;
-    });
-    aoa.push(totalRow);
-  }
-
-  const ws = XLSX.utils.aoa_to_sheet(aoa);
-
-  // Formatos de célula por coluna (a partir da 1ª linha de dados)
-  const primeiraDados = linhaCabecalho + 1;
-  for (let r = primeiraDados; r < aoa.length; r++) {
-    cols.forEach((c, ci) => {
+    const row = ws.getRow(5 + ri);
+    const zebra = ri % 2 === 1;
+    cols.forEach((c, i) => {
+      const cell = row.getCell(i + 1);
+      const v = c.valor(p, a);
+      cell.value = v == null ? "" : v;
       const fmt = FMT[c.tipo];
-      if (!fmt) return;
-      const ref = XLSX.utils.encode_cell({ r, c: ci });
-      const cell = ws[ref];
-      if (cell && typeof cell.v === "number") cell.z = fmt;
+      if (fmt && typeof v === "number") cell.numFmt = fmt;
+      cell.font = { size: 10, color: { argb: C.ink } };
+      cell.alignment = { vertical: "middle", horizontal: c.tipo === "texto" ? "left" : "right", indent: c.tipo === "texto" ? 1 : 0 };
+      cell.border = bordaFina;
+      if (zebra) cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: C.zebra } };
     });
-  }
-
-  // Larguras: rótulo vs. conteúdo (texto largo p/ descrição, médio p/ números)
-  ws["!cols"] = cols.map((c) => {
-    if (c.tipo === "texto") return { wch: c.chave === "descricao" ? 42 : Math.max(14, c.rotulo.length + 2) };
-    return { wch: Math.max(13, c.rotulo.length + 2) };
   });
 
-  // Mesclar a banda de título nas colunas
-  ws["!merges"] = [
-    { s: { r: 0, c: 0 }, e: { r: 0, c: cols.length - 1 } },
-    { s: { r: 1, c: 0 }, e: { r: 1, c: cols.length - 1 } },
-  ];
+  // --- Linha de TOTAIS (colunas somáveis) ---
+  const temSomavel = cols.some((c) => c.somavel);
+  if (temSomavel && produtos.length > 1) {
+    const tr = ws.getRow(5 + produtos.length);
+    cols.forEach((c, i) => {
+      const cell = tr.getCell(i + 1);
+      if (i === 0) cell.value = "TOTAL";
+      else if (c.somavel) {
+        const soma = produtos.reduce((s, p) => {
+          const v = c.valor(p, (p.analise ?? null) as AnaliseParcial);
+          return s + (typeof v === "number" ? v : 0);
+        }, 0);
+        cell.value = Math.round(soma * 100) / 100;
+        const fmt = FMT[c.tipo];
+        if (fmt) cell.numFmt = fmt;
+      }
+      cell.font = { bold: true, size: 10, color: { argb: C.navy } };
+      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: C.amberSoft } };
+      cell.alignment = { vertical: "middle", horizontal: c.tipo === "texto" ? "left" : "right", indent: c.tipo === "texto" ? 1 : 0 };
+    });
+    tr.height = 20;
+  }
 
-  // Congelar cabeçalho + filtro automático na tabela
-  ws["!freeze"] = { xSplit: 0, ySplit: linhaCabecalho + 1, topLeftCell: XLSX.utils.encode_cell({ r: linhaCabecalho + 1, c: 0 }), activePane: "bottomLeft", state: "frozen" };
-  const ultimaDados = primeiraDados + produtos.length - 1;
-  ws["!autofilter"] = { ref: `${XLSX.utils.encode_cell({ r: linhaCabecalho, c: 0 })}:${XLSX.utils.encode_cell({ r: ultimaDados, c: cols.length - 1 })}` };
+  // Filtro automático na tabela
+  ws.autoFilter = { from: { row: 4, column: 1 }, to: { row: 4 + produtos.length, column: nc } };
 
-  XLSX.utils.book_append_sheet(wb, ws, "Relatório");
-
+  // Download no navegador
+  const buf = await wb.xlsx.writeBuffer();
   const slug = (cab.cliente ?? "masor")
     .toString().normalize("NFD").replace(/[̀-ͯ]/g, "")
     .replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40).toLowerCase();
   const dia = (cab.emitidoEm ? String(cab.emitidoEm).slice(0, 10) : "").replace(/-/g, "");
-  XLSX.writeFile(wb, `masor-relatorio-${slug || "produtos"}${dia ? "-" + dia : ""}.xlsx`);
+  const nome = `masor-relatorio-${slug || "produtos"}${dia ? "-" + dia : ""}.xlsx`;
+  const blob = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = nome;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

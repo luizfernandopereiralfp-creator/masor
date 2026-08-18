@@ -85,11 +85,11 @@ function Relatorios() {
     });
   }
 
-  function gerar() {
+  async function gerar() {
     if (!produtos?.length || !sel.length) return;
     setGerando(true);
     try {
-      gerarRelatorioXlsx(produtos, sel, {
+      await gerarRelatorioXlsx(produtos, sel, {
         cliente: clienteAtual?.nome_fantasia || clienteAtual?.razao_social,
         cnpj: clienteAtual?.cnpj_cpf,
         uf: clienteAtual?.endereco?.uf,
