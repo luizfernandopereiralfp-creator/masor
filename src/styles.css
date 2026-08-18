@@ -213,6 +213,12 @@
 .app-nav[data-active="true"] { background: var(--nav-active); color: #fff; }
 .app-nav[data-active="true"] .app-nav-ic { color: var(--amber); }
 .app-nav-ic { color: var(--sidebar-ink); flex: 0 0 auto; display: flex; }
+/* rolagem sutil na sidebar navy (some a barra branca feia) */
+.app-scroll { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.16) transparent; }
+.app-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.app-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,.16); border-radius: 8px; }
+.app-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.28); }
+.app-scroll::-webkit-scrollbar-track { background: transparent; }
 .app-row { transition: background .12s; }
 .app-row:hover { background: var(--app-bg2); }
 

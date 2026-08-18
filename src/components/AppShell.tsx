@@ -108,12 +108,11 @@ export function AppShell({ children }: { children: ReactNode }) {
         style={{ background: "var(--sidebar, var(--navy))" }}
       >
         <MarcaSidebar />
-        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+        <nav className="app-scroll flex-1 space-y-1 overflow-y-auto px-3 py-4">
           {itens.map((it) => (
             <ItemNav key={it.to} it={it} path={path} lang={lang} />
           ))}
         </nav>
-        <RodapeSidebar email={user?.email ?? null} onSair={() => sair()} sairLabel={t("nav.sair")} />
       </aside>
 
       {/* Drawer mobile */}
@@ -130,12 +129,11 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <X size={20} />
               </button>
             </div>
-            <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4" onClick={() => setMenuAberto(false)}>
+            <nav className="app-scroll flex-1 space-y-1 overflow-y-auto px-3 py-4" onClick={() => setMenuAberto(false)}>
               {itens.map((it) => (
                 <ItemNav key={it.to} it={it} path={path} lang={lang} />
               ))}
             </nav>
-            <RodapeSidebar email={user?.email ?? null} onSair={() => sair()} sairLabel={t("nav.sair")} />
           </aside>
         </div>
       )}
@@ -172,10 +170,20 @@ export function AppShell({ children }: { children: ReactNode }) {
             </button>
             <PilulaIdioma lang={lang} setLang={setLang} />
             {user?.email && (
-              <span className="hidden max-w-[180px] truncate text-xs md:inline" style={{ color: "var(--app-muted)" }}>
+              <span className="hidden max-w-[150px] truncate text-xs lg:inline" style={{ color: "var(--app-muted)" }}>
                 {user.email}
               </span>
             )}
+            <button
+              type="button"
+              onClick={() => sair()}
+              className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors"
+              style={{ background: "var(--app-bg2)", color: "var(--app-ink)", border: "1px solid var(--app-line)" }}
+              title={t("nav.sair")}
+            >
+              <LogOut size={15} />
+              <span className="hidden sm:inline">{t("nav.sair")}</span>
+            </button>
           </div>
         </header>
 
@@ -244,24 +252,6 @@ function ItemNav({ it, path, lang }: { it: NavItem; path: string; lang: "pt" | "
         </span>
       )}
     </Link>
-  );
-}
-
-function RodapeSidebar({ email, onSair, sairLabel }: { email: string | null; onSair: () => void; sairLabel: string }) {
-  return (
-    <div className="border-t px-3 py-3" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-      {email && (
-        <p className="truncate px-2 pb-2 text-[11px]" style={{ color: "var(--sidebar-ink)" }}>
-          {email}
-        </p>
-      )}
-      <button type="button" onClick={onSair} className="app-nav w-full" style={{ color: "var(--sidebar-ink)" }}>
-        <span className="app-nav-ic">
-          <LogOut size={18} />
-        </span>
-        <span className="flex-1 text-left">{sairLabel}</span>
-      </button>
-    </div>
   );
 }
 
