@@ -1,13 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { Loader2, ShieldCheck, Scale, TrendingDown, Layers } from "lucide-react";
+import { Loader2, ShieldCheck, Scale, TrendingDown, TrendingUp, Layers, Upload } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
 import { Protegido } from "@/components/Protegido";
 import { AppShell } from "@/components/AppShell";
 import { useEmpresa, useClientesFiscais } from "@/lib/empresa";
 import { useClienteAtivo } from "@/lib/cliente-ativo";
-import { apurarEntradas, rotuloCFOP, type Apuracao } from "@/lib/apuracao";
+import { apurarEntradas, apurarSaidas, rotuloCFOP, type Apuracao, type SaidaResumo } from "@/lib/apuracao";
 
 export const Route = createFileRoute("/apuracao")({
   component: () => (
@@ -34,6 +34,18 @@ function ApuracaoPage() {
 
   const [ap, setAp] = useState<Apuracao | null>(null);
   const [carregando, setCarregando] = useState(false);
+  const [saida, setSaida] = useState<SaidaResumo | null>(null);
+  const [processando, setProcessando] = useState(false);
+
+  async function onCupons(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    if (!files.length) return;
+    setProcessando(true);
+    const xmls = await Promise.all(files.map((f) => f.text()));
+    setSaida(apurarSaidas(xmls));
+    setProcessando(false);
+  }
 
   const carregar = useCallback(async () => {
     if (!clienteId) {
@@ -106,8 +118,103 @@ function ApuracaoPage() {
         ) : (
           <Resultado ap={ap} tx={tx} />
         )}
+
+        {clienteId && (
+          <section className="mt-6">
+            <div className="app-card p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-bold" style={{ color: INK }}>
+                    {tx("Cupons fiscais de saída (vendas)", "Кассовые чеки (продажи)")}
+                  </p>
+                  <p className="text-xs" style={{ color: MUTED }}>
+                    {tx(
+                      "Importe os XML dos cupons (CF-e-SAT / NFC-e) em lote — selecione vários arquivos de uma vez.",
+                      "Импортируйте XML чеков (CF-e-SAT / NFC-e) пакетом — выберите несколько файлов.",
+                    )}
+                  </p>
+                </div>
+                <label
+                  className="inline-flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold text-white"
+                  style={{ background: "var(--navy)" }}
+                >
+                  {processando ? <Loader2 size={15} className="animate-spin" /> : <Upload size={15} />}
+                  {tx("Importar cupons (XML)", "Импорт чеков (XML)")}
+                  <input type="file" accept=".xml,text/xml,application/xml" multiple className="hidden" onChange={onCupons} />
+                </label>
+              </div>
+            </div>
+            {saida && <SaidaBlock saida={saida} entrada={ap} tx={tx} />}
+          </section>
+        )}
       </div>
     </AppShell>
+  );
+}
+
+function SaidaBlock({
+  saida,
+  entrada,
+  tx,
+}: {
+  saida: SaidaResumo;
+  entrada: Apuracao | null;
+  tx: (pt: string, ru: string) => string;
+}) {
+  const saldoICMS = saida.debitoICMS - (entrada?.creditoICMS ?? 0);
+  const saldoPC = saida.debitoPisCofins - (entrada?.creditoPisCofins ?? 0);
+  const fmtSaldo = (v: number) => (v >= 0 ? tx("a pagar ", "к уплате ") : tx("crédito ", "кредит ")) + brl(Math.abs(v));
+  return (
+    <>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Kpi
+          titulo={tx("Total de saídas", "Всего продаж")}
+          valor={brl(saida.totalSaidas)}
+          sub={tx(`${saida.totalCupons} cupom(ns)`, `${saida.totalCupons} чек.`)}
+          icon={<TrendingUp size={18} />}
+        />
+        <Kpi titulo={tx("Débito de ICMS", "Дебет ICMS")} valor={brl(saida.debitoICMS)} sub={tx("venda tributada", "облагаемая")} icon={<Scale size={18} />} />
+        <Kpi
+          titulo={tx("Débito de PIS/COFINS", "Дебет PIS/COFINS")}
+          valor={brl(saida.debitoPisCofins)}
+          sub={tx("9,25% da base", "9,25% базы")}
+          icon={<Scale size={18} />}
+        />
+        {saida.cuponsInvalidos > 0 && (
+          <Kpi
+            titulo={tx("Cupons ignorados", "Пропущено")}
+            valor={String(saida.cuponsInvalidos)}
+            sub={tx("XML inválido", "неверный XML")}
+            icon={<TrendingDown size={18} />}
+          />
+        )}
+      </div>
+      <div className="app-card mt-3 p-4">
+        <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: MUTED }}>
+          {tx("Saldo do período (débito da venda − crédito da compra)", "Сальдо периода")}
+        </p>
+        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+          <div className="flex items-baseline justify-between rounded-lg px-3 py-2" style={{ background: "var(--app-bg2)" }}>
+            <span className="text-sm font-semibold" style={{ color: INK }}>ICMS</span>
+            <span className="text-sm font-bold" style={{ color: saldoICMS > 0 ? "var(--warn)" : "var(--success)", fontFamily: MONO }}>
+              {fmtSaldo(saldoICMS)}
+            </span>
+          </div>
+          <div className="flex items-baseline justify-between rounded-lg px-3 py-2" style={{ background: "var(--app-bg2)" }}>
+            <span className="text-sm font-semibold" style={{ color: INK }}>PIS/COFINS</span>
+            <span className="text-sm font-bold" style={{ color: saldoPC > 0 ? "var(--warn)" : "var(--success)", fontFamily: MONO }}>
+              {fmtSaldo(saldoPC)}
+            </span>
+          </div>
+        </div>
+        <p className="mt-2 text-[11px]" style={{ color: MUTED }}>
+          {tx(
+            "Negativo = crédito acumulado a favor da empresa (abate impostos futuros). Importação client-side; para milhares de cupons/dia migramos p/ .zip no servidor.",
+            "Отрицательное = накопленный кредит компании.",
+          )}
+        </p>
+      </div>
+    </>
   );
 }
 

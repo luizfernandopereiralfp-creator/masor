@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { parseNFe, type NFeParsed } from "@/lib/nfe/parse-nfe";
+import { parseCupom } from "@/lib/nfe/parse-cupom";
 
 /* ============================================================
    Masor — Apuração fiscal / Prova Real (Fase 7) — ENTRADAS.
@@ -52,6 +53,9 @@ const CFOP_REVENDA = new Set([
 ]);
 // Alíquota do PIS/COFINS não cumulativo (1,65% + 7,6%) — constante legal, não presumida.
 const ALIQ_PIS_COFINS = 0.0925;
+// CST de ICMS com DÉBITO próprio na SAÍDA (venda tributada). CST 60 (ST já
+// retida na cadeia) e 40/41 (isento/não tributado) não geram débito próprio.
+const CST_DEB_ICMS = new Set(["00", "10", "20", "70", "90"]);
 
 export async function apurarEntradas(clienteId: string): Promise<Apuracao> {
   const ap: Apuracao = {
@@ -103,6 +107,60 @@ export async function apurarEntradas(clienteId: string): Promise<Apuracao> {
   ap.creditoPisCofins = ap.basePisCofins * ALIQ_PIS_COFINS;
   ap.porCFOP = [...cfopMap.values()].sort((a, b) => b.vProd - a.vProd);
   return ap;
+}
+
+export type SaidaResumo = {
+  totalCupons: number;
+  cuponsInvalidos: number;
+  totalSaidas: number; // Σ vProd
+  debitoICMS: number; // Σ vICMS próprio dos itens tributados (CST 00/10/20/70/90)
+  baseDebitoPisCofins: number;
+  debitoPisCofins: number; // 9,25% da base tributada
+  porCFOP: LinhaCFOP[];
+};
+
+/** Apura o DÉBITO das SAÍDAS a partir dos XML de cupons fiscais (CF-e-SAT/NFC-e).
+ *  Parse client-side (ok p/ lotes moderados); p/ milhares de cupons/dia o alvo é
+ *  server-side via .zip + agregação por competência (Fase 7b). */
+export function apurarSaidas(xmls: string[]): SaidaResumo {
+  const r: SaidaResumo = {
+    totalCupons: 0,
+    cuponsInvalidos: 0,
+    totalSaidas: 0,
+    debitoICMS: 0,
+    baseDebitoPisCofins: 0,
+    debitoPisCofins: 0,
+    porCFOP: [],
+  };
+  const cfopMap = new Map<string, LinhaCFOP>();
+  for (const xml of xmls) {
+    const c = parseCupom(xml);
+    if (!c.ok) {
+      r.cuponsInvalidos++;
+      continue;
+    }
+    r.totalCupons++;
+    for (const it of c.itens) {
+      const vProd = it.vProd ?? 0;
+      const vICMS = it.vICMS ?? 0;
+      const vICMSST = it.vICMSST ?? 0;
+      r.totalSaidas += vProd;
+      if (it.cst_icms && CST_DEB_ICMS.has(it.cst_icms)) r.debitoICMS += vICMS;
+      // monofásico/alíquota-zero (mesmos CST do lado do crédito) não geram débito.
+      if (!CST_PIS_SEM_CREDITO.has(it.cst_pis ?? "")) r.baseDebitoPisCofins += vProd;
+
+      const cfop = it.cfop ?? "—";
+      const linha = cfopMap.get(cfop) ?? { cfop, qtdItens: 0, vProd: 0, vICMS: 0, vICMSST: 0 };
+      linha.qtdItens += 1;
+      linha.vProd += vProd;
+      linha.vICMS += vICMS;
+      linha.vICMSST += vICMSST;
+      cfopMap.set(cfop, linha);
+    }
+  }
+  r.debitoPisCofins = r.baseDebitoPisCofins * ALIQ_PIS_COFINS;
+  r.porCFOP = [...cfopMap.values()].sort((a, b) => b.vProd - a.vProd);
+  return r;
 }
 
 /** Rótulo didático (leigo) dos CFOPs de entrada mais comuns em supermercado. */
