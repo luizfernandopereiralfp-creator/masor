@@ -184,6 +184,8 @@ export const Route = createFileRoute("/api/analisar")({
         // Rastreabilidade: cada parâmetro que entrou na conta, com sua fonte.
         const fonteDe = (campo: string): string | null =>
           parecer.fontes_parametros.find((x) => x.campo === campo && x.url)?.url ?? null;
+        const vigenciaDe = (campo: string): string | null =>
+          parecer.fontes_parametros.find((x) => x.campo === campo)?.vigencia ?? null;
         const T = (ptTxt: string, ruTxt: string) => (corpo.idioma === "ru" ? ruTxt : ptTxt);
         const simNao = (b: boolean | null) => (b === null ? null : b ? T("Sim", "Да") : T("Não", "Нет"));
         const parametros_aplicados: AnaliseFiscal["parametros_aplicados"] = [];
@@ -192,6 +194,7 @@ export const Route = createFileRoute("/api/analisar")({
             rotulo,
             valor: valor ?? T("a confirmar", "уточняется"),
             fonte_url: fonteDe(campo),
+            vigencia: vigenciaDe(campo),
             confirmado: valor !== null,
           });
         addParam(

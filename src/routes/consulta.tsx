@@ -683,7 +683,14 @@ function Relatorio({
         <div className="grid gap-1.5">
           {a.parametros_aplicados.map((p, i) => (
             <div key={i} className="flex items-center justify-between gap-3 text-xs" style={{ color: INK }}>
-              <span>{p.rotulo}</span>
+              <span className="flex flex-col">
+                <span>{p.rotulo}</span>
+                {p.vigencia ? (
+                  <span className="text-[10px]" style={{ color: "var(--app-muted)" }}>
+                    {p.vigencia}
+                  </span>
+                ) : null}
+              </span>
               <span className="flex items-center gap-1.5 whitespace-nowrap">
                 <b style={{ fontFamily: MONO }}>{p.valor}</b>
                 {p.fonte_url ? (

@@ -139,7 +139,13 @@ export const ParecerIA = z.object({
   idioma: z.enum(IDIOMAS).default("pt"),
   parametros_fiscais: ParametrosFiscais.default({}),
   fontes_parametros: z
-    .array(z.object({ campo: z.string().default(""), url: z.string().nullable().default(null) }))
+    .array(
+      z.object({
+        campo: z.string().default(""),
+        url: z.string().nullable().default(null),
+        vigencia: z.string().nullable().optional(), // "vale desde X" (início de vigência da regra)
+      }),
+    )
     .default([]),
   resumo_executivo: z.string().default(""),
   tratamento_atual: z.string().default(""),
@@ -188,6 +194,7 @@ export const AnaliseFiscal = z.object({
         rotulo: z.string(),
         valor: z.string(),
         fonte_url: z.string().nullable(),
+        vigencia: z.string().nullable().optional(), // "vale desde X" — trilha de auditoria
         confirmado: z.boolean(),
       }),
     )

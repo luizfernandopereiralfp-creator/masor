@@ -55,7 +55,7 @@ const ESQUELETO_JSON = `{
     "reducao_base_icms_pct": number|null,     // % de redução de base de ICMS na saída (0..100), 0 se não houver
     "mva_pct": number|null                    // MVA/IVA-ST em % (quando antecipação aplicável)
   },
-  "fontes_parametros": [ { "campo": "aliq_interna_destino", "url": "https://fonte-oficial..." } ],
+  "fontes_parametros": [ { "campo": "aliq_interna_destino", "url": "https://fonte-oficial...", "vigencia": "vale desde 01/01/2024" } ],
   "resumo_executivo": "string",
   "tratamento_atual": "string",
   "impactos_reforma": "string",
@@ -149,7 +149,7 @@ Aceite dados de entrada em português OU russo. Todo TEXTO legível por humano (
 Responda APENAS com um único JSON válido, sem markdown, sem texto fora do JSON, exatamente nesta forma:
 ${ESQUELETO_JSON}
 
-VOCÊ NÃO CALCULA custo, tributos nem preço — o sistema faz a aritmética a partir dos "parametros_fiscais". Foque em determinar cada parâmetro com FONTE oficial; parâmetro não confirmado = null e um item em "pendencias". Em CADA item de "fontes_parametros", "campo" deve ser o NOME EXATO do parâmetro (aliq_interna_destino, regiao_destino, sujeito_st, monofasico, aliquota_zero_pc, reducao_base_icms_pct, mva_pct, equalizacao_simples, antecipacao_st) e "url" a fonte oficial que o confirma — todo resultado exibido precisa dessa rastreabilidade. Seja OBJETIVO: cada lista descritiva no máximo 5 itens; "cenarios" no máximo 3; frases curtas. Se algo essencial faltar nos dados de entrada, liste em "dados_adicionais_necessarios" em vez de presumir.`;
+VOCÊ NÃO CALCULA custo, tributos nem preço — o sistema faz a aritmética a partir dos "parametros_fiscais". Foque em determinar cada parâmetro com FONTE oficial; parâmetro não confirmado = null e um item em "pendencias". Em CADA item de "fontes_parametros", "campo" deve ser o NOME EXATO do parâmetro (aliq_interna_destino, regiao_destino, sujeito_st, monofasico, aliquota_zero_pc, reducao_base_icms_pct, mva_pct, equalizacao_simples, antecipacao_st), "url" a fonte oficial que o confirma, e "vigencia" desde quando a regra vale (ex.: "vale desde 01/01/2024"; se houver prazo final, informe). Preencha também "vigencia" em cada item de "fundamentacao_legal" e "consultado_em" (data de hoje, ${entrada.hoje}) em cada "fontes_oficiais". Essa é a TRILHA DE AUDITORIA: todo número precisa mostrar que está vigente hoje. Seja OBJETIVO: cada lista descritiva no máximo 5 itens; "cenarios" no máximo 3; frases curtas. Se algo essencial faltar nos dados de entrada, liste em "dados_adicionais_necessarios" em vez de presumir.`;
 }
 
 /** Monta a mensagem do usuário (payload da operação + regras de UF conhecidas). */
