@@ -36,10 +36,20 @@ export type Apuracao = {
   porCFOP: LinhaCFOP[];
 };
 
-// CST de ICMS que dão crédito próprio na entrada p/ revenda (conservador, spec).
-const CST_CRED_ICMS = new Set(["00", "20"]);
+// CST de ICMS com ICMS PRÓPRIO destacado (creditável na entrada p/ revenda).
+// Inclui 10 e 70 (tributada/red.BC + ST): o parser separa vICMS (próprio) de
+// vICMSST (retido), então soma-se só o próprio — sem risco de creditar a ST.
+const CST_CRED_ICMS = new Set(["00", "10", "20", "70"]);
 // CST de PIS que NÃO geram crédito (monofásico 04/05; alíquota-zero/isenta 06/07/08/09).
 const CST_PIS_SEM_CREDITO = new Set(["04", "05", "06", "07", "08", "09"]);
+// CFOPs de ENTRADA que geram crédito (compra p/ revenda/industrialização, com ou
+// sem ST). Uso/consumo (1556), devolução (1202), bonificação (1910) e
+// transferência (1152) NÃO entram — não dão crédito de revenda; ficam só informativos.
+const CFOP_REVENDA = new Set([
+  "1101", "2101", "1102", "2102", // compra p/ industrialização / revenda
+  "1401", "2401", "1403", "2403", // idem, com substituição tributária
+  "1116", "2116", "1117", "2117", // compra p/ revenda por encomenda / ordem
+]);
 // Alíquota do PIS/COFINS não cumulativo (1,65% + 7,6%) — constante legal, não presumida.
 const ALIQ_PIS_COFINS = 0.0925;
 
@@ -72,11 +82,14 @@ export async function apurarEntradas(clienteId: string): Promise<Apuracao> {
       const vProd = it.vProd ?? 0;
       const vICMS = it.vICMS ?? 0;
       const vICMSST = it.vICMSST ?? 0;
+      const cfopNum = (it.cfop ?? "").replace(/\D/g, "");
+      const ehRevenda = CFOP_REVENDA.has(cfopNum);
       ap.totalEntradas += vProd;
       ap.stRetido += vICMSST;
       ap.ipiCusto += it.vIPI ?? 0;
-      if (it.cst_icms && CST_CRED_ICMS.has(it.cst_icms)) ap.creditoICMS += vICMS;
-      if (!CST_PIS_SEM_CREDITO.has(it.cst_pis ?? "")) ap.basePisCofins += vProd;
+      // Crédito só em entrada de REVENDA (gate por CFOP) E com ICMS próprio (CST).
+      if (ehRevenda && it.cst_icms && CST_CRED_ICMS.has(it.cst_icms)) ap.creditoICMS += vICMS;
+      if (ehRevenda && !CST_PIS_SEM_CREDITO.has(it.cst_pis ?? "")) ap.basePisCofins += vProd;
 
       const cfop = it.cfop ?? "—";
       const linha = cfopMap.get(cfop) ?? { cfop, qtdItens: 0, vProd: 0, vICMS: 0, vICMSST: 0 };
