@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   PackageSearch,
   FileSpreadsheet,
+  FileBarChart2,
   Package,
   ShieldCheck,
   Settings2,
@@ -60,6 +61,15 @@ const MODULOS: Modulo[] = [
     ru: "Автопоиск НФ в SEFAZ",
     descPt: "Puxa automaticamente as NF-e de compra emitidas contra o seu CNPJ na SEFAZ.",
     descRu: "Автоматически загружает входящие НФ-е по вашему CNPJ из SEFAZ.",
+    soStaff: true,
+  },
+  {
+    to: "/relatorios",
+    icon: FileBarChart2,
+    pt: "Relatórios personalizados",
+    ru: "Настраиваемые отчёты",
+    descPt: "Planilha com toda a memória de cálculo por produto — escolha colunas, ordem e modelo, e exporte em XLSX.",
+    descRu: "Таблица с полным расчётом по каждому товару — выберите столбцы, порядок и шаблон, и выгрузите в XLSX.",
     soStaff: true,
   },
   {
