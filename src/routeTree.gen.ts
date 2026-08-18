@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ApuracaoRouteImport } from './routes/apuracao'
+import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as ConsultaRouteImport } from './routes/consulta'
 import { Route as EmpresaRouteImport } from './routes/empresa'
 import { Route as EntrarRouteImport } from './routes/entrar'
@@ -41,6 +42,11 @@ const AdminRoute = AdminRouteImport.update({
 const ApuracaoRoute = ApuracaoRouteImport.update({
   id: '/apuracao',
   path: '/apuracao',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConsultaRoute = ConsultaRouteImport.update({
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/apuracao': typeof ApuracaoRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/consulta': typeof ConsultaRoute
   '/empresa': typeof EmpresaRoute
   '/entrar': typeof EntrarRoute
@@ -143,6 +150,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/apuracao': typeof ApuracaoRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/consulta': typeof ConsultaRoute
   '/empresa': typeof EmpresaRoute
   '/entrar': typeof EntrarRoute
@@ -164,6 +172,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/apuracao': typeof ApuracaoRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/consulta': typeof ConsultaRoute
   '/empresa': typeof EmpresaRoute
   '/entrar': typeof EntrarRoute
@@ -186,6 +195,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/apuracao'
+    | '/configuracoes'
     | '/consulta'
     | '/empresa'
     | '/entrar'
@@ -206,6 +216,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/apuracao'
+    | '/configuracoes'
     | '/consulta'
     | '/empresa'
     | '/entrar'
@@ -226,6 +237,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/apuracao'
+    | '/configuracoes'
     | '/consulta'
     | '/empresa'
     | '/entrar'
@@ -247,6 +259,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   ApuracaoRoute: typeof ApuracaoRoute
+  ConfiguracoesRoute: typeof ConfiguracoesRoute
   ConsultaRoute: typeof ConsultaRoute
   EmpresaRoute: typeof EmpresaRoute
   EntrarRoute: typeof EntrarRoute
@@ -285,6 +298,13 @@ declare module '@tanstack/react-router' {
       path: '/apuracao'
       fullPath: '/apuracao'
       preLoaderRoute: typeof ApuracaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracoes': {
+      id: '/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof ConfiguracoesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/consulta': {
@@ -399,6 +419,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   ApuracaoRoute: ApuracaoRoute,
+  ConfiguracoesRoute: ConfiguracoesRoute,
   ConsultaRoute: ConsultaRoute,
   EmpresaRoute: EmpresaRoute,
   EntrarRoute: EntrarRoute,
