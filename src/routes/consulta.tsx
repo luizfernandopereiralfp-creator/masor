@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Loader2, ShieldCheck, TriangleAlert, ExternalLink, Upload, ChevronDown, Download, RefreshCw } from "lucide-react";
+import { Loader2, ShieldCheck, TriangleAlert, ExternalLink, Upload, ChevronDown, Download, FileText, RefreshCw } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
@@ -13,6 +13,7 @@ import { parsePdfNFe } from "@/lib/nfe/parse-pdf-nfe";
 import { AnaliseFiscal } from "@/lib/ia/contrato";
 import { ChatDock } from "@/components/ChatDock";
 import { exportarAnaliseXlsx } from "@/lib/export/planilha";
+import { gerarPdfAnalise } from "@/lib/export/pdf-analise";
 import {
   VIEW_PADRAO,
   aplicarDiretriz,
@@ -98,15 +99,22 @@ function ConsultaConteudo() {
   const toggleSecao = (s: SecaoId) =>
     setView((v) => ({ ...v, abertas: v.abertas.includes(s) ? v.abertas.filter((x) => x !== s) : [...v.abertas, s] }));
 
-  function exportar() {
+  const metaExport = () => ({
+    produto: descricao,
+    ncm,
+    uf: ufSuper,
+    regime: regimeEmpresa,
+    data: analise?.data_verificacao_legislativa,
+  });
+
+  async function exportar() {
     if (!analise) return;
-    exportarAnaliseXlsx(analise, {
-      produto: descricao,
-      ncm,
-      uf: ufSuper,
-      regime: regimeEmpresa,
-      data: analise.data_verificacao_legislativa,
-    });
+    await exportarAnaliseXlsx(analise, metaExport());
+  }
+
+  async function exportarPdf() {
+    if (!analise) return;
+    await gerarPdfAnalise(analise, metaExport());
   }
 
   // Pré-preenche os dados fixos vindos do cadastro da empresa.
@@ -508,6 +516,7 @@ function ConsultaConteudo() {
                 onDiretriz={aplicarView}
                 onToggle={toggleSecao}
                 onExport={exportar}
+                onPdf={exportarPdf}
               />
               <button
                 type="button"
@@ -548,6 +557,7 @@ function Relatorio({
   onDiretriz,
   onToggle,
   onExport,
+  onPdf,
 }: {
   a: AnaliseFiscal;
   avisos: string[];
@@ -556,6 +566,7 @@ function Relatorio({
   onDiretriz: (d: DiretrizView) => void;
   onToggle: (s: SecaoId) => void;
   onExport: () => void;
+  onPdf: () => void;
 }) {
   const fp = a.formacao_preco;
   const statusLabel =
@@ -598,14 +609,24 @@ function Relatorio({
             </button>
           ))}
         </div>
-        <button
-          type="button"
-          onClick={onExport}
-          className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-bold"
-          style={{ borderColor: NAVY, color: INK }}
-        >
-          <Download size={13} /> {tx("Exportar planilha", "Экспорт")}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onPdf}
+            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-bold"
+            style={{ background: AMBER, color: NAVY }}
+          >
+            <FileText size={13} /> {tx("Gerar PDF", "Скачать PDF")}
+          </button>
+          <button
+            type="button"
+            onClick={onExport}
+            className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-bold"
+            style={{ borderColor: NAVY, color: INK }}
+          >
+            <Download size={13} /> {tx("Exportar planilha", "Экспорт")}
+          </button>
+        </div>
       </div>
 
       {/* HERO — números em evidência */}
