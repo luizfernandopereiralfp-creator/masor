@@ -6,6 +6,7 @@ import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { Protegido } from "@/components/Protegido";
 import { AppShell } from "@/components/AppShell";
+import { Ajuda } from "@/components/Ajuda";
 import { supabase } from "@/integrations/supabase/client";
 import { useEmpresa } from "@/lib/empresa";
 import { parseNFe } from "@/lib/nfe/parse-nfe";
@@ -282,6 +283,7 @@ function ConsultaConteudo() {
             <Campo
               label={tx("Finalidade da compra", "Цель покупки")}
               hint={tx("DIFAL só existe em uso/consumo/ativo.", "DIFAL только для потребления/актива.")}
+              ajuda={{ pt: "Para que você vai usar o item. 'Revenda' = vai vender na loja (o caso do supermercado). 'Uso/consumo/ativo' = a loja consome (ex.: material de limpeza próprio) — só aí há DIFAL.", ru: "Для чего товар. «Перепродажа» = продаёте в магазине (случай супермаркета). «Потребление/актив» = магазин использует сам — только тогда есть DIFAL." }}
             >
               <Alternar
                 value={finalidade}
@@ -296,10 +298,10 @@ function ConsultaConteudo() {
 
           <Bloco n="02" titulo={tx("Fornecedor", "Поставщик")}>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Campo label={tx("UF de origem do fornecedor", "Штат поставщика")}>
+              <Campo label={tx("UF de origem do fornecedor", "Штат поставщика")} ajuda={{ pt: "Sigla do estado de onde a mercadoria sai (o estado do fornecedor). Ex.: SP, RS, MG. Define a alíquota interestadual de ICMS.", ru: "Код штата, откуда идёт товар (штат поставщика). Напр.: SP, RS, MG. Определяет межштатную ставку ICMS." }}>
                 <Texto value={ufForn} onChange={(v) => setUfForn(v.toUpperCase().slice(0, 2))} mono placeholder="RS" />
               </Campo>
-              <Campo label={tx("Origem da mercadoria", "Происхождение товара")}>
+              <Campo label={tx("Origem da mercadoria", "Происхождение товара")} ajuda={{ pt: "De onde vem em relação ao seu estado: mesmo estado (interna), de Sul/Sudeste, de Norte/NE/CO/ES, ou importado. Muda a alíquota de ICMS da compra (4%, 7% ou 12%).", ru: "Откуда относительно вашего штата: тот же штат, Юг/Юго-восток, Север/NE/CO/ES, или импорт. Меняет ставку ICMS (4%, 7% или 12%)." }}>
                 <Sel
                   value={origem}
                   onChange={setOrigem}
@@ -311,7 +313,7 @@ function ConsultaConteudo() {
                   ]}
                 />
               </Campo>
-              <Campo label={tx("Regime do fornecedor", "Режим поставщика")}>
+              <Campo label={tx("Regime do fornecedor", "Режим поставщика")} ajuda={{ pt: "Regime tributário de quem te vendeu. 'Simples Nacional' credita menos ICMS que o 'Regime normal'. Consta na nota fiscal do fornecedor.", ru: "Налоговый режим продавца. «Simples Nacional» даёт меньше зачёта ICMS, чем «Общий». Указан в накладной поставщика." }}>
                 <Alternar
                   value={regimeForn}
                   onChange={setRegimeForn}
@@ -350,33 +352,33 @@ function ConsultaConteudo() {
               {nfInfo && <span className="ml-1 font-normal" style={{ color: "var(--app-muted)" }}>· {nfInfo}</span>}
             </label>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Campo label={tx("Descrição do produto", "Описание товара")}>
+              <Campo label={tx("Descrição do produto", "Описание товара")} ajuda={{ pt: "Nome do item. Seja específico (marca, sabor, tamanho): ajuda a IA a confirmar NCM/CEST e achar estratégias legais de economia.", ru: "Название товара. Указывайте конкретно (бренд, вкус, размер): помогает ИИ подтвердить NCM/CEST и найти законную экономию." }}>
                 <Texto value={descricao} onChange={setDescricao} placeholder={tx("ex.: Shampoo 1 L", "напр.: Шампунь 1 л")} />
               </Campo>
-              <Campo label={tx("Código de barras (EAN/GTIN)", "Штрихкод (EAN/GTIN)")}>
+              <Campo label={tx("Código de barras (EAN/GTIN)", "Штрихкод (EAN/GTIN)")} ajuda={{ pt: "Número embaixo do código de barras. Costuma já indicar o NCM e identificar o produto com precisão.", ru: "Число под штрихкодом. Часто уже указывает NCM и точно опознаёт товар." }}>
                 <Texto value={gtin} onChange={setGtin} mono placeholder="7891234567890" />
               </Campo>
-              <Campo label="NCM">
+              <Campo label="NCM" ajuda={{ pt: "Código de 8 dígitos que classifica a mercadoria e define a maioria dos impostos. Não sabe? Deixe em branco — a IA sugere pela descrição.", ru: "8-значный код классификации товара, задаёт большинство налогов. Не знаете — оставьте пустым, ИИ подскажет по описанию." }}>
                 <Texto value={ncm} onChange={setNcm} mono placeholder="3305.10.00" />
               </Campo>
-              <Campo label={tx("CEST (se houver)", "CEST (если есть)")}>
+              <Campo label={tx("CEST (se houver)", "CEST (если есть)")} ajuda={{ pt: "Código de 7 dígitos ligado à Substituição Tributária (ICMS-ST). Só preencha se o produto for de ST; a IA confirma pelo NCM.", ru: "7-значный код для налогового замещения (ICMS-ST). Заполняйте только для товаров ST; ИИ подтвердит по NCM." }}>
                 <Texto value={cest} onChange={setCest} mono placeholder="20.001.00" />
               </Campo>
-              <Campo label={tx("Custo na NF (R$)", "Стоимость по НН (R$)")}>
+              <Campo label={tx("Custo na NF (R$)", "Стоимость по НН (R$)")} ajuda={{ pt: "Valor unitário do produto na nota do fornecedor, antes de impostos que você recupera. Use vírgula: 5,39.", ru: "Цена за единицу по накладной поставщика, до возмещаемых налогов. Запятая для копеек: 5,39." }}>
                 <Texto value={custo} onChange={setCusto} mono placeholder="5,39" />
               </Campo>
               <div className="grid grid-cols-3 gap-2">
-                <Campo label="IPI (R$)">
+                <Campo label="IPI (R$)" ajuda={{ pt: "Imposto sobre Produtos Industrializados destacado na nota (R$). Para revenda no supermercado, geralmente entra no custo. 0 se não houver.", ru: "Налог на промышленные товары (IPI), указанный в накладной (R$). При перепродаже обычно входит в себестоимость. 0 — если нет." }}>
                   <Texto value={ipi} onChange={setIpi} mono />
                 </Campo>
-                <Campo label={tx("Frete (R$)", "Доставка")}>
+                <Campo label={tx("Frete (R$)", "Доставка")} ajuda={{ pt: "Custo de transporte por unidade, se você paga. Entra no custo do produto. 0 se o fornecedor entrega grátis.", ru: "Стоимость доставки за единицу, если платите вы. Входит в себестоимость. 0 — если поставщик везёт бесплатно." }}>
                   <Texto value={frete} onChange={setFrete} mono />
                 </Campo>
-                <Campo label={tx("Desc. (R$)", "Скидка")}>
+                <Campo label={tx("Desc. (R$)", "Скидка")} ajuda={{ pt: "Desconto por unidade concedido na nota (R$). Reduz o custo. 0 se não houver.", ru: "Скидка за единицу по накладной (R$). Уменьшает себестоимость. 0 — если нет." }}>
                   <Texto value={descontos} onChange={setDescontos} mono />
                 </Campo>
               </div>
-              <Campo label={tx("ST retida na nota?", "ST удержан в НН?")}>
+              <Campo label={tx("ST retida na nota?", "ST удержан в НН?")} ajuda={{ pt: "O fornecedor já cobrou o ICMS-ST de toda a cadeia nesta nota? Se sim, você não debita ICMS na venda. Veja na nota (CST 60 / campo 'ICMS ST').", ru: "Поставщик уже удержал ICMS-ST всей цепочки в этой накладной? Если да — вы не начисляете ICMS при продаже. Смотрите в накладной (CST 60)." }}>
                 <Alternar
                   value={stRetida}
                   onChange={setStRetida}
@@ -386,6 +388,7 @@ function ConsultaConteudo() {
               <Campo
                 label={tx("Produto na lista de ST do destino?", "Товар в списке ST штата?")}
                 hint={tx("Não sabe? Deixe 'não' — a IA verifica.", "Не знаете? 'Нет' — ИИ проверит.")}
+                ajuda={{ pt: "Se o produto está sujeito a Substituição Tributária no SEU estado. Na dúvida, deixe 'não' — a IA verifica na legislação estadual.", ru: "Подпадает ли товар под налоговое замещение в ВАШЕМ штате. Сомневаетесь — оставьте «нет», ИИ проверит по закону штата." }}
               >
                 <Alternar
                   value={naListaST}
@@ -394,11 +397,11 @@ function ConsultaConteudo() {
                 />
               </Campo>
               {naListaST === "S" && stRetida === "N" && (
-                <Campo label={tx("MVA / IVA-ST estimado (%)", "MVA / IVA-ST (%)")}>
+                <Campo label={tx("MVA / IVA-ST estimado (%)", "MVA / IVA-ST (%)")} ajuda={{ pt: "Margem de Valor Agregado: o % que o governo presume de lucro na cadeia para calcular o ICMS-ST. Vem da legislação do estado. Não sabe? Deixe em branco — a IA busca (nunca inventa).", ru: "MVA: предполагаемый государством % наценки в цепочке для расчёта ICMS-ST. Из закона штата. Не знаете — оставьте пустым, ИИ найдёт (не выдумывает)." }}>
                   <Texto value={mva} onChange={setMva} mono placeholder="40" />
                 </Campo>
               )}
-              <Campo label={tx("PIS / COFINS do produto", "PIS / COFINS товара")}>
+              <Campo label={tx("PIS / COFINS do produto", "PIS / COFINS товара")} ajuda={{ pt: "Tratamento de PIS/COFINS do item. 'Normal' = tributado. 'Monofásico' = imposto pago só pela indústria (você não paga na venda; ex.: bebidas frias). 'Alíquota zero' = sem PIS/COFINS (ex.: cesta básica).", ru: "Режим PIS/COFINS товара. «Обычное» = облагается. «Монофазное» = налог платит только производитель (вы — нет; напр. напитки). «Нулевая ставка» = без PIS/COFINS (напр. базовые продукты)." }}>
                 <Sel
                   value={pisCofins}
                   onChange={setPisCofins}
@@ -414,7 +417,7 @@ function ConsultaConteudo() {
 
           <Bloco n="04" titulo={tx("Margem desejada", "Желаемая маржа")}>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Campo label={tx("Margem / markup alvo (%)", "Целевая маржа (%)")}>
+              <Campo label={tx("Margem / markup alvo (%)", "Целевая маржа (%)")} ajuda={{ pt: "Quanto você quer ganhar sobre o custo, em %. O sistema usa isso para calcular o preço mínimo de venda. Ex.: 20 = 20%.", ru: "Сколько хотите заработать сверх себестоимости, в %. Система рассчитает минимальную цену продажи. Напр.: 20 = 20%." }}>
                 <Texto value={markup} onChange={setMarkup} mono />
               </Campo>
               <Campo label={tx("Como aplicar", "Как применять")}>
@@ -986,10 +989,13 @@ function Bloco({ n, titulo, sub, children }: { n: string; titulo: string; sub?: 
     </section>
   );
 }
-function Campo({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
+function Campo({ label, hint, children, ajuda }: { label: string; hint?: string; children: ReactNode; ajuda?: { pt: string; ru: string } }) {
   return (
     <label className="grid gap-1">
-      <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: INK }}>{label}</span>
+      <span className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider" style={{ color: INK }}>
+        {label}
+        {ajuda && <Ajuda {...ajuda} />}
+      </span>
       {children}
       {hint && <span className="text-[11px] leading-snug" style={{ color: "var(--app-muted)" }}>{hint}</span>}
     </label>

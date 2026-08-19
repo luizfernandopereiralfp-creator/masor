@@ -19,6 +19,7 @@ import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as FiscalRouteImport } from './routes/fiscal'
 import { Route as HistoricoRouteImport } from './routes/historico'
 import { Route as ImportarRouteImport } from './routes/importar'
+import { Route as ManualRouteImport } from './routes/manual'
 import { Route as NcmRouteImport } from './routes/ncm'
 import { Route as PendenciasRouteImport } from './routes/pendencias'
 import { Route as PortalRouteImport } from './routes/portal'
@@ -81,6 +82,11 @@ const HistoricoRoute = HistoricoRouteImport.update({
 const ImportarRoute = ImportarRouteImport.update({
   id: '/importar',
   path: '/importar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ManualRoute = ManualRouteImport.update({
+  id: '/manual',
+  path: '/manual',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NcmRoute = NcmRouteImport.update({
@@ -160,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/fiscal': typeof FiscalRoute
   '/historico': typeof HistoricoRoute
   '/importar': typeof ImportarRoute
+  '/manual': typeof ManualRoute
   '/ncm': typeof NcmRoute
   '/pendencias': typeof PendenciasRoute
   '/portal': typeof PortalRoute
@@ -185,6 +192,7 @@ export interface FileRoutesByTo {
   '/fiscal': typeof FiscalRoute
   '/historico': typeof HistoricoRoute
   '/importar': typeof ImportarRoute
+  '/manual': typeof ManualRoute
   '/ncm': typeof NcmRoute
   '/pendencias': typeof PendenciasRoute
   '/portal': typeof PortalRoute
@@ -211,6 +219,7 @@ export interface FileRoutesById {
   '/fiscal': typeof FiscalRoute
   '/historico': typeof HistoricoRoute
   '/importar': typeof ImportarRoute
+  '/manual': typeof ManualRoute
   '/ncm': typeof NcmRoute
   '/pendencias': typeof PendenciasRoute
   '/portal': typeof PortalRoute
@@ -238,6 +247,7 @@ export interface FileRouteTypes {
     | '/fiscal'
     | '/historico'
     | '/importar'
+    | '/manual'
     | '/ncm'
     | '/pendencias'
     | '/portal'
@@ -263,6 +273,7 @@ export interface FileRouteTypes {
     | '/fiscal'
     | '/historico'
     | '/importar'
+    | '/manual'
     | '/ncm'
     | '/pendencias'
     | '/portal'
@@ -288,6 +299,7 @@ export interface FileRouteTypes {
     | '/fiscal'
     | '/historico'
     | '/importar'
+    | '/manual'
     | '/ncm'
     | '/pendencias'
     | '/portal'
@@ -314,6 +326,7 @@ export interface RootRouteChildren {
   FiscalRoute: typeof FiscalRoute
   HistoricoRoute: typeof HistoricoRoute
   ImportarRoute: typeof ImportarRoute
+  ManualRoute: typeof ManualRoute
   NcmRoute: typeof NcmRoute
   PendenciasRoute: typeof PendenciasRoute
   PortalRoute: typeof PortalRoute
@@ -399,6 +412,13 @@ declare module '@tanstack/react-router' {
       path: '/importar'
       fullPath: '/importar'
       preLoaderRoute: typeof ImportarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/manual': {
+      id: '/manual'
+      path: '/manual'
+      fullPath: '/manual'
+      preLoaderRoute: typeof ManualRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ncm': {
@@ -506,6 +526,7 @@ const rootRouteChildren: RootRouteChildren = {
   FiscalRoute: FiscalRoute,
   HistoricoRoute: HistoricoRoute,
   ImportarRoute: ImportarRoute,
+  ManualRoute: ManualRoute,
   NcmRoute: NcmRoute,
   PendenciasRoute: PendenciasRoute,
   PortalRoute: PortalRoute,

@@ -12,6 +12,7 @@ import {
   Settings2,
   Calculator,
   FileSpreadsheet,
+  BookOpen,
   Home,
   Menu,
   X,
@@ -54,6 +55,7 @@ const NAV_STAFF: NavItem[] = [
   { to: "/pendencias", icon: ClipboardList, pt: "Pendências", ru: "Очередь" },
   { to: "/admin", icon: Settings2, pt: "Admin", ru: "Админ" },
   { to: "/apuracao", icon: Calculator, pt: "Apuração", ru: "Расчёт" },
+  { to: "/manual", icon: BookOpen, pt: "Manual", ru: "Руководство" },
 ];
 
 const NAV_CLIENTE: NavItem[] = [
@@ -62,6 +64,7 @@ const NAV_CLIENTE: NavItem[] = [
   { to: "/consulta", icon: PackageSearch, pt: "Analisar", ru: "Анализ" },
   { to: "/ncm", icon: Search, pt: "Buscar NCM", ru: "Поиск NCM" },
   { to: "/importar", icon: Upload, pt: "Importar", ru: "Импорт" },
+  { to: "/manual", icon: BookOpen, pt: "Manual", ru: "Руководство" },
 ];
 
 /** Título da página atual (breadcrumb simples) a partir do path. */

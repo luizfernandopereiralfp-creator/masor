@@ -7,6 +7,7 @@ import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { Protegido } from "@/components/Protegido";
 import { AppShell } from "@/components/AppShell";
+import { Ajuda } from "@/components/Ajuda";
 import { useEmpresa, useClientesFiscais } from "@/lib/empresa";
 import { useClienteAtivo } from "@/lib/cliente-ativo";
 import {
@@ -198,10 +199,10 @@ function EmpresaConteudo() {
                       {tx("Configuração fiscal (Masor)", "Настройки (Masor)")}
                     </h3>
                     <div className="grid gap-4 sm:grid-cols-2">
-                      <Campo label={tx("Markup/margem padrão (%)", "Наценка по умолчанию (%)")}>
+                      <Campo label={tx("Markup/margem padrão (%)", "Наценка по умолчанию (%)")} ajuda={{ pt: "Margem padrão que já vem preenchida na análise dos produtos deste cliente. Pode ser mudada produto a produto. Ex.: 30.", ru: "Наценка по умолчанию, подставляется в анализ товаров этого клиента. Можно менять по каждому товару. Напр.: 30." }}>
                         <input className="ipt" style={{ fontFamily: MONO }} value={markup} onChange={(e) => setMarkup(e.target.value)} />
                       </Campo>
-                      <Campo label={tx("DAS efetivo (%) — Simples", "DAS (%) — Simples")}>
+                      <Campo label={tx("DAS efetivo (%) — Simples", "DAS (%) — Simples")} ajuda={{ pt: "Só para clientes no Simples Nacional: o percentual efetivo do DAS que a empresa paga sobre o faturamento. Consta no PGDAS. Ex.: 6,8.", ru: "Только для Simples Nacional: эффективный % DAS с оборота. Смотрите в PGDAS. Напр.: 6,8." }}>
                         <input className="ipt" style={{ fontFamily: MONO }} value={das} onChange={(e) => setDas(e.target.value)} placeholder="ex.: 6,8" />
                       </Campo>
                     </div>
@@ -358,7 +359,7 @@ function CadastroCliente({
 
       {/* CNPJ + Receita */}
       <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
-        <Campo label="CNPJ / CPF">
+        <Campo label="CNPJ / CPF" ajuda={{ pt: "Documento da empresa (14 dígitos, CNPJ) ou pessoa (11, CPF). Digite e clique 'Buscar na Receita' para preencher razão social, endereço e CNAE automaticamente.", ru: "Документ компании (14 цифр, CNPJ) или лица (11, CPF). Введите и нажмите «Из Receita» — данные заполнятся автоматически." }}>
           <input
             className="ipt"
             style={{ fontFamily: MONO }}
@@ -386,7 +387,7 @@ function CadastroCliente({
         <Campo label={tx("Nome fantasia", "Бренд")}>
           <input className="ipt" value={f.nome_fantasia} onChange={(e) => set("nome_fantasia", e.target.value)} />
         </Campo>
-        <Campo label={tx("Regime tributário", "Режим")}>
+        <Campo label={tx("Regime tributário", "Режим")} ajuda={{ pt: "Como a empresa é tributada: Simples Nacional, Lucro Presumido ou Lucro Real. Determina PIS/COFINS e o cálculo do preço. Para supermercado, normalmente Lucro Real.", ru: "Как облагается компания: Simples Nacional, Presumido или Real. Определяет PIS/COFINS и расчёт цены. Для супермаркета обычно Lucro Real." }}>
           <input className="ipt" list="regimes" value={f.regime_tributario} onChange={(e) => set("regime_tributario", e.target.value)} placeholder="Simples Nacional…" />
           <datalist id="regimes">
             {REGIMES.map((r) => (
@@ -396,13 +397,13 @@ function CadastroCliente({
         </Campo>
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
-        <Campo label={tx("CNAE principal", "CNAE")}>
+        <Campo label={tx("CNAE principal", "CNAE")} ajuda={{ pt: "Código da atividade econômica principal (ex.: 4711-3/02 = supermercado). Vem da Receita. É o código do ESTATUTO, não do produto.", ru: "Код основной деятельности (напр. 4711-3/02 = супермаркет). Из Receita. Это код УСТАВА, а не товара." }}>
           <input className="ipt" style={{ fontFamily: MONO }} value={f.cnae_principal} onChange={(e) => set("cnae_principal", e.target.value)} />
         </Campo>
-        <Campo label={tx("Inscr. Estadual", "IE")}>
+        <Campo label={tx("Inscr. Estadual", "IE")} ajuda={{ pt: "Registro da empresa na Secretaria da Fazenda do estado (para ICMS). Obrigatório para quem vende mercadoria. Consta no cadastro estadual.", ru: "Регистрация в налоговой штата (для ICMS). Обязательна для торговли товаром. Из реестра штата." }}>
           <input className="ipt" value={f.inscricao_estadual} onChange={(e) => set("inscricao_estadual", e.target.value)} />
         </Campo>
-        <Campo label={tx("Inscr. Municipal", "IM")}>
+        <Campo label={tx("Inscr. Municipal", "IM")} ajuda={{ pt: "Registro na prefeitura (para ISS de serviços). Nem todo supermercado precisa. Opcional.", ru: "Регистрация в мэрии (для ISS по услугам). Нужна не всем супермаркетам. Необязательно." }}>
           <input className="ipt" value={f.inscricao_municipal} onChange={(e) => set("inscricao_municipal", e.target.value)} />
         </Campo>
       </div>
@@ -708,10 +709,13 @@ function Leitura({ label, valor, mono }: { label: string; valor: string | null; 
   );
 }
 
-function Campo({ label, children }: { label: string; children: ReactNode }) {
+function Campo({ label, children, ajuda }: { label: string; children: ReactNode; ajuda?: { pt: string; ru: string } }) {
   return (
     <label className="grid gap-1">
-      <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--app-muted)" }}>{label}</span>
+      <span className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--app-muted)" }}>
+        {label}
+        {ajuda && <Ajuda {...ajuda} />}
+      </span>
       {children}
     </label>
   );

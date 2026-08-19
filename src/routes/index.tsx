@@ -3,6 +3,7 @@ import {
   PackageSearch,
   FileSpreadsheet,
   FileBarChart2,
+  BookOpen,
   Package,
   ShieldCheck,
   Settings2,
@@ -71,6 +72,14 @@ const MODULOS: Modulo[] = [
     descPt: "Planilha com toda a memória de cálculo por produto — escolha colunas, ordem e modelo, e exporte em XLSX.",
     descRu: "Таблица с полным расчётом по каждому товару — выберите столбцы, порядок и шаблон, и выгрузите в XLSX.",
     soStaff: true,
+  },
+  {
+    to: "/manual",
+    icon: BookOpen,
+    pt: "Manual de uso",
+    ru: "Руководство",
+    descPt: "O que o sistema faz e como usar cada tela, em português e russo. Cada campo tem um '?' com explicação.",
+    descRu: "Что делает система и как пользоваться каждым экраном, на португальском и русском. У каждого поля есть «?».",
   },
   {
     to: "/configuracoes",

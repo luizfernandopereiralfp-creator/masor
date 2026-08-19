@@ -7,6 +7,7 @@ import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { Protegido } from "@/components/Protegido";
 import { AppShell } from "@/components/AppShell";
+import { Ajuda } from "@/components/Ajuda";
 import { useEmpresa, useClientesFiscais } from "@/lib/empresa";
 import { useClienteAtivo } from "@/lib/cliente-ativo";
 import {
@@ -251,21 +252,21 @@ function FormProduto({
         <h3 className="text-sm font-bold uppercase tracking-wide" style={{ color: INK }}>{editando ? tx("Editar produto", "Изменить товар") : tx("Novo produto", "Новый товар")}</h3>
         <button type="button" onClick={onCancelar} className="text-[var(--app-muted)]"><X size={18} /></button>
       </div>
-      <Campo label={tx("Descrição *", "Описание *")}>
+      <Campo label={tx("Descrição *", "Описание *")} ajuda={{ pt: "Nome do produto como aparece na nota/etiqueta. Quanto mais específico (marca, sabor, tamanho), melhor a IA acha NCM/CEST e estratégias.", ru: "Название товара как в накладной/на ценнике. Чем конкретнее (бренд, вкус, размер), тем точнее ИИ подберёт NCM/CEST." }}>
         <input className="ipt" value={form.descricao} onChange={(e) => set("descricao", e.target.value)} required />
       </Campo>
       <div className="grid gap-4 sm:grid-cols-3">
-        <Campo label="NCM" hint={tx("código fiscal do produto — deixe em branco se não souber", "налоговый код товара — оставьте пустым, если не знаете")}><input className="ipt" style={{ fontFamily: MONO }} value={form.ncm} onChange={(e) => set("ncm", e.target.value)} /></Campo>
-        <Campo label="CEST" hint={tx("opcional (ST)", "необязательно")}><input className="ipt" style={{ fontFamily: MONO }} value={form.cest} onChange={(e) => set("cest", e.target.value)} /></Campo>
-        <Campo label="EAN / GTIN" hint={tx("código de barras", "штрих-код")}><input className="ipt" style={{ fontFamily: MONO }} value={form.ean} onChange={(e) => set("ean", e.target.value)} /></Campo>
+        <Campo label="NCM" hint={tx("código fiscal do produto — deixe em branco se não souber", "налоговый код товара — оставьте пустым, если не знаете")} ajuda={{ pt: "Código de 8 dígitos que classifica a mercadoria (NCM). Define a maioria dos impostos. Se não souber, deixe em branco e use 'Buscar NCM' pela descrição.", ru: "8-значный код классификации товара (NCM). Определяет большинство налогов. Не знаете — оставьте пустым, используйте «Поиск NCM» по описанию." }}><input className="ipt" style={{ fontFamily: MONO }} value={form.ncm} onChange={(e) => set("ncm", e.target.value)} /></Campo>
+        <Campo label="CEST" hint={tx("opcional (ST)", "необязательно")} ajuda={{ pt: "Código de 7 dígitos usado quando o produto está em Substituição Tributária (ICMS-ST). Só preencha se houver; a IA sugere o correto pelo NCM.", ru: "7-значный код для товаров с налоговым замещением (ICMS-ST). Заполняйте только если есть; ИИ подскажет по NCM." }}><input className="ipt" style={{ fontFamily: MONO }} value={form.cest} onChange={(e) => set("cest", e.target.value)} /></Campo>
+        <Campo label="EAN / GTIN" hint={tx("código de barras", "штрих-код")} ajuda={{ pt: "Código de barras da embalagem. Ajuda a identificar o produto e muitas vezes já traz o NCM.", ru: "Штрихкод упаковки. Помогает опознать товар и часто уже содержит NCM." }}><input className="ipt" style={{ fontFamily: MONO }} value={form.ean} onChange={(e) => set("ean", e.target.value)} /></Campo>
       </div>
       <div className="grid gap-4 sm:grid-cols-4">
-        <Campo label={tx("Custo de compra (R$)", "Стоимость закупки (R$)")}><input className="ipt" style={{ fontFamily: MONO }} value={form.custo_nf} onChange={(e) => set("custo_nf", e.target.value)} /></Campo>
-        <Campo label={tx("Markup (%)", "Наценка (%)")}><input className="ipt" style={{ fontFamily: MONO }} value={form.markup_pct} onChange={(e) => set("markup_pct", e.target.value)} /></Campo>
-        <Campo label={tx("Unidade", "Ед.")}><input className="ipt" value={form.unidade} onChange={(e) => set("unidade", e.target.value)} /></Campo>
-        <Campo label={tx("Estoque mín.", "Мин. склад")}><input className="ipt" style={{ fontFamily: MONO }} value={form.estoque_min} onChange={(e) => set("estoque_min", e.target.value)} /></Campo>
+        <Campo label={tx("Custo de compra (R$)", "Стоимость закупки (R$)")} ajuda={{ pt: "Quanto você paga por unidade na nota do fornecedor (sem contar o seu lucro). Use vírgula para centavos: 5,39.", ru: "Сколько вы платите за единицу по накладной поставщика (без вашей наценки). Копейки через запятую: 5,39." }}><input className="ipt" style={{ fontFamily: MONO }} value={form.custo_nf} onChange={(e) => set("custo_nf", e.target.value)} /></Campo>
+        <Campo label={tx("Markup (%)", "Наценка (%)")} ajuda={{ pt: "Margem que você quer somar sobre o custo para formar o preço. Ex.: 30 = vender ~30% acima do custo líquido.", ru: "Наценка, которую вы добавляете к себестоимости для цены. Напр.: 30 = продавать примерно на 30% выше чистой себестоимости." }}><input className="ipt" style={{ fontFamily: MONO }} value={form.markup_pct} onChange={(e) => set("markup_pct", e.target.value)} /></Campo>
+        <Campo label={tx("Unidade", "Ед.")} ajuda={{ pt: "Como o produto é vendido/contado: UN (unidade), KG, L, CX (caixa), etc.", ru: "Как товар продаётся/считается: UN (шт.), KG (кг), L (л), CX (коробка) и т.д." }}><input className="ipt" value={form.unidade} onChange={(e) => set("unidade", e.target.value)} /></Campo>
+        <Campo label={tx("Estoque mín.", "Мин. склад")} ajuda={{ pt: "Quantidade mínima em estoque. Abaixo disso o sistema sinaliza reposição. Opcional.", ru: "Минимальный остаток. Ниже него система напомнит о пополнении. Необязательно." }}><input className="ipt" style={{ fontFamily: MONO }} value={form.estoque_min} onChange={(e) => set("estoque_min", e.target.value)} /></Campo>
       </div>
-      <Campo label={tx("Categoria", "Категория")}><input className="ipt" value={form.categoria} onChange={(e) => set("categoria", e.target.value)} /></Campo>
+      <Campo label={tx("Categoria", "Категория")} ajuda={{ pt: "Agrupamento livre para organizar (ex.: Bebidas, Limpeza, Hortifrúti). Ajuda a filtrar relatórios.", ru: "Свободная группировка для порядка (напр.: Напитки, Бытовая химия, Овощи). Помогает фильтровать отчёты." }}><input className="ipt" value={form.categoria} onChange={(e) => set("categoria", e.target.value)} /></Campo>
       {!editando && (
         <Campo label={tx("Estoque inicial (qtd)", "Начальный остаток (кол-во)")} hint={tx("opcional — lança uma entrada de estoque agora", "необязательно — создаёт приход на складе")}>
           <input className="ipt" style={{ fontFamily: MONO }} value={form.estoque_inicial} onChange={(e) => set("estoque_inicial", e.target.value)} />
@@ -559,10 +560,13 @@ function Vazio({ tx, texto }: { tx: (pt: string, ru: string) => string; texto: s
   );
 }
 
-function Campo({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
+function Campo({ label, children, hint, ajuda }: { label: string; children: ReactNode; hint?: string; ajuda?: { pt: string; ru: string } }) {
   return (
     <label className="grid gap-1">
-      <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--app-muted)" }}>{label}</span>
+      <span className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--app-muted)" }}>
+        {label}
+        {ajuda && <Ajuda {...ajuda} />}
+      </span>
       {children}
       {hint && <span className="text-[10px]" style={{ color: "var(--app-muted)" }}>{hint}</span>}
     </label>
