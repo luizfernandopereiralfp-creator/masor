@@ -20,7 +20,9 @@ export function Ajuda({ pt, ru }: { pt: string; ru: string }) {
         <button
           type="button"
           aria-label="Ajuda"
-          onClick={(e) => e.preventDefault()}
+          // stopPropagation impede o <label> de focar o input ao clicar no "?".
+          // NÃO usar preventDefault: o Radix pula o toggle se defaultPrevented=true.
+          onClick={(e) => e.stopPropagation()}
           className="inline-flex h-4 w-4 items-center justify-center rounded-full align-middle opacity-70 transition hover:opacity-100"
           style={{ color: "var(--amber)" }}
         >
@@ -32,7 +34,7 @@ export function Ajuda({ pt, ru }: { pt: string; ru: string }) {
         sideOffset={6}
         className="w-64 rounded-xl border p-3 shadow-lg"
         style={{ background: "var(--card)", borderColor: "var(--border,#e2e8f0)" }}
-        onClick={(e) => e.preventDefault()}
+        onClick={(e) => e.stopPropagation()}
       >
         <p className="text-[12px] leading-snug" style={{ color: "var(--app-ink)" }}>{principal}</p>
         <p className="mt-1.5 border-t pt-1.5 text-[11px] leading-snug" style={{ color: "var(--app-muted)", borderColor: "var(--border,#e2e8f0)" }}>
