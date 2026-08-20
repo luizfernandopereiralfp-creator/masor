@@ -3,12 +3,13 @@ import { useState } from "react";
 import {
   BookOpen, Home, Building2, PackageSearch, Search, Upload, Package, ShieldCheck,
   Calculator, FileBarChart2, History, ClipboardList, Settings2, Sparkles, FileText,
-  Languages, ShieldAlert, ChevronDown, type LucideIcon,
+  Languages, ShieldAlert, ChevronDown, Loader2, X, type LucideIcon,
 } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
 import { Protegido } from "@/components/Protegido";
 import { AppShell } from "@/components/AppShell";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/manual")({
   component: () => (
@@ -176,6 +177,46 @@ function Manual() {
   const [abertas, setAbertas] = useState<Set<number>>(new Set([0, 1, 2]));
   const toggle = (i: number) => setAbertas((s) => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n; });
 
+  // Busca no manual: filtra as seções na hora e, opcionalmente, pergunta à IA.
+  const [q, setQ] = useState("");
+  const [iaLoading, setIaLoading] = useState(false);
+  const [iaResp, setIaResp] = useState<string | null>(null);
+  const [iaErro, setIaErro] = useState<string | null>(null);
+
+  const norm = (s: string) => s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+  const termo = norm(q.trim());
+  const filtradas = SECOES.map((s, i) => ({ s, i })).filter(({ s }) =>
+    !termo || norm([tx(s.tituloPt, s.tituloRu), tx(s.introPt, s.introRu), ...s.itens.map((it) => tx(it.pt, it.ru))].join(" ")).includes(termo),
+  );
+
+  async function perguntarIA() {
+    const pergunta = q.trim();
+    if (!pergunta) return;
+    setIaLoading(true);
+    setIaResp(null);
+    setIaErro(null);
+    try {
+      const tok = supabase ? (await supabase.auth.getSession()).data.session?.access_token ?? null : null;
+      const r = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "content-type": "application/json", ...(tok ? { authorization: `Bearer ${tok}` } : {}) },
+        body: JSON.stringify({
+          mensagem: pergunta,
+          idioma: lang,
+          contexto: { tela: "manual", modulos: SECOES.map((s) => tx(s.tituloPt, s.tituloRu)) },
+        }),
+      });
+      const j = (await r.json()) as { ok?: boolean; erro?: string; resposta?: string };
+      if (!r.ok || j.ok === false) setIaErro(j.erro ?? tx("Não consegui falar com a IA agora.", "Не удалось связаться с ИИ."));
+      else setIaResp(j.resposta ?? "—");
+    } catch (e) {
+      setIaErro((e as Error).message);
+    } finally {
+      setIaLoading(false);
+    }
+  }
+  const limpar = () => { setQ(""); setIaResp(null); setIaErro(null); };
+
   return (
     <AppShell>
       <div className="mx-auto max-w-3xl">
@@ -195,6 +236,52 @@ function Manual() {
           </div>
         </div>
 
+        {/* Busca — filtra as seções e pergunta à IA */}
+        <div className="mb-4 rounded-2xl border bg-[var(--card)] p-3" style={{ borderColor: BORDER }}>
+          <div className="flex items-center gap-2">
+            <div className="flex flex-1 items-center gap-2 rounded-xl border px-3 py-2" style={{ borderColor: BORDER }}>
+              <Search size={16} style={{ color: MUTED }} />
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") void perguntarIA(); }}
+                placeholder={tx("Busque um assunto ou tire uma dúvida…", "Найдите тему или задайте вопрос…")}
+                className="w-full bg-transparent text-sm outline-none"
+                style={{ color: INK }}
+              />
+              {q && <button type="button" onClick={limpar} aria-label={tx("Limpar", "Очистить")}><X size={15} style={{ color: MUTED }} /></button>}
+            </div>
+            <button
+              type="button"
+              onClick={() => void perguntarIA()}
+              disabled={!q.trim() || iaLoading}
+              className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold disabled:opacity-40"
+              style={{ background: AMBER, color: NAVY }}
+            >
+              {iaLoading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+              {tx("Perguntar à IA", "Спросить ИИ")}
+            </button>
+          </div>
+          {termo && (
+            <p className="mt-2 text-[11px]" style={{ color: MUTED }}>
+              {filtradas.length
+                ? tx(`${filtradas.length} seção(ões) do manual correspondem — veja abaixo.`, `Найдено разделов: ${filtradas.length} — см. ниже.`)
+                : tx("Nenhuma seção do manual corresponde. Tente 'Perguntar à IA'.", "Разделов не найдено. Попробуйте «Спросить ИИ».")}
+            </p>
+          )}
+          {(iaResp || iaErro) && (
+            <div className="mt-2 rounded-xl border p-3" style={{ borderColor: BORDER, background: "var(--amber-soft)" }}>
+              <div className="mb-1 flex items-center gap-1.5">
+                <Sparkles size={13} style={{ color: NAVY }} />
+                <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: NAVY }}>{tx("Resposta da IA", "Ответ ИИ")}</span>
+              </div>
+              <p className="whitespace-pre-wrap text-xs leading-relaxed" style={{ color: iaErro ? "var(--warn,#B4791F)" : INK }}>
+                {iaErro ?? iaResp}
+              </p>
+            </div>
+          )}
+        </div>
+
         {/* Anti-invenção — princípio */}
         <div className="mb-5 flex items-start gap-3 rounded-xl border p-4" style={{ borderColor: BORDER, background: "var(--amber-soft)" }}>
           <ShieldAlert size={20} style={{ color: NAVY }} className="mt-0.5 shrink-0" />
@@ -211,9 +298,9 @@ function Manual() {
 
         {/* Seções */}
         <div className="space-y-2.5">
-          {SECOES.map((s, i) => {
+          {filtradas.map(({ s, i }) => {
             const Icon = s.icon;
-            const aberta = abertas.has(i);
+            const aberta = termo ? true : abertas.has(i);
             return (
               <div key={i} className="overflow-hidden rounded-xl border bg-[var(--card)]" style={{ borderColor: BORDER }}>
                 <button type="button" onClick={() => toggle(i)} className="flex w-full items-center gap-3 px-4 py-3 text-left">
