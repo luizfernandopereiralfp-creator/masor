@@ -211,9 +211,11 @@ function ConsultaConteudo() {
     else setContribuido(true);
   }
 
+  // NCM é OPCIONAL: se vier vazio, a IA infere pela descrição e o resultado sai
+  // provisório (com pendência para confirmar o código). Exige só descrição + custo.
   const podeAnalisar = useMemo(
-    () => descricao.trim() !== "" && ncm.replace(/\D/g, "").length >= 8 && Number(custo.replace(",", ".")) > 0,
-    [descricao, ncm, custo],
+    () => descricao.trim() !== "" && Number(custo.replace(",", ".")) > 0,
+    [descricao, custo],
   );
 
   async function analisar() {
@@ -221,31 +223,35 @@ function ConsultaConteudo() {
     setErro(null);
     setAnalise(null);
     setContribuido(false);
+    // No modo simplificado, os campos ocultos NÃO vão com o que ficou setado no
+    // modo completo — enviam defaults controlados (evita "vazamento" de valores
+    // que o usuário não vê e a IA/motor cuidam da classificação).
     const operacao: Operacao = {
       uf_supermercado: ufSuper,
       municipio_supermercado: municipio || null,
       regime_empresa: regimeEmpresa,
-      uf_fornecedor: ufForn || null,
-      regime_fornecedor: regimeForn,
-      credito_simples_percent: regimeForn === "simples" ? credSimples || null : null,
+      uf_fornecedor: completo ? ufForn || null : null,
+      regime_fornecedor: completo ? regimeForn : "normal",
+      credito_simples_percent: completo && regimeForn === "simples" ? credSimples || null : null,
       origem_mercadoria: origem,
-      finalidade,
+      finalidade: completo ? finalidade : "revenda",
       produto_descricao: descricao,
       gtin: gtin || null,
       ncm,
-      cest: cest || null,
+      cest: completo ? cest || null : null,
       unidade,
       custo_nf: custo,
-      ipi: ipi || null,
-      frete: frete || null,
-      descontos: descontos || null,
-      st_retida: stRetida === "S",
-      consta_lista_st: naListaST === "S",
-      mva_estimado: mva || null,
-      pis_cofins: pisCofins,
+      ipi: completo ? ipi || null : null,
+      frete: completo ? frete || null : null,
+      descontos: completo ? descontos || null : null,
+      st_retida: completo ? stRetida === "S" : false,
+      consta_lista_st: completo ? naListaST === "S" : false,
+      mva_estimado: completo ? mva || null : null,
+      // "auto" no simples: a IA classifica PIS/COFINS; se não confirmar, vira pendência.
+      pis_cofins: completo ? pisCofins : "auto",
       markup_percent: markup,
-      tipo_margem: tipoMargem,
-      informacao_adicional: infoAdicional || null,
+      tipo_margem: completo ? tipoMargem : "venda",
+      informacao_adicional: completo ? infoAdicional || null : null,
     };
     try {
       const tok = supabase ? (await supabase.auth.getSession()).data.session?.access_token : null;
@@ -263,8 +269,17 @@ function ConsultaConteudo() {
         setStatus("error");
         return;
       }
+      // Nunca renderiza o objeto CRU (evita TypeError em campo null/ausente):
+      // o contrato é tolerante (.catch), então o parse quase sempre normaliza;
+      // se ainda assim falhar, mostra erro em vez de quebrar a tela.
       const parsed = AnaliseFiscal.safeParse(data.analise);
-      setAnalise(parsed.success ? parsed.data : (data.analise as AnaliseFiscal));
+      if (!parsed.success) {
+        console.error("[Masor] análise fora do contrato:", parsed.error);
+        setErro(tx("A análise voltou em formato inesperado. Tente novamente.", "Анализ вернулся в неожиданном формате. Попробуйте снова."));
+        setStatus("error");
+        return;
+      }
+      setAnalise(parsed.data);
       setAvisos((data.avisos_sanidade as string[]) ?? []);
       setStatus("ok");
       // Persiste no histórico (RLS garante o tenant). Fire-and-forget.
@@ -306,8 +321,8 @@ function ConsultaConteudo() {
                     "Все поля доступны — вы задаёте каждый налоговый параметр.",
                   )
                 : tx(
-                    "Só o essencial: produto, custo e margem. A IA especialista descobre impostos, ST e PIS/COFINS pelo NCM e pela UF do cliente.",
-                    "Только главное: товар, стоимость и наценка. ИИ сам определит налоги, ST и PIS/COFINS по NCM и штату клиента.",
+                    "Você informa só o produto, o custo e o quanto quer ganhar. O sistema descobre sozinho os impostos e a lei que se aplica.",
+                    "Вы указываете только товар, себестоимость и желаемую наценку. Система сама определит налоги и применимый закон.",
                   )}
             </p>
           </div>
@@ -353,15 +368,15 @@ function ConsultaConteudo() {
                   <Texto value={ufForn} onChange={(v) => setUfForn(v.toUpperCase().slice(0, 2))} mono placeholder="RS" />
                 </Campo>
               )}
-              <Campo label={tx("Origem da mercadoria", "Происхождение товара")} ajuda={{ pt: "De onde vem em relação ao seu estado: mesmo estado (interna), de Sul/Sudeste, de Norte/NE/CO/ES, ou importado. Muda a alíquota de ICMS da compra (4%, 7% ou 12%).", ru: "Откуда относительно вашего штата: тот же штат, Юг/Юго-восток, Север/NE/CO/ES, или импорт. Меняет ставку ICMS (4%, 7% или 12%)." }}>
+              <Campo label={tx("De onde vem a mercadoria?", "Откуда товар?")} ajuda={{ pt: "Onde fica o fornecedor em relação ao seu estado. Isso muda o imposto (ICMS) cobrado na compra: mesmo estado, outro estado do Sul/Sudeste (7%), outro estado do Norte/Nordeste/Centro-Oeste ou ES (12%), ou de fora do Brasil (4%, Resolução do Senado 13/2012).", ru: "Где находится поставщик относительно вашего штата. От этого зависит налог (ICMS) при покупке: тот же штат, другой штат Юга/Юго-востока (7%), Севера/СВ/ЦЗ или ES (12%), или из-за границы (4%)." }}>
                 <Sel
                   value={origem}
                   onChange={setOrigem}
                   opts={[
-                    ["interna", tx("Mesmo estado (interna)", "Тот же штат")],
-                    ["sul_sudeste", tx("Sul / Sudeste (exceto ES)", "Юг/Юго-восток (кроме ES)")],
-                    ["n_ne_co_es", tx("Norte / NE / CO / ES", "Север / NE / CO / ES")],
-                    ["importado", tx("Importado (Res. 13/2012) · 4%", "Импорт (Рез. 13/2012) · 4%")],
+                    ["interna", tx("Do meu estado", "Из моего штата")],
+                    ["sul_sudeste", tx("De outro estado (Sul ou Sudeste)", "Из другого штата (Юг/Юго-восток)")],
+                    ["n_ne_co_es", tx("De outro estado (Norte, Nordeste, Centro-Oeste ou ES)", "Из другого штата (Север, СВ, ЦЗ или ES)")],
+                    ["importado", tx("Importado (de fora do Brasil)", "Импортный (из-за границы)")],
                   ]}
                 />
               </Campo>
@@ -412,15 +427,26 @@ function ConsultaConteudo() {
               <Campo label={tx("Código de barras (EAN/GTIN)", "Штрихкод (EAN/GTIN)")} ajuda={{ pt: "Número embaixo do código de barras. Costuma já indicar o NCM e identificar o produto com precisão.", ru: "Число под штрихкодом. Часто уже указывает NCM и точно опознаёт товар." }}>
                 <Texto value={gtin} onChange={setGtin} mono placeholder="7891234567890" />
               </Campo>
-              <Campo label="NCM" ajuda={{ pt: "Código de 8 dígitos que classifica a mercadoria e define a maioria dos impostos. Não sabe? Deixe em branco — a IA sugere pela descrição.", ru: "8-значный код классификации товара, задаёт большинство налогов. Не знаете — оставьте пустым, ИИ подскажет по описанию." }}>
+              <Campo label={tx("NCM (opcional)", "NCM (необязательно)")} ajuda={{ pt: "Código de 8 dígitos que classifica a mercadoria e define a maioria dos impostos. Não sabe? Deixe em branco — a IA descobre pela descrição (o resultado sai provisório até confirmar o código).", ru: "8-значный код классификации товара. Не знаете — оставьте пустым, ИИ определит по описанию (результат будет предварительным до подтверждения кода)." }}>
                 <Texto value={ncm} onChange={setNcm} mono placeholder="3305.10.00" />
+                {descricao.trim() !== "" && (
+                  <a
+                    href={`/ncm?q=${encodeURIComponent(descricao.trim())}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold underline"
+                    style={{ color: AMBER }}
+                  >
+                    {tx("Não sei o NCM — buscar pela descrição", "Не знаю NCM — найти по описанию")}
+                  </a>
+                )}
               </Campo>
               {completo && (
                 <Campo label={tx("CEST (se houver)", "CEST (если есть)")} ajuda={{ pt: "Código de 7 dígitos ligado à Substituição Tributária (ICMS-ST). Só preencha se o produto for de ST; a IA confirma pelo NCM.", ru: "7-значный код для налогового замещения (ICMS-ST). Заполняйте только для товаров ST; ИИ подтвердит по NCM." }}>
                   <Texto value={cest} onChange={setCest} mono placeholder="20.001.00" />
                 </Campo>
               )}
-              <Campo label={tx("Custo na NF (R$)", "Стоимость по НН (R$)")} ajuda={{ pt: "Valor unitário do produto na nota do fornecedor, antes de impostos que você recupera. Use vírgula: 5,39.", ru: "Цена за единицу по накладной поставщика, до возмещаемых налогов. Запятая для копеек: 5,39." }}>
+              <Campo label={tx("Custo de compra (R$)", "Стоимость закупки (R$)")} ajuda={{ pt: "Quanto você paga por unidade na nota do fornecedor (o preço de compra). Use vírgula para centavos: 5,39.", ru: "Сколько вы платите за единицу по накладной поставщика (цена закупки). Копейки через запятую: 5,39." }}>
                 <Texto value={custo} onChange={setCusto} mono placeholder="5,39" />
               </Campo>
               {completo && (
@@ -549,8 +575,8 @@ function ConsultaConteudo() {
           {!podeAnalisar && (
             <p className="text-[11px]" style={{ color: "var(--app-muted)" }}>
               {tx(
-                "Preencha ao menos descrição, NCM (8 dígitos) e custo para analisar.",
-                "Укажите описание, NCM (8 цифр) и стоимость для анализа.",
+                "Preencha ao menos a descrição do produto e o custo. O NCM é opcional — sem ele, a IA descobre pela descrição.",
+                "Укажите хотя бы описание товара и стоимость. NCM необязателен — без него ИИ определит по описанию.",
               )}
             </p>
           )}

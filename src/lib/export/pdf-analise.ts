@@ -42,8 +42,15 @@ const secao = (titulo: string): Content => ({
 /** Cabeçalho de tabela (linha navy, texto branco). */
 const th = (t: string): TableCell => ({ text: t, bold: true, color: "#fff", fillColor: NAVY, fontSize: 8.5, margin: [2, 3, 2, 3] });
 
-export async function gerarPdfAnalise(a: AnaliseFiscal, meta: MetaProduto = {}) {
-  const fp = a.formacao_preco;
+const FP_VAZIO: AnaliseFiscal["formacao_preco"] = {
+  custo_aquisicao: null, frete_despesas: null, creditos_tributarios: null,
+  debitos_saida_percent: null, custo_tributario_liquido: null, markup_percent: null,
+  margem_estimada_percent: null, preco_venda_sugerido: null, formulas: [],
+};
+
+/** Monta a definição do documento (pura — sem browser). Exposta p/ teste. */
+export function montarDocAnalise(a: AnaliseFiscal, meta: MetaProduto = {}): TDocumentDefinitions {
+  const fp = a.formacao_preco ?? FP_VAZIO;
   const statusLabel = a.status === "aprovado" ? "Aprovado" : a.status === "com_ressalvas" ? "Com ressalvas" : "Provisório";
   const statusCor = a.status === "aprovado" ? SUCCESS : AMBER;
 
@@ -223,6 +230,11 @@ export async function gerarPdfAnalise(a: AnaliseFiscal, meta: MetaProduto = {}) 
       ],
     }),
   };
+  return doc;
+}
+
+export async function gerarPdfAnalise(a: AnaliseFiscal, meta: MetaProduto = {}) {
+  const doc = montarDocAnalise(a, meta);
 
   // Carrega o pdfmake sob demanda (evita SSR e mantém o bundle inicial leve).
   const [{ default: pdfMake }, fontsMod] = await Promise.all([
@@ -244,6 +256,10 @@ export async function gerarPdfAnalise(a: AnaliseFiscal, meta: MetaProduto = {}) 
     anyFonts.vfs ??
     anyFonts.default ?? // 0.3.x: default é o próprio vfs
     anyFonts;
+  // Guarda: se a fonte padrão não estiver no vfs resolvido, o createPdf falharia
+  // silenciosamente no clique. Avisa no console para diagnóstico rápido.
+  if (!(vfs as Record<string, unknown> | undefined)?.["Roboto-Regular.ttf"])
+    console.warn("[Masor] pdfmake: vfs sem 'Roboto-Regular.ttf' — verifique a versão do pdfmake/vfs_fonts.");
   (pdfMake as unknown as { vfs: unknown }).vfs = vfs;
 
   const slug = (meta.produto ?? "analise")

@@ -110,9 +110,9 @@ function ImportarConteudo() {
         ...r,
         [item.nItem]: {
           estado: "ok",
-          pv: a.formacao_preco.preco_venda_sugerido,
+          pv: a.formacao_preco?.preco_venda_sugerido ?? null,
           status: a.status,
-          pendencias: a.pendencias.length,
+          pendencias: a.pendencias?.length ?? 0,
         },
       }));
       if (supabase && perfil) {
@@ -168,7 +168,7 @@ function ImportarConteudo() {
       const a = data.analise as AnaliseFiscal;
       setResultadosPl((r) => ({
         ...r,
-        [l.n]: { estado: "ok", pv: a.formacao_preco.preco_venda_sugerido, status: a.status, pendencias: a.pendencias.length },
+        [l.n]: { estado: "ok", pv: a.formacao_preco?.preco_venda_sugerido ?? null, status: a.status, pendencias: a.pendencias?.length ?? 0 },
       }));
       if (supabase && perfil) {
         void supabase.from("masor_product_simulations").insert({ cliente_id: perfil.cliente_id, origem: "importacao", payload: operacao, analise: a });

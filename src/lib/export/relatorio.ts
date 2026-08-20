@@ -49,7 +49,7 @@ const fracDe = (s: string | null): number | null => {
   if (s == null) return null;
   const txt = String(s).trim();
   const temPct = txt.includes("%");
-  const n = parseFloat(txt.replace(/[^\d,.-]/g, "").replace(".", "").replace(",", "."));
+  const n = parseFloat(txt.replace(/[^\d,.-]/g, "").replace(/\./g, "").replace(",", "."));
   if (isNaN(n)) return null;
   return temPct || n > 1 ? n / 100 : n;
 };
@@ -167,7 +167,8 @@ export type CabecalhoRelatorio = {
  * @param colunasSel chaves das colunas escolhidas, NA ORDEM desejada
  * @param cab cabeçalho (cliente/emissão)
  */
-export async function gerarRelatorioXlsx(produtos: Produto[], colunasSel: string[], cab: CabecalhoRelatorio = {}) {
+/** Monta o workbook do relatório (puro — sem browser). Exposto p/ teste. */
+export function montarWorkbookRelatorio(produtos: Produto[], colunasSel: string[], cab: CabecalhoRelatorio = {}): ExcelJS.Workbook {
   const cols = colunasSel.map(porChave).filter((c): c is ColunaRelatorio => !!c);
   if (!cols.length) throw new Error("Selecione ao menos uma coluna.");
   const nc = cols.length;
@@ -266,7 +267,15 @@ export async function gerarRelatorioXlsx(produtos: Produto[], colunasSel: string
   // Filtro automático na tabela
   ws.autoFilter = { from: { row: 4, column: 1 }, to: { row: 4 + produtos.length, column: nc } };
 
-  // Download no navegador
+  return wb;
+}
+
+/**
+ * Gera o XLSX do relatório personalizado e dispara o download no navegador.
+ */
+export async function gerarRelatorioXlsx(produtos: Produto[], colunasSel: string[], cab: CabecalhoRelatorio = {}) {
+  const wb = montarWorkbookRelatorio(produtos, colunasSel, cab);
+
   const buf = await wb.xlsx.writeBuffer();
   const slug = (cab.cliente ?? "masor")
     .toString().normalize("NFD").replace(/[̀-ͯ]/g, "")

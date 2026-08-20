@@ -122,8 +122,11 @@ export function calcularFiscal(e: EntradaMotor): ResultadoMotor {
   let credICMS = 0;
   if (empresaSimples) {
     // sem crédito
-  } else if (e.st_retida) {
-    // ST retida: ICMS embutido é custo, sem crédito
+  } else if (temST) {
+    // Produto de ST (retido na nota OU sujeito a ST confirmado pelo NCM): o
+    // ICMS é cobrado uma vez na cadeia e vem embutido no custo — NÃO gera
+    // crédito normal de entrada. (Conceder preço×alíquota aqui subestimaria
+    // o custo e geraria preço abaixo do custo real.)
   } else if (e.regime_fornecedor === "simples") {
     credICMS = preco * mSimples;
   } else {
@@ -133,11 +136,21 @@ export function calcularFiscal(e: EntradaMotor): ResultadoMotor {
     memoria.push({ rotulo: T("Crédito de ICMS (entrada)", "Кредит ICMS (вход)"), formula: T("preço × alíquota destacada", "цена × выделенная ставка"), resultado: credICMS, unidade: "BRL" });
 
   // --- crédito de PIS/COFINS (Lucro Real, tributação normal) ---
+  // Base = preço − ICMS creditado na entrada. Em produto de ST não há crédito
+  // de ICMS (o imposto fica no custo), então nada se subtrai da base.
   let credPC = 0;
   if (lucroReal && e.pis_cofins === "normal")
-    credPC = 0.0925 * Math.max(preco - (e.st_retida ? 0 : preco * taxaDestaque), 0);
+    credPC = 0.0925 * Math.max(preco - (temST ? 0 : preco * taxaDestaque), 0);
   if (credPC > 0)
-    memoria.push({ rotulo: T("Crédito de PIS/COFINS", "Кредит PIS/COFINS"), formula: T("9,25% × (preço − ICMS destacado)", "9,25% × (цена − выделенный ICMS)"), resultado: credPC, unidade: "BRL" });
+    memoria.push({
+      rotulo: T("Crédito de PIS/COFINS", "Кредит PIS/COFINS"),
+      // Em produto de ST não há ICMS creditado, então a base é o preço cheio.
+      formula: temST
+        ? T("9,25% × preço (ST: sem ICMS a subtrair)", "9,25% × цена (ST: без вычета ICMS)")
+        : T("9,25% × (preço − ICMS destacado)", "9,25% × (цена − выделенный ICMS)"),
+      resultado: credPC,
+      unidade: "BRL",
+    });
 
   // --- DIFAL (uso/consumo) ou equalização Simples (revenda) ---
   let difal = 0;
@@ -221,6 +234,17 @@ export function calcularFiscal(e: EntradaMotor): ResultadoMotor {
   if (e.consta_lista_st && !e.st_retida && p.antecipacao_st === null)
     pendencias.push({ campo: T("antecipação de ST", "предоплата ST"), motivo: T("não confirmada no destino", "не подтверждено в пункте назначения") });
   if (p.sujeito_st === null) pendencias.push({ campo: T("sujeição a ST", "обложение ST"), motivo: T("não confirmada para o NCM no destino", "не подтверждено для NCM в пункте назначения") });
+  // Produto sujeito a ST mas a nota não foi marcada como ST retida: a forma de
+  // recolhimento (retido na nota × antecipação) muda o crédito de entrada.
+  // Sem essa confirmação, o resultado é provisório (nunca um preço "aprovado" chutado).
+  if (p.sujeito_st === true && !e.st_retida)
+    pendencias.push({
+      campo: T("ST — forma de recolhimento", "ST — способ уплаты"),
+      motivo: T(
+        "produto sujeito a ST pelo NCM, mas a nota não foi marcada como ST retida — confirme se veio retido (CST 60) ou se há antecipação na entrada; o crédito de entrada depende disso",
+        "товар облагается ST по NCM, но накладная не отмечена как ST удержан — подтвердите удержание (CST 60) или предоплату на входе; кредит входа зависит от этого",
+      ),
+    });
 
   const provisorio = pendencias.length > 0;
 

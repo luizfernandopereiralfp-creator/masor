@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, Loader2, ExternalLink, Copy, Check } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
@@ -39,6 +39,16 @@ function BuscaNCM() {
   const [cands, setCands] = useState<Candidato[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [copiado, setCopiado] = useState<string | null>(null);
+
+  // Pré-preenche a busca quando aberta com ?q= (ex.: vindo da Consulta).
+  useEffect(() => {
+    try {
+      const p = new URLSearchParams(window.location.search).get("q");
+      if (p) setQ(p);
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   async function buscar(e: React.FormEvent) {
     e.preventDefault();

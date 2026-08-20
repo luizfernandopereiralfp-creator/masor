@@ -146,19 +146,19 @@ export const ParecerIA = z.object({
         vigencia: z.string().nullable().optional(), // "vale desde X" (início de vigência da regra)
       }),
     )
-    .default([]),
+    .default([]).catch([]),
   resumo_executivo: z.string().default(""),
   tratamento_atual: z.string().default(""),
   impactos_reforma: z.string().default(""),
-  cenarios: z.array(Cenario).default([]),
-  oportunidades_economia: z.array(z.string()).default([]),
-  ncms_enquadramentos: z.array(EnquadramentoNCM).default([]),
-  beneficios_creditos_regimes: z.array(BeneficioRegime).default([]),
-  riscos_pontos_atencao: z.array(z.string()).default([]),
-  fundamentacao_legal: z.array(FundamentoLegal).default([]),
-  fontes_oficiais: z.array(FonteConsultada).default([]),
-  dados_adicionais_necessarios: z.array(z.string()).default([]),
-  pendencias: z.array(Pendencia).default([]),
+  cenarios: z.array(Cenario).default([]).catch([]),
+  oportunidades_economia: z.array(z.string()).default([]).catch([]),
+  ncms_enquadramentos: z.array(EnquadramentoNCM).default([]).catch([]),
+  beneficios_creditos_regimes: z.array(BeneficioRegime).default([]).catch([]),
+  riscos_pontos_atencao: z.array(z.string()).default([]).catch([]),
+  fundamentacao_legal: z.array(FundamentoLegal).default([]).catch([]),
+  fontes_oficiais: z.array(FonteConsultada).default([]).catch([]),
+  dados_adicionais_necessarios: z.array(z.string()).default([]).catch([]),
+  pendencias: z.array(Pendencia).default([]).catch([]),
 });
 export type ParecerIA = z.infer<typeof ParecerIA>;
 
@@ -186,7 +186,7 @@ export const AnaliseFiscal = z.object({
   provisorio: z.boolean().default(true),
   idioma: z.enum(IDIOMAS).default("pt"),
 
-  formacao_preco: FormacaoPreco.default(FORMACAO_VAZIA),
+  formacao_preco: FormacaoPreco.default(FORMACAO_VAZIA).catch(FORMACAO_VAZIA),
   /** Cada parâmetro que ENTROU na conta, com sua fonte (rastreabilidade/confiança). */
   parametros_aplicados: z
     .array(
@@ -198,28 +198,28 @@ export const AnaliseFiscal = z.object({
         confirmado: z.boolean(),
       }),
     )
-    .default([]),
-  memoria_calculo: z.array(PassoCalculo).default([]),
-  cenarios: z.array(Cenario).default([]),
+    .default([]).catch([]),
+  memoria_calculo: z.array(PassoCalculo).default([]).catch([]),
+  cenarios: z.array(Cenario).default([]).catch([]),
 
   resumo_executivo: z.string().default(""),
-  dados_considerados: z.record(z.string(), z.unknown()).default({}),
+  dados_considerados: z.record(z.string(), z.unknown()).default({}).catch({}),
   uf_supermercado: z.string().nullable().default(null),
   uf_fornecedor: z.string().nullable().default(null),
   tratamento_atual: z.string().default(""),
   impactos_reforma: z.string().default(""),
 
-  oportunidades_economia: z.array(z.string()).default([]),
-  ncms_enquadramentos: z.array(EnquadramentoNCM).default([]),
-  beneficios_creditos_regimes: z.array(BeneficioRegime).default([]),
-  riscos_pontos_atencao: z.array(z.string()).default([]),
+  oportunidades_economia: z.array(z.string()).default([]).catch([]),
+  ncms_enquadramentos: z.array(EnquadramentoNCM).default([]).catch([]),
+  beneficios_creditos_regimes: z.array(BeneficioRegime).default([]).catch([]),
+  riscos_pontos_atencao: z.array(z.string()).default([]).catch([]),
 
-  fundamentacao_legal: z.array(FundamentoLegal).default([]),
-  fontes_oficiais: z.array(FonteConsultada).default([]),
+  fundamentacao_legal: z.array(FundamentoLegal).default([]).catch([]),
+  fontes_oficiais: z.array(FonteConsultada).default([]).catch([]),
   data_verificacao_legislativa: z.string().default(""),
-  dados_adicionais_necessarios: z.array(z.string()).default([]),
+  dados_adicionais_necessarios: z.array(z.string()).default([]).catch([]),
 
-  pendencias: z.array(Pendencia).default([]),
+  pendencias: z.array(Pendencia).default([]).catch([]),
 
   /** Sanity-check leve: a IA declara se as contas que MOSTROU fecham entre si. */
   autoverificacao: z
@@ -227,7 +227,8 @@ export const AnaliseFiscal = z.object({
       contas_consistentes: z.boolean(),
       observacao: z.string().nullable().optional(),
     })
-    .default({ contas_consistentes: false, observacao: null }),
+    .default({ contas_consistentes: false, observacao: null })
+    .catch({ contas_consistentes: false, observacao: null }),
 });
 export type AnaliseFiscal = z.infer<typeof AnaliseFiscal>;
 

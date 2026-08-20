@@ -151,10 +151,22 @@ export const Route = createFileRoute("/api/analisar")({
         }
         const pf = parecer.parametros_fiscais;
 
-        // 2) a IA pode CORRIGIR o enquadramento PIS/COFINS informado pelo usuário
-        let pisCofins = (str(op.pis_cofins) ?? "normal") as PisCofins;
+        // 2) enquadramento PIS/COFINS. No modo simplificado o usuário NÃO informa:
+        // chega "auto" e a IA precisa classificar. Se a IA não confirmar (nem
+        // monofásico, nem zero, nem "normal" explícito), o resultado sai
+        // PROVISÓRIO com pendência — nunca tarifa como normal em silêncio.
+        const pcInformado = str(op.pis_cofins);
+        let pisCofins: PisCofins;
+        let pcNaoConfirmado = false;
         if (pf.monofasico === true) pisCofins = "monofasico";
         else if (pf.aliquota_zero_pc === true) pisCofins = "zero";
+        else if (pcInformado === "auto") {
+          pisCofins = "normal";
+          // só é "normal confirmado" se a IA afirmou explicitamente que NÃO é os dois
+          if (!(pf.monofasico === false && pf.aliquota_zero_pc === false)) pcNaoConfirmado = true;
+        } else {
+          pisCofins = (pcInformado ?? "normal") as PisCofins; // modo completo: respeita o usuário
+        }
 
         // 3) motor determinístico faz a aritmética
         const entradaMotor: EntradaMotor = {
@@ -168,7 +180,10 @@ export const Route = createFileRoute("/api/analisar")({
           regime_fornecedor: (str(op.regime_fornecedor) ?? "normal") as RegimeFornecedor,
           credito_simples_pct: num(op.credito_simples_percent),
           st_retida: op.st_retida === true,
-          consta_lista_st: op.consta_lista_st === true,
+          // Se a IA confirma que o produto é de ST pelo NCM, tratamos como "consta
+          // na lista" mesmo que o usuário não tenha marcado (habilita o caminho de
+          // antecipação e as pendências corretas de ST).
+          consta_lista_st: op.consta_lista_st === true || pf.sujeito_st === true,
           pis_cofins: pisCofins,
           markup_pct: num(op.markup_percent) || 20,
           tipo_margem: op.tipo_margem === "markup" ? "markup" : "venda",
@@ -226,7 +241,30 @@ export const Route = createFileRoute("/api/analisar")({
           addParam(T("Equalização do Simples (destino)", "Уравнивание Simples (назначение)"), "equalizacao_simples", simNao(pf.equalizacao_simples));
 
         // 4) monta o relatório final: NÚMEROS do motor + NARRATIVA da IA
-        const provisorio = m.provisorio || parecer.status === "provisorio";
+        // NCM ausente (modo simplificado): a IA infere pela descrição — nunca
+        // apresentar como definitivo; força provisório + pendência de confirmação.
+        const ncmInferido = ncmKey.length < 8;
+        const provisorio = m.provisorio || parecer.status === "provisorio" || pcNaoConfirmado || ncmInferido;
+        const pendenciasPC = pcNaoConfirmado
+          ? [{
+              campo: T("enquadramento PIS/COFINS", "режим PIS/COFINS"),
+              motivo: T(
+                "não confirmado pelo NCM — confira se o produto é monofásico (higiene/cosmético/medicamento) ou de alíquota zero (cesta básica); calculado como normal provisoriamente",
+                "не подтверждён по NCM — проверьте монофазность (гигиена/косметика/лекарства) или нулевую ставку (базовая корзина); рассчитано как обычное предварительно",
+              ),
+              impacto: null as string | null,
+            }]
+          : [];
+        const pendenciasNCM = ncmInferido
+          ? [{
+              campo: T("NCM (código do produto)", "NCM (код товара)"),
+              motivo: T(
+                "NCM não informado — a IA inferiu pela descrição; confirme o código antes de usar o preço em definitivo (veja os candidatos em 'NCMs/enquadramentos')",
+                "NCM не указан — ИИ определил по описанию; подтвердите код перед окончательным использованием цены",
+              ),
+              impacto: null as string | null,
+            }]
+          : [];
         const analise: AnaliseFiscal = {
           status: provisorio ? "provisorio" : parecer.status,
           provisorio,
@@ -278,6 +316,8 @@ export const Route = createFileRoute("/api/analisar")({
           pendencias: [
             ...parecer.pendencias,
             ...m.pendencias.map((p) => ({ campo: p.campo, motivo: p.motivo, impacto: null })),
+            ...pendenciasPC,
+            ...pendenciasNCM,
           ],
           autoverificacao: {
             contas_consistentes: true,

@@ -115,11 +115,17 @@ function tabela(ws: ExcelJS.Worksheet, linha0: number, header: string[], linhas:
   });
 }
 
-/** Exporta UMA análise fiscal (resultado da consulta) como planilha multi-aba estilizada. */
-export async function exportarAnaliseXlsx(a: AnaliseFiscal, meta?: MetaProduto) {
+const FP_VAZIO: AnaliseFiscal["formacao_preco"] = {
+  custo_aquisicao: null, frete_despesas: null, creditos_tributarios: null,
+  debitos_saida_percent: null, custo_tributario_liquido: null, markup_percent: null,
+  margem_estimada_percent: null, preco_venda_sugerido: null, formulas: [],
+};
+
+/** Monta o workbook da análise (puro — sem browser). Exposto p/ teste. */
+export function montarWorkbookAnalise(a: AnaliseFiscal, meta?: MetaProduto): ExcelJS.Workbook {
   const wb = new ExcelJS.Workbook();
   wb.creator = "Masor — G41 Inteligência Contábil";
-  const fp = a.formacao_preco;
+  const fp = a.formacao_preco ?? FP_VAZIO;
   const metaLinha = [
     meta?.produto ? `Produto: ${meta.produto}` : null,
     meta?.ncm ? `NCM: ${meta.ncm}` : null,
@@ -200,7 +206,7 @@ export async function exportarAnaliseXlsx(a: AnaliseFiscal, meta?: MetaProduto) 
   }
 
   // ---- Memória de cálculo ----
-  if (a.memoria_calculo.length) {
+  if (a.memoria_calculo?.length) {
     const ws = wb.addWorksheet("Memória de cálculo", { views: [{ state: "frozen", ySplit: 2 }] });
     const l0 = bandaTitulo(ws, 4, "Memória de cálculo");
     tabela(ws, l0, ["Passo", "Fórmula", "Resultado", "Un."],
@@ -213,7 +219,7 @@ export async function exportarAnaliseXlsx(a: AnaliseFiscal, meta?: MetaProduto) 
   }
 
   // ---- Parâmetros aplicados (fonte) ----
-  if (a.parametros_aplicados.length) {
+  if (a.parametros_aplicados?.length) {
     const ws = wb.addWorksheet("Parâmetros (fonte)", { views: [{ state: "frozen", ySplit: 2 }] });
     const l0 = bandaTitulo(ws, 4, "Parâmetros aplicados (com fonte)");
     tabela(ws, l0, ["Parâmetro", "Valor", "Confirmado?", "Fonte"],
@@ -222,7 +228,7 @@ export async function exportarAnaliseXlsx(a: AnaliseFiscal, meta?: MetaProduto) 
   }
 
   // ---- Fundamentação legal ----
-  if (a.fundamentacao_legal.length) {
+  if (a.fundamentacao_legal?.length) {
     const ws = wb.addWorksheet("Fundamentação legal", { views: [{ state: "frozen", ySplit: 2 }] });
     const l0 = bandaTitulo(ws, 6, "Fundamentação legal");
     tabela(ws, l0, ["Norma", "Artigo", "Órgão", "Vigência", "Afirmação", "Fonte"],
@@ -231,20 +237,25 @@ export async function exportarAnaliseXlsx(a: AnaliseFiscal, meta?: MetaProduto) 
   }
 
   // ---- Pendências ----
-  if (a.pendencias.length) {
+  if (a.pendencias?.length) {
     const ws = wb.addWorksheet("Pendências", { views: [{ state: "frozen", ySplit: 2 }] });
     const l0 = bandaTitulo(ws, 2, "Pendências (a confirmar em fonte oficial)");
     tabela(ws, l0, ["Campo", "Motivo"], a.pendencias.map((p) => [p.campo, p.motivo]), {}, [28, 60]);
   }
 
   // ---- Fontes ----
-  if (a.fontes_oficiais.length) {
+  if (a.fontes_oficiais?.length) {
     const ws = wb.addWorksheet("Fontes", { views: [{ state: "frozen", ySplit: 2 }] });
     const l0 = bandaTitulo(ws, 2, "Fontes oficiais consultadas");
     tabela(ws, l0, ["Título", "URL"], a.fontes_oficiais.map((f) => [f.titulo ?? f.url, f.url]), {}, [40, 60]);
   }
 
-  await baixar(wb, nomeArquivo("analise", meta));
+  return wb;
+}
+
+/** Exporta UMA análise fiscal (resultado da consulta) como planilha multi-aba estilizada. */
+export async function exportarAnaliseXlsx(a: AnaliseFiscal, meta?: MetaProduto) {
+  await baixar(montarWorkbookAnalise(a, meta), nomeArquivo("analise", meta));
 }
 
 /** Linha do histórico (product_simulations) — forma tolerante. */
@@ -255,8 +266,8 @@ export type LinhaHistorico = {
   analise?: AnaliseFiscal | null;
 };
 
-/** Exporta o histórico do tenant como uma planilha estilizada (uma linha por análise). */
-export async function exportarHistoricoXlsx(linhas: LinhaHistorico[]) {
+/** Monta o workbook do histórico (puro — sem browser). Exposto p/ teste. */
+export function montarWorkbookHistorico(linhas: LinhaHistorico[]): ExcelJS.Workbook {
   const wb = new ExcelJS.Workbook();
   wb.creator = "Masor — G41 Inteligência Contábil";
   const ws = wb.addWorksheet("Histórico", { views: [{ state: "frozen", ySplit: 4 }] });
@@ -279,5 +290,10 @@ export async function exportarHistoricoXlsx(linhas: LinhaHistorico[]) {
   });
   tabela(ws, l0, header, rows, { 6: BRL, 7: BRL, 8: PCT }, [18, 10, 40, 12, 6, 13, 15, 15, 11]);
   ws.autoFilter = { from: { row: l0, column: 1 }, to: { row: l0 + rows.length, column: header.length } };
-  await baixar(wb, `masor-historico-${new Date().toISOString().slice(0, 10)}.xlsx`);
+  return wb;
+}
+
+/** Exporta o histórico do tenant como uma planilha estilizada (uma linha por análise). */
+export async function exportarHistoricoXlsx(linhas: LinhaHistorico[]) {
+  await baixar(montarWorkbookHistorico(linhas), `masor-historico-${new Date().toISOString().slice(0, 10)}.xlsx`);
 }
