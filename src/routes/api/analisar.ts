@@ -241,8 +241,8 @@ export const Route = createFileRoute("/api/analisar")({
           addParam(T("Equalização do Simples (destino)", "Уравнивание Simples (назначение)"), "equalizacao_simples", simNao(pf.equalizacao_simples));
 
         // 4) monta o relatório final: NÚMEROS do motor + NARRATIVA da IA
-        // NCM ausente (modo simplificado): a IA infere pela descrição — nunca
-        // apresentar como definitivo; força provisório + pendência de confirmação.
+        // Guarda: NCM é obrigatório (define o enquadramento). Se por algum caminho
+        // chegar vazio, força provisório em vez de apresentar um preço como definitivo.
         const ncmInferido = ncmKey.length < 8;
         const provisorio = m.provisorio || parecer.status === "provisorio" || pcNaoConfirmado || ncmInferido;
         const pendenciasPC = pcNaoConfirmado
@@ -259,8 +259,8 @@ export const Route = createFileRoute("/api/analisar")({
           ? [{
               campo: T("NCM (código do produto)", "NCM (код товара)"),
               motivo: T(
-                "NCM não informado — a IA inferiu pela descrição; confirme o código antes de usar o preço em definitivo (veja os candidatos em 'NCMs/enquadramentos')",
-                "NCM не указан — ИИ определил по описанию; подтвердите код перед окончательным использованием цены",
+                "NCM não informado — o código define o enquadramento fiscal; informe-o (use a busca por descrição) antes de usar o preço em definitivo",
+                "NCM не указан — код определяет налоговую классификацию; укажите его (через поиск по описанию) перед окончательным использованием цены",
               ),
               impacto: null as string | null,
             }]

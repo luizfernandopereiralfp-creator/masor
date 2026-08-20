@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Loader2, ShieldCheck, TriangleAlert, ExternalLink, Upload, ChevronDown, Download, FileText, RefreshCw } from "lucide-react";
+import { Loader2, ShieldCheck, TriangleAlert, ExternalLink, Upload, ChevronDown, Download, FileText, Search, RefreshCw } from "lucide-react";
 
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
@@ -33,6 +33,17 @@ const NAVY = "var(--navy)";
 const INK = "var(--app-ink)";
 const AMBER = "var(--amber)";
 const MONO = "var(--font-mono)";
+
+// UFs de Sul/Sudeste EXCETO ES (origem que gera 7% na saída interestadual p/ N/NE/CO/ES).
+const UF_SUL_SUDESTE = new Set(["SP", "RJ", "MG", "PR", "SC", "RS"]);
+const UF_BR = new Set(["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"]);
+/** Deriva a origem da mercadoria a partir da UF do fornecedor × UF do supermercado. */
+function origemDaUF(ufForn: string, ufDestino: string): "interna" | "sul_sudeste" | "n_ne_co_es" | null {
+  const uf = (ufForn || "").toUpperCase();
+  if (uf.length !== 2 || !UF_BR.has(uf)) return null;
+  if (uf === (ufDestino || "").toUpperCase()) return "interna";
+  return UF_SUL_SUDESTE.has(uf) ? "sul_sudeste" : "n_ne_co_es";
+}
 
 const brl = (v: number | null | undefined) =>
   v == null
@@ -83,7 +94,9 @@ function ConsultaConteudo() {
   const [pisCofins, setPisCofins] = useState("normal");
 
   const [markup, setMarkup] = useState("20");
-  const [tipoMargem, setTipoMargem] = useState("venda");
+  // Padrão = "markup s/ custo" (preço = custo × (1 + markup)), a convenção das
+  // planilhas da equipe (ex.: time de MG). O usuário pode trocar no modo completo.
+  const [tipoMargem, setTipoMargem] = useState("markup");
 
   // Modo do formulário: "simples" (só o essencial — a IA infere o resto) ou
   // "completo" (todos os campos, para quem quer controlar cada parâmetro).
@@ -100,6 +113,37 @@ function ConsultaConteudo() {
     }
   };
   const completo = modo === "completo";
+
+  // Busca de NCM por descrição, EMBUTIDA no formulário (NCM é obrigatório; quem
+  // não sabe o código acha aqui e preenche com 1 clique, sem sair da tela).
+  const [buscandoNcm, setBuscandoNcm] = useState(false);
+  const [candsNcm, setCandsNcm] = useState<
+    { ncm: string; descricao_oficial?: string; cest?: string | null; confianca?: string }[] | null
+  >(null);
+  async function buscarNcmInline() {
+    if (!descricao.trim() || buscandoNcm) return;
+    setBuscandoNcm(true);
+    setCandsNcm(null);
+    try {
+      const tok = supabase ? (await supabase.auth.getSession()).data.session?.access_token ?? null : null;
+      const r = await fetch("/api/ncm-busca", {
+        method: "POST",
+        headers: { "content-type": "application/json", ...(tok ? { authorization: `Bearer ${tok}` } : {}) },
+        body: JSON.stringify({ descricao: descricao.trim(), idioma: lang }),
+      });
+      const d = (await r.json()) as { ok?: boolean; candidatos?: typeof candsNcm };
+      setCandsNcm(!r.ok || d.ok === false ? [] : d.candidatos ?? []);
+    } catch {
+      setCandsNcm([]);
+    } finally {
+      setBuscandoNcm(false);
+    }
+  }
+  function escolherNcm(c: { ncm: string; cest?: string | null }) {
+    setNcm(c.ncm);
+    if (c.cest) setCest(c.cest);
+    setCandsNcm(null);
+  }
   const [infoAdicional, setInfoAdicional] = useState("");
   const [contribuido, setContribuido] = useState(false);
 
@@ -211,11 +255,11 @@ function ConsultaConteudo() {
     else setContribuido(true);
   }
 
-  // NCM é OPCIONAL: se vier vazio, a IA infere pela descrição e o resultado sai
-  // provisório (com pendência para confirmar o código). Exige só descrição + custo.
+  // NCM é OBRIGATÓRIO: ele determina o enquadramento fiscal do produto. Quem não
+  // sabe usa a busca por descrição embutida (abaixo do campo), que preenche o NCM.
   const podeAnalisar = useMemo(
-    () => descricao.trim() !== "" && Number(custo.replace(",", ".")) > 0,
-    [descricao, custo],
+    () => descricao.trim() !== "" && ncm.replace(/\D/g, "").length >= 8 && Number(custo.replace(",", ".")) > 0,
+    [descricao, ncm, custo],
   );
 
   async function analisar() {
@@ -250,7 +294,7 @@ function ConsultaConteudo() {
       // "auto" no simples: a IA classifica PIS/COFINS; se não confirmar, vira pendência.
       pis_cofins: completo ? pisCofins : "auto",
       markup_percent: markup,
-      tipo_margem: completo ? tipoMargem : "venda",
+      tipo_margem: completo ? tipoMargem : "markup",
       informacao_adicional: completo ? infoAdicional || null : null,
     };
     try {
@@ -365,10 +409,21 @@ function ConsultaConteudo() {
             <div className="grid gap-4 sm:grid-cols-2">
               {completo && (
                 <Campo label={tx("UF de origem do fornecedor", "Штат поставщика")} ajuda={{ pt: "Sigla do estado de onde a mercadoria sai (o estado do fornecedor). Ex.: SP, RS, MG. Define a alíquota interestadual de ICMS.", ru: "Код штата, откуда идёт товар (штат поставщика). Напр.: SP, RS, MG. Определяет межштатную ставку ICMS." }}>
-                  <Texto value={ufForn} onChange={(v) => setUfForn(v.toUpperCase().slice(0, 2))} mono placeholder="RS" />
+                  <Texto
+                    value={ufForn}
+                    onChange={(v) => {
+                      const uf = v.toUpperCase().slice(0, 2);
+                      setUfForn(uf);
+                      // Puxa a região da mercadoria automaticamente pela UF do fornecedor.
+                      const o = origemDaUF(uf, ufSuper);
+                      if (o) setOrigem(o);
+                    }}
+                    mono
+                    placeholder="RS"
+                  />
                 </Campo>
               )}
-              <Campo label={tx("De onde vem a mercadoria?", "Откуда товар?")} ajuda={{ pt: "Onde fica o fornecedor em relação ao seu estado. Isso muda o imposto (ICMS) cobrado na compra: mesmo estado, outro estado do Sul/Sudeste (7%), outro estado do Norte/Nordeste/Centro-Oeste ou ES (12%), ou de fora do Brasil (4%, Resolução do Senado 13/2012).", ru: "Где находится поставщик относительно вашего штата. От этого зависит налог (ICMS) при покупке: тот же штат, другой штат Юга/Юго-востока (7%), Севера/СВ/ЦЗ или ES (12%), или из-за границы (4%)." }}>
+              <Campo label={tx("De onde vem a mercadoria?", "Откуда товар?")} hint={completo ? tx("Puxado automaticamente da UF do fornecedor — ajuste se precisar.", "Определяется по штату поставщика — при необходимости измените.") : undefined} ajuda={{ pt: "Onde fica o fornecedor em relação ao seu estado. Isso muda o imposto (ICMS) cobrado na compra: mesmo estado, outro estado do Sul/Sudeste (7%), outro estado do Norte/Nordeste/Centro-Oeste ou ES (12%), ou de fora do Brasil (4%, Resolução do Senado 13/2012).", ru: "Где находится поставщик относительно вашего штата. От этого зависит налог (ICMS) при покупке: тот же штат, другой штат Юга/Юго-востока (7%), Севера/СВ/ЦЗ или ES (12%), или из-за границы (4%)." }}>
                 <Sel
                   value={origem}
                   onChange={setOrigem}
@@ -427,18 +482,44 @@ function ConsultaConteudo() {
               <Campo label={tx("Código de barras (EAN/GTIN)", "Штрихкод (EAN/GTIN)")} ajuda={{ pt: "Número embaixo do código de barras. Costuma já indicar o NCM e identificar o produto com precisão.", ru: "Число под штрихкодом. Часто уже указывает NCM и точно опознаёт товар." }}>
                 <Texto value={gtin} onChange={setGtin} mono placeholder="7891234567890" />
               </Campo>
-              <Campo label={tx("NCM (opcional)", "NCM (необязательно)")} ajuda={{ pt: "Código de 8 dígitos que classifica a mercadoria e define a maioria dos impostos. Não sabe? Deixe em branco — a IA descobre pela descrição (o resultado sai provisório até confirmar o código).", ru: "8-значный код классификации товара. Не знаете — оставьте пустым, ИИ определит по описанию (результат будет предварительным до подтверждения кода)." }}>
+              <Campo label={tx("NCM *", "NCM *")} ajuda={{ pt: "Código de 8 dígitos que classifica a mercadoria — ele DEFINE os impostos do produto, por isso é obrigatório. Não sabe? Clique em 'buscar pela descrição' abaixo e escolha o código.", ru: "8-значный код классификации товара — он ОПРЕДЕЛЯЕТ налоги, поэтому обязателен. Не знаете? Нажмите «найти по описанию» ниже и выберите код." }}>
                 <Texto value={ncm} onChange={setNcm} mono placeholder="3305.10.00" />
                 {descricao.trim() !== "" && (
-                  <a
-                    href={`/ncm?q=${encodeURIComponent(descricao.trim())}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold underline"
+                  <button
+                    type="button"
+                    onClick={() => void buscarNcmInline()}
+                    disabled={buscandoNcm}
+                    className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold disabled:opacity-50"
                     style={{ color: AMBER }}
                   >
+                    {buscandoNcm ? <Loader2 size={11} className="animate-spin" /> : <Search size={11} />}
                     {tx("Não sei o NCM — buscar pela descrição", "Не знаю NCM — найти по описанию")}
-                  </a>
+                  </button>
+                )}
+                {candsNcm && (
+                  <div className="mt-1 overflow-hidden rounded-lg border" style={{ borderColor: "var(--border,#e2e8f0)" }}>
+                    {candsNcm.length === 0 ? (
+                      <p className="px-2 py-1.5 text-[11px]" style={{ color: "var(--app-muted)" }}>
+                        {tx("Nada encontrado — descreva melhor o produto.", "Ничего не найдено — уточните описание.")}
+                      </p>
+                    ) : (
+                      candsNcm.slice(0, 6).map((c) => (
+                        <button
+                          key={c.ncm}
+                          type="button"
+                          onClick={() => escolherNcm(c)}
+                          className="flex w-full items-start gap-2 border-b px-2 py-1.5 text-left last:border-b-0"
+                          style={{ borderColor: "var(--border,#e2e8f0)" }}
+                        >
+                          <span className="font-bold" style={{ fontFamily: MONO, color: INK }}>{c.ncm}</span>
+                          <span className="flex-1 text-[11px]" style={{ color: "var(--app-muted)" }}>
+                            {c.descricao_oficial}
+                            {c.cest ? ` · CEST ${c.cest}` : ""}
+                          </span>
+                        </button>
+                      ))
+                    )}
+                  </div>
                 )}
               </Campo>
               {completo && (
@@ -521,7 +602,7 @@ function ConsultaConteudo() {
               {completo && (
                 <Campo
                   label={tx("Como aplicar", "Как применять")}
-                  ajuda={{ pt: "'Sobre a venda' = a margem é uma fatia do preço final (garante X% de lucro na venda). 'Markup s/ custo' = multiplica o custo por (1+X%); a margem real na venda sai um pouco menor. No simplificado usamos 'sobre a venda'.", ru: "«От продажи» = маржа как доля итоговой цены (гарантирует X% прибыли с продажи). «Наценка от себест.» = умножает себестоимость на (1+X%); реальная маржа с продажи выходит меньше. В простом режиме — «от продажи»." }}
+                  ajuda={{ pt: "'Markup s/ custo' (padrão, igual às planilhas da equipe) = preço = custo × (1 + X%). 'Sobre a venda' = a margem é uma fatia do preço final (garante X% de lucro na venda). No simplificado usamos 'markup s/ custo'.", ru: "«Наценка от себест.» (по умолчанию, как в таблицах команды) = цена = себест. × (1 + X%). «От продажи» = маржа как доля итоговой цены. В простом режиме — «наценка от себест.»." }}
                 >
                   <Alternar
                     value={tipoMargem}
@@ -575,8 +656,8 @@ function ConsultaConteudo() {
           {!podeAnalisar && (
             <p className="text-[11px]" style={{ color: "var(--app-muted)" }}>
               {tx(
-                "Preencha ao menos a descrição do produto e o custo. O NCM é opcional — sem ele, a IA descobre pela descrição.",
-                "Укажите хотя бы описание товара и стоимость. NCM необязателен — без него ИИ определит по описанию.",
+                "Preencha descrição, NCM (8 dígitos) e custo. Não sabe o NCM? Use 'buscar pela descrição' no campo NCM.",
+                "Заполните описание, NCM (8 цифр) и стоимость. Не знаете NCM? Нажмите «найти по описанию» в поле NCM.",
               )}
             </p>
           )}
