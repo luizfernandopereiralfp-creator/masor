@@ -11,9 +11,9 @@
  */
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
+  --radius-sm: 8px;   /* handoff: sm 8 */
+  --radius-md: 11px;  /* handoff: md 11 (controles) */
+  --radius-lg: var(--radius); /* 16 (cards) */
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) + 8px);
   --color-background: var(--background);
@@ -59,24 +59,24 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --font-display: "Archivo", system-ui, sans-serif;
-  --font-sans: "Archivo", system-ui, sans-serif;
+  --font-display: "Jost", system-ui, sans-serif;
+  --font-sans: "Jost", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
 }
 
 :root {
   --radius: 1rem;
-  --background: oklch(1 0 0);
+  --background: #F4EFE6;              /* handoff: fundo de página (creme) */
   --foreground: oklch(0.21 0.06 265);
 
   /* G41 brand */
   --navy: #0B1740;
   --navy-soft: #24304d;
   --amber: #E9A74A;
-  --amber-soft: #fdeccd;
-  --gradient-amber: linear-gradient(135deg, #f7b955, #ee8f2b);
-  --app-bg: #eef1f6;
-  --app-surface: #f6f8fb;
+  --amber-soft: #FDF3E2;
+  --gradient-amber: linear-gradient(135deg, #FDBD58, #E9A74A);
+  --app-bg: #F4EFE6;                 /* fundo do shell */
+  --app-surface: #FFFFFF;            /* superfícies/cards */
 
   /* Handoff design system (app shell) — tokens hex (namespaced p/ não colidir com shadcn) */
   --bulb: #FDBD58;          /* âmbar do bulbo (logo) */
@@ -84,11 +84,16 @@
   --warnbg: #FBEEDC;
   --successbg: #E4F2EC;
   --infobg: #E7EEF9;
-  --app-ink: #14203F;       /* texto primário */
-  --app-muted: #6B7488;     /* texto secundário */
-  --app-faint: #8892A4;     /* texto terciário / caption */
-  --app-line: #E2E8F0;      /* bordas */
-  --app-bg2: #F6F8FB;       /* fundo sutil (headers de tabela, hover, inputs) */
+  --app-ink: #0B1740;       /* texto primário (handoff: text) */
+  --app-body: #3b455e;      /* texto de corpo (handoff: text-body) */
+  --app-muted: #7C8598;     /* texto secundário (handoff: text-secondary) */
+  --app-faint: #9AA2B3;     /* texto terciário / caption */
+  --app-line: #EBE4D6;      /* bordas (handoff: line, warm) */
+  --line-soft: #F1ECE1;     /* linha suave */
+  --app-bg2: #F1ECE1;       /* fundo sutil (headers de tabela, hover) */
+  --tint-navy: #EEF1F8;     /* tint navy (fills frios) */
+  --tint-amber: #FDF6E9;    /* tint âmbar */
+  --amber-text: #B7791F;    /* texto sobre tint âmbar */
   --sidebar-ink: #AEB8D4;   /* texto da sidebar (inativo) */
   --nav-active: #18264F;    /* fundo do item de nav ativo */
   --shadow-app: 0 1px 2px rgba(13,25,64,.04), 0 8px 24px rgba(13,25,64,.06);
@@ -97,8 +102,8 @@
   /* Status (no red) */
   --warn: oklch(0.72 0.16 60);             /* âmbar mais quente p/ atrasos */
   --warn-soft: oklch(0.95 0.05 75);
-  --success: oklch(0.62 0.13 165);
-  --success-soft: oklch(0.94 0.04 165);
+  --success: #2E9E6B;                /* handoff: concluído / sucesso */
+  --success-soft: #E4F2EC;
   --info: oklch(0.55 0.12 245);
   --info-soft: oklch(0.94 0.03 245);
 
@@ -117,8 +122,8 @@
   /* No red — destructive uses a deep navy/charcoal */
   --destructive: oklch(0.32 0.06 265);
   --destructive-foreground: oklch(0.99 0.003 80);
-  --border: oklch(0.91 0.01 250);
-  --input: oklch(0.91 0.01 250);
+  --border: #EBE4D6;                 /* handoff: line (warm) */
+  --input: #E2D9C7;                  /* handoff: borda de input (warm) */
   --ring: var(--amber);
 
   --chart-1: var(--navy);
@@ -207,7 +212,7 @@
 
 /* App shell / design system (handoff) */
 .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
-.app-card { background: var(--card); border: 1px solid var(--app-line); border-radius: 20px; box-shadow: var(--shadow-app); }
+.app-card { background: var(--card); border: 1px solid var(--app-line); border-radius: 16px; box-shadow: var(--shadow-app); }
 .app-nav { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; color: var(--sidebar-ink); font-size: 14px; font-weight: 500; transition: background .15s, color .15s; white-space: nowrap; cursor: pointer; }
 .app-nav:hover { background: rgba(255,255,255,.06); color: #fff; }
 .app-nav[data-active="true"] { background: var(--nav-active); color: #fff; }
