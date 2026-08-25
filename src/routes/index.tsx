@@ -28,6 +28,7 @@ type Modulo = {
   descPt: string;
   descRu: string;
   soStaff?: boolean;
+  novo?: boolean;
 };
 
 const MODULOS: Modulo[] = [
@@ -72,6 +73,7 @@ const MODULOS: Modulo[] = [
     descPt: "Planilha com toda a memória de cálculo por produto — escolha colunas, ordem e modelo, e exporte em XLSX.",
     descRu: "Таблица с полным расчётом по каждому товару — выберите столбцы, порядок и шаблон, и выгрузите в XLSX.",
     soStaff: true,
+    novo: true,
   },
   {
     to: "/manual",
@@ -111,40 +113,38 @@ function HomeConteudo() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <section>
-        <h2
-          className="text-2xl font-bold leading-tight md:text-3xl"
-          style={{ color: "var(--app-ink)", fontFamily: "var(--font-display)" }}
+      {/* Hero — wordmark do Masor centralizado (padrão launcher Lior) */}
+      <section className="pb-2 pt-2 text-center md:pt-4">
+        <span
+          className="inline-flex items-center justify-center font-extrabold"
+          style={{ gap: 1, fontSize: 44, letterSpacing: "-.02em", color: "var(--navy)", fontFamily: "var(--font-display)" }}
+          aria-label="Masor"
         >
-          {tx("Por onde começar?", "С чего начать?")}
-        </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed md:text-base" style={{ color: "var(--app-muted)" }}>
-          {tx(
-            "Escolha uma ferramenta abaixo. Cada análise vem com a legislação vigente e a fonte oficial de cada número.",
-            "Выберите инструмент ниже. Каждый анализ сопровождается действующим законодательством и официальным источником.",
-          )}
+          Mas
+          <img src="/globe.png" alt="o" style={{ height: "0.86em", transform: "translateY(0.1em)", margin: "0 -.01em" }} />
+          r
+        </span>
+        <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.22em]" style={{ color: "var(--app-faint)" }}>
+          {tx("Auditor Tributário · G41 Inteligência", "Налоговый аудитор · G41")}
         </p>
       </section>
 
-      <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {modulos.map((m) => (
-          <ModuloCard key={m.to} to={m.to} icon={m.icon} title={tx(m.pt, m.ru)} desc={tx(m.descPt, m.descRu)} />
+          <ModuloCard key={m.to} to={m.to} icon={m.icon} title={tx(m.pt, m.ru)} desc={tx(m.descPt, m.descRu)} novo={m.novo} lang={lang} />
         ))}
       </section>
 
       {/* Confiança / anti-invenção */}
-      <section className="app-card mt-6 flex items-start gap-3 p-5">
-        <span
-          className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-          style={{ background: "var(--amber-soft)", color: "var(--navy)" }}
-        >
+      <section className="mt-5 flex items-start gap-3 rounded-2xl border p-5" style={{ borderColor: "var(--app-line)", background: "var(--tint-amber)" }}>
+        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg" style={{ background: "var(--navy)", color: "var(--bulb)" }}>
           <ShieldTrust size={20} />
         </span>
         <div>
           <p className="text-sm font-bold" style={{ color: "var(--app-ink)" }}>
             {t("home.trust.title")}
           </p>
-          <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--app-muted)" }}>
+          <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--app-body)" }}>
             {t("home.trust.desc")}
           </p>
         </div>
@@ -153,24 +153,28 @@ function HomeConteudo() {
   );
 }
 
-function ModuloCard({ to, icon: Icon, title, desc }: { to: string; icon: LucideIcon; title: string; desc: string }) {
+function ModuloCard({ to, icon: Icon, title, desc, novo, lang }: { to: string; icon: LucideIcon; title: string; desc: string; novo?: boolean; lang: "pt" | "ru" }) {
   return (
-    <Link to={to} className="app-card group flex flex-col p-5 transition-shadow hover:shadow-lg">
+    <Link
+      to={to}
+      className="group relative flex flex-col rounded-2xl p-5 transition-transform hover:-translate-y-0.5"
+      style={{ background: "var(--navy)", boxShadow: "var(--shadow-app)" }}
+    >
+      {novo && (
+        <span className="absolute right-4 top-4 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider" style={{ background: "var(--amber)", color: "var(--navy)" }}>
+          {lang === "ru" ? "Новое" : "Novo"}
+        </span>
+      )}
       <span
         className="flex h-11 w-11 items-center justify-center rounded-xl transition-transform group-hover:scale-105"
-        style={{ background: "var(--navy)", color: "var(--amber)" }}
+        style={{ background: "rgba(233,167,74,0.16)", color: "var(--bulb)" }}
       >
         <Icon size={20} />
       </span>
-      <h3 className="mt-4 text-base font-bold" style={{ color: "var(--app-ink)" }}>
-        {title}
-      </h3>
-      <p className="mt-1 flex-1 text-[13px] leading-relaxed" style={{ color: "var(--app-muted)" }}>
+      <h3 className="mt-4 text-base font-bold text-white">{title}</h3>
+      <p className="mt-1 flex-1 text-[13px] leading-relaxed" style={{ color: "#C7CEDE" }}>
         {desc}
       </p>
-      <span className="mt-3 text-[13px] font-semibold transition-transform group-hover:translate-x-0.5" style={{ color: "var(--navy)" }}>
-        {title} →
-      </span>
     </Link>
   );
 }
