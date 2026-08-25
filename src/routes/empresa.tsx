@@ -239,7 +239,6 @@ function EmpresaConteudo() {
         )}
       </div>
 
-      <style>{`.ipt{width:100%;border:1px solid var(--app-line);border-radius:.6rem;padding:.55rem .75rem;font-size:.875rem;color:var(--app-ink);outline:none;background:var(--app-bg2)}.ipt:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(233,167,74,.16)}`}</style>
     </AppShell>
   );
 }

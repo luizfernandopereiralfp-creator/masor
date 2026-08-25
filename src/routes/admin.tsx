@@ -210,7 +210,6 @@ function Admin() {
         )}
       </div>
 
-      <style>{`.ipt{width:100%;border:1px solid var(--app-line);border-radius:.5rem;padding:.4rem .6rem;font-size:.85rem;color:var(--app-ink);outline:none;background:var(--app-bg2)}.ipt:focus{border-color:var(--amber)}`}</style>
     </AppShell>
   );
 }

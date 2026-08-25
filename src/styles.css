@@ -227,6 +227,21 @@
 .app-row { transition: background .12s; }
 .app-row:hover { background: var(--app-bg2); }
 
+/* Campo de formulário canônico (padrão Lior): borda warm + foco âmbar */
+.ipt {
+  width: 100%;
+  border: 1px solid var(--input);
+  border-radius: 11px;
+  padding: .55rem .75rem;
+  font-size: .875rem;
+  color: var(--app-ink);
+  background: var(--card);
+  outline: none;
+  transition: border-color .12s, box-shadow .12s;
+}
+.ipt:focus { border-color: var(--amber); box-shadow: 0 0 0 3px rgba(233,167,74,.18); }
+.ipt::placeholder { color: var(--app-faint); }
+
 /* Inputs numéricos sem setas (spinner) em todos os navegadores */
 .no-spinner {
   appearance: none;
