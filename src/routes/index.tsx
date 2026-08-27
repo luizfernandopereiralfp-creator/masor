@@ -125,7 +125,7 @@ function HomeConteudo() {
           r
         </span>
         <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.22em]" style={{ color: "var(--app-faint)" }}>
-          {tx("Auditor Tributário · G41 Inteligência", "Налоговый аудитор · G41")}
+          {tx("Auditor Fiscal · G41 Inteligência", "Налоговый аудитор · G41")}
         </p>
       </section>
 

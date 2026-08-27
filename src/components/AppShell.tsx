@@ -169,7 +169,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           {/* Cabeçalho de tela (overline + título) */}
           <div className="min-w-0">
             <div className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--app-faint)" }}>
-              {tx(lang, "Auditor tributário", "Налоговый аудитор")}
+              {tx(lang, "Auditor Fiscal", "Налоговый аудитор")}
             </div>
             <h1 className="-mt-0.5 truncate text-base font-bold md:text-lg" style={{ color: "var(--app-ink)", fontFamily: "var(--font-display)" }}>
               {titulo}
