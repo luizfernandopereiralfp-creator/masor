@@ -308,7 +308,7 @@ Eventos periódicos **descontinuados / não presentes no XSD S-1.3**:
 Cenário-alvo do MVP: **empresa comum brasileira** — pessoa jurídica, RGPS, empregados CLT, sem servidores
 estatutários, sem produção rural, sem trabalhadores avulsos, sem benefícios previdenciários próprios.
 
-### 4.1 Escopo do MVP (13 eventos de envio + 6 de retorno)
+### 4.1 Escopo do MVP (15 eventos de envio + 6 de retorno consumidos)
 
 | # | Evento | Papel no MVP | Frequência |
 |---|---|---|---|
