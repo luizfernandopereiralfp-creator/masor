@@ -107,6 +107,22 @@ Ver `AUDITORIA-anti-invencao.md`. Estes não são pendências das frentes de pes
 | F7 | **Licença da biblioteca `sped-esocial`** — um documento diz ter lido o LICENSE, outro diz que o GitHub reporta licença indefinida | Abrir o LICENSE e registrar o hash | Média (jurídico) |
 | F8 | **Esforço da camada de transmissão** — 4 a 7 semanas num documento, 4 a 7 pessoa-mês em outro, para escopos que se sobrepõem | Reconciliar os escopos antes de usar o número em decisão | **Alta para a decisão** |
 
+## Bloco G — itens abertos por `10-migracao-ponto-e-holerite.md`
+
+Aberto em 30/08/2026 pela especificação de **migração de sistema, ponto eletrônico e
+holerite**. São as regras legais de que a engenharia dessas três frentes depende e que a
+rodada de pesquisa não pôde ler (egress `*.gov.br` bloqueado).
+
+| # | Documento | Fecha | Prioridade |
+|---|---|---|---|
+| G1 | **Portaria MTP 671/2021 — ANEXOS** (layout do **AFD** e do **AEJ**) | Parser do arquivo de ponto; reprodutibilidade do AEJ; se o AEJ carrega os ajustes de marcação. Complementa o item **C3**, mas o anexo precisa de download e hash próprios | **BLOQUEADOR do parser de ponto** (T-01) |
+| G2 | **CLT, art. 58 e §1º** + o verbete do TST sobre tolerância de marcação | Limite por marcação, limite diário e o **modo** (computa o tempo integral × só o excedente). Escolher errado erra em toda a carteira, todo mês | **BLOQUEADOR da apuração de horas extras** (T-02) |
+| G3 | **CLT, art. 71 e §4º** (redação da Lei 13.467/2017) | Duração mínima do intervalo por faixa de jornada, percentual devido na supressão, se o devido é o período suprimido ou o intervalo inteiro, e a **natureza** da parcela — que decide as três incidências no `S-1010` | **BLOQUEADOR da rubrica de intervalo** (T-03) |
+| G4 | **CLT, art. 464 e parágrafo único** | Conteúdo obrigatório do recibo de pagamento, discriminação das parcelas, assinatura/aceite e guarda | **BLOQUEADOR do holerite** (H-01, H-03, H-04, H-05) |
+| G5 | **Lei 8.036/1990, art. 17** e correlatos | Obrigação de informar ao trabalhador o FGTS depositado e a periodicidade | Alta (H-02) |
+| G6 | **MOS S-1.3** — capítulo de **eventos extemporâneos e retificação** | Se e como se retifica competência anterior à data de corte quando o declarante era outro sistema; se o `S-1010` precisa ser reenviado na troca de sistema | Alta (M-02, M-03) — já sob **A1**, com pergunta específica de migração |
+| G7 | **Súmula 60 do TST, item II** | Prorrogação do adicional noturno após o fim da faixa. Muda o resultado da jornada noturna em ~1,14 h por turno | Média (T-09) |
+
 ## Estado do lastro, por área
 
 | Área | Situação após esta pesquisa |

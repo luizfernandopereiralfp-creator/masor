@@ -16,6 +16,7 @@
 | `06-riscos-lgpd-e-dados-vivos.md` | Dados sensíveis, papéis, controles de dia 1 e o catálogo de dados vivos |
 | `07-arquitetura-modulo-lior.md` | Proposta de desenho: onde o módulo mora, schema, segurança, faseamento e o que ainda não tem especificação |
 | `09-rubricas-e-reconciliacao.md` | **Tabela de rubricas (S-1010), o de-para de incidências e o plano de reconciliação contra os totalizadores** — fecha a lacuna apontada pela auditoria |
+| `10-migracao-ponto-e-holerite.md` | **Carga inicial na troca de sistema, ponto eletrônico do arquivo às horas, e o holerite** — as outras três lacunas apontadas pela auditoria |
 | `AUDITORIA-anti-invencao.md` | **Auditoria cruzada dos seis** — contradições, selos inflacionados, erros de aritmética e veredito por documento |
 | `FONTES-A-BAIXAR.md` | **A checklist que fecha o loop** — o que baixar para converter pesquisa em especificação |
 
