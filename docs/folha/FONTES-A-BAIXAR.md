@@ -1,0 +1,106 @@
+# Checklist de verificação em fonte primária — módulo de Folha
+
+> **Por que este arquivo existe.** A pesquisa de 30/08/2026 rodou num ambiente com
+> **egress bloqueado por política de rede para `*.gov.br`, `planalto.gov.br` e `in.gov.br`**
+> (403 no proxy, registrado em `recentRelayFailures`). Nenhum PDF oficial pôde ser aberto.
+> Os seis documentos de pesquisa foram escritos com selo de confiança por afirmação e
+> acumulam **cerca de 85 pendências numeradas**.
+>
+> Pela regra inegociável do projeto (`CLAUDE.md`), **nada disso está lastreado** enquanto
+> não for lido no texto original. Este arquivo é a lista do que baixar, numa máquina com
+> acesso aberto, para converter pesquisa em especificação.
+
+## Como executar
+
+1. Baixar cada item da lista **da origem oficial**.
+2. Arquivar em `docs/folha/fontes/` com **nome, data de download e hash SHA-256**
+   (mesmo padrão de versionamento do `docs/fontes-oficiais.md`).
+3. Reabrir o documento de pesquisa correspondente e **elevar o selo** das afirmações que o
+   texto original confirmar; corrigir as que ele contrariar.
+4. O que o texto original **não** responder continua pendência — e o motor trata como
+   parâmetro não confirmado: resultado **PROVISÓRIO**, pendência visível, tarefa no Kanban.
+
+**Regra de corte:** os itens marcados **BLOQUEADOR** impedem o início da codificação da
+área correspondente. Os demais podem correr em paralelo ao desenvolvimento.
+
+---
+
+## Bloco A — eSocial (portal → Documentação Técnica)
+
+| # | Documento | Fecha | Prioridade |
+|---|---|---|---|
+| A1 | **MOS S-1.3 consolidado** (versão mais recente) | prazo de envio de 25 eventos; semântica do `infoFech` do S-1299; obrigatoriedade condicional do S-1020; eventos extemporâneos | **BLOQUEADOR** |
+| A2 | **Leiautes S-1.3** (documento de leiaute por evento) | campo "Prazo de envio" de cada evento; conferência do mapa de 50 eventos | **BLOQUEADOR** |
+| A3 | **NT S-1.3 nº 06/2026** | regra do **CNPJ alfanumérico** — define o tipo de `nrInsc` no modelo de dados | **BLOQUEADOR** |
+| A4 | **Pacote ZIP de XSD S-1.3 vigente** (eventos + comunicação) | geração dos tipos do módulo; versões vigentes de cada schema | **BLOQUEADOR** |
+| A5 | **Manual de Orientação do Desenvolvedor (MOD)**, v1.15 ou posterior | as 8 URLs de webservice; limite de eventos e de bytes por lote; confirmação de que o lote não é assinado, só o evento; formação do `Id`; política de polling | **BLOQUEADOR** |
+| A6 | **Mensagens do Sistema** (catálogo de ocorrências) | tabela de `cdResposta` e tratamento de retorno com erro | Alta |
+| A7 | **Tabelas do eSocial** (em especial a de FPAS/Terceiros) | rateio de Terceiros por FPAS — divergência entre fontes na pesquisa | Alta |
+| A8 | Notícia/norma do **novo padrão de certificado em produção (24/06/2026)** | requisitos de TLS e cadeia; risco de parada silenciosa da integração | Alta |
+| A9 | **Cronograma de implantação** + Portarias Conjuntas de obrigatoriedade | matriz de grupos e fases | Média |
+| A10 | Documentação técnica — verificar se existe **S-1.4 anunciada** | roadmap do módulo | Média |
+
+> **Contradição a resolver neste bloco:** dois documentos de pesquisa citam consolidações
+> diferentes do MOS (`NO 11/2026` e `NO 07/2026`). O MOS baixado decide qual é a vigente.
+
+## Bloco B — Receita Federal
+
+| # | Documento | Fecha | Prioridade |
+|---|---|---|---|
+| B1 | **Lei 15.270/2025** + **IN RFB 2.299/2025** | **definição de RBM do redutor do IRRF** (bruto ou tributável após INSS). Muda o imposto de toda folha entre R$ 5.000,01 e R$ 7.350,00 | **BLOQUEADOR** |
+| B2 | **Portaria Interministerial MPS/MF nº 13/2026** (Anexo II) | tabela de faixas e teto do INSS 2026 | **BLOQUEADOR** |
+| B3 | **IN RFB 2.005/2021 consolidada** + **IN RFB 2.248/2025** | prazo da DCTFWeb, DCTFWeb Anual do 13º e regra de dia não útil | **BLOQUEADOR** |
+| B4 | **IN RFB 2.110/2022** (Anexos II e III) | Terceiros por FPAS; posição da RFB sobre **INSS no aviso prévio indenizado** | Alta |
+| B5 | **IN RFB 1.500/2014** (arts. 11 e 65) | IRRF de férias calculado em separado; isenção do abono pecuniário | Alta |
+| B6 | **Manual DCTFWeb** + Perguntas e Respostas | procedimento de **retificação com DARF já pago** — caso mais frequente de suporte | Alta |
+| B7 | **Manual da EFD-Reinf** vigente | eventos das séries R-2xxx/R-4xxx e prazos | Média |
+| B8 | Norma do **comprovante de rendimentos** pós-extinção da DIRF | obrigação anual do módulo, hoje sem base normativa confirmada | Alta |
+| B9 | Legislação do **IRRF sobre rendimentos do trabalho** | prazo e código de recolhimento da guia mensal | Alta |
+
+## Bloco C — Ministério do Trabalho e FGTS
+
+| # | Documento | Fecha | Prioridade |
+|---|---|---|---|
+| C1 | **Manual do FGTS Digital** (versão vigente) | prazo do dia 20 e **regra de ajuste quando não é dia útil**; base da multa de 40%; multa rescisória do aprendiz | **BLOQUEADOR** |
+| C2 | **Portaria MTP 667/2021 compilada** + **Portaria MTE 1.131/2025** | **valores das multas do eSocial** — nenhum número de multa foi reproduzido na pesquisa, por decisão | **BLOQUEADOR** para telas de risco e material comercial |
+| C3 | **Portaria MTP 671/2021 compilada** + anexos | ponto eletrônico; **layouts AFD e AEJ**; dispensa do livro de registro em papel | Alta |
+| C4 | Legislação do **FGTS Digital** (Portaria MTE 240/2024 e correlatas) | norma vigente; data formal do fim da GFIP para fins de FGTS | Média |
+| C5 | **Sistema Mediador (CCT/ACT)** — verificar existência de API ou dados abertos | alimentação da tabela viva de convenção coletiva por cliente | **BLOQUEADOR** para o cadastro de CCT |
+
+## Bloco D — Planalto (texto de lei)
+
+| # | Norma | Fecha | Prioridade |
+|---|---|---|---|
+| D1 | **Decreto 12.797/2025** | salário mínimo vigente, valor-dia e valor-hora | **BLOQUEADOR** |
+| D2 | **Lei 8.036/1990**, arts. 18 e 22 | percentual de **juros de mora do FGTS** em atraso — fontes divergem entre 0,5% e 1% ao mês | Alta |
+| D3 | **Lei 8.212/1991**, arts. 21, 22, 22-A, 25 e 32-A | alíquotas de contribuinte individual; encargos patronais; rural | Alta |
+| D4 | **CLT**, arts. 41, 47, 47-A, 64, 135, 145, 459, 462, 477, 482 e 484-A | multas administrativas; divisor do salário-hora; prazos de férias e de pagamento; limite de descontos; rescisão | Alta |
+| D5 | **Lei 12.546/2011** (arts. 7º e 8º) + **Lei 14.973/2024** | setores e alíquotas da CPRB; cronograma da reoneração | Alta |
+| D6 | **LC 123/2006**, arts. 13, 18 e 18-C | Simples Anexo IV; limite do MEI empregador | Média |
+| D7 | **Decreto 9.579/2018** (arts. 51–57) e **Lei 11.788/2008** | cota e regras do aprendiz; o que não incide sobre estágio | Média |
+| D8 | Verificar **lei de licença-paternidade** publicada em 2025/2026 | duração vigente do afastamento | Média |
+
+## Bloco E — ANPD e outros
+
+| # | Documento | Fecha | Prioridade |
+|---|---|---|---|
+| E1 | **Resolução CD/ANPD nº 15/2024** | critérios de risco relevante e prazo de comunicação de incidente | Alta |
+| E2 | Orientação da ANPD sobre **dados de crianças e adolescentes** | tratamento de dependentes menores na folha | Alta |
+| E3 | **Layout CNAB 240 (FEBRABAN)** vigente | remessa bancária de pagamento de salários em lote | Média |
+| E4 | Leis estaduais de **piso regional** das UFs atendidas | piso por UF — hoje `null` no modelo, por decisão | Alta |
+
+---
+
+## Estado do lastro, por área
+
+| Área | Situação após esta pesquisa |
+|---|---|
+| Eventos e leiaute do eSocial | Mapa de 50 eventos conferido contra XSD. Prazos **não confirmados**. |
+| Integração técnica | Canal e mecânica descritos. Endpoints e limites **não confirmados**. |
+| Motor de cálculo | Tabelas 2026 com convergência entre fontes e prova aritmética interna. Texto normativo **não lido**. |
+| Obrigações e calendário | Ciclo mensal montado. Vários prazos **não confirmados** no texto original. |
+| Construir x comprar | Categorias e fornecedores mapeados. **Nenhum preço** — o mercado não publica. |
+| LGPD e dados vivos | Um único item verificado direto no texto normativo. |
+
+**Conclusão honesta:** o processo está entendido e mapeado. A informação **ainda não está
+verificada no padrão que este projeto exige**. Executar esta checklist é o que fecha o loop.
