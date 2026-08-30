@@ -137,6 +137,8 @@ Levantado pela auditoria, e não coberto por nenhum dos seis documentos:
 - Proporcionalização de admissão e demissão no meio do mês; faltas, atrasos e perda do DSR.
 - Tratamento do arquivo de ponto até as horas apuradas.
 - Conteúdo legal obrigatório do holerite.
-- Plano de reconciliação da folha contra os totalizadores de retorno.
+- ~~Plano de reconciliação da folha contra os totalizadores de retorno.~~ →
+  **especificado em `09-rubricas-e-reconciliacao.md`**, junto com o modelo completo de
+  `folha_rubrica`, o catálogo inicial proposto e as travas de integridade da seção 3 acima.
 
 Nada disso é detalhe: cada item é um lugar onde a folha erra em silêncio.
