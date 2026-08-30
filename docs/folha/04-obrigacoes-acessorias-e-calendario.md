@@ -19,7 +19,7 @@ que retorna o conteúdo das páginas oficiais mas **não substitui a leitura lit
 |---|---|---|
 | ✅ | Confirmado em página/documento de domínio oficial, com URL | Sim, com a URL no comentário do código |
 | ⚠️ | Confirmado em fonte oficial, mas **sem leitura do texto literal da norma** (redação, exceções e §§ não conferidos) | **Não** — ler a norma antes |
-| ❌ | **PENDÊNCIA — não confirmado** | **Não.** Vai para a seção 13 e abre tarefa no Kanban |
+| ○ | **PENDÊNCIA — não confirmado** | **Não.** Vai para a seção 13 e abre tarefa no Kanban |
 
 **Regra do projeto aplicada aqui:** prazo/obrigação/multa sem fonte oficial confirmada entra no
 sistema como `null` + pendência visível, nunca como valor padrão silencioso.
@@ -134,7 +134,7 @@ EFD-Reinf) → só então a DCTFWeb fica disponível para editar e transmitir �
 - O DARF só é liberado **após a transmissão** da declaração.
   ✅ [DCTFWeb — Receita Federal](https://www.gov.br/receitafederal/pt-br/assuntos/orientacao-tributaria/declaracoes-e-demonstrativos/DCTFWeb)
 - Emissão de DARF **parcial / por débito específico**, DARF de saldo e vinculação de compensações:
-  **❌ PENDÊNCIA** — descrito no Manual da DCTFWeb, não lido nesta pesquisa.
+  **○ PENDÊNCIA** — descrito no Manual da DCTFWeb, não lido nesta pesquisa.
 
 ### 3.5 O que acontece se a folha estiver errada
 
@@ -143,7 +143,7 @@ retificar o evento no **eSocial** → reabrir (S-1298) e **refechar** (S-1299) �
 **"em andamento/retificadora"** → transmitir a **DCTFWeb retificadora** → recalcular o DARF.
 Se o DARF original já foi pago a menor, sobra saldo a recolher **com multa e juros**; se pago a
 maior, gera crédito a compensar/restituir.
-**❌ PENDÊNCIA:** procedimento exato de retificação, tratamento do DARF já pago, prazo de retificação
+**○ PENDÊNCIA:** procedimento exato de retificação, tratamento do DARF já pago, prazo de retificação
 e efeitos da retificação após início de procedimento de ofício — precisa da leitura do
 [Manual da DCTFWeb](https://www.gov.br/receitafederal/pt-br/centrais-de-conteudo/publicacoes/manuais/manual-dctfweb/manual-dctfweb-atualizacao-janeiro2025_versao_final.pdf) e do
 [Perguntas e Respostas set/2025](https://www.gov.br/receitafederal/pt-br/assuntos/orientacao-tributaria/declaracoes-e-demonstrativos/DCTFWeb/arquivos/perguntas-e-respostas-dctfweb-2025-09-23.pdf).
@@ -173,7 +173,7 @@ e efeitos da retificação após início de procedimento de ofício — precisa 
 |---|---|---|---|
 | Prazo mensal vigente | **Até o dia 20 do mês seguinte** ao da competência | [Novo prazo — dia 20 (MTE)](https://www.gov.br/trabalho-e-emprego/pt-br/servicos/empregador/fgtsdigital/videos-e-tutoriais/novo-prazo-para-recolhimento-do-fgts-mensal-dia-20) · [Perguntas frequentes — MTE](https://www.gov.br/trabalho-e-emprego/pt-br/servicos/empregador/fgtsdigital/perguntas-frequentes) | ✅ |
 | Base legal | **Lei nº 14.438/2022**, que alterou o prazo do art. 15 da **Lei nº 8.036/1990** (de dia 7 para dia 20), com eficácia amarrada à entrada em operação do FGTS Digital | [Lei 8.036/1990 consolidada](https://www.planalto.gov.br/ccivil_03/leis/l8036consol.htm) | ⚠️ **ler o art. 15 literal** |
-| Antecipação/prorrogação quando dia 20 não é útil | **❌ PENDÊNCIA — não confirmado** (regra difere da previdenciária; conferir no Manual de Orientação) | — | ❌ |
+| Antecipação/prorrogação quando dia 20 não é útil | **○ PENDÊNCIA — não confirmado** (regra difere da previdenciária; conferir no Manual de Orientação) | — | ○ |
 
 > **Armadilha nº 3:** houve um período em que o MTE publicou comunicado **"o prazo de recolhimento do
 > FGTS ainda não mudou"** antes de a alteração produzir efeitos
@@ -200,7 +200,7 @@ e efeitos da retificação após início de procedimento de ofício — precisa 
 - **Consumir:** o retorno **S-5003** (base e valor do FGTS por trabalhador) para **conferência
   automática folha × FGTS Digital** antes de o cliente pagar a guia. ✅
 - **Existência de API/webservice público do FGTS Digital para emissão de guia e consulta de débitos:
-  ❌ PENDÊNCIA — não confirmado.** Assumir integração via portal + certificado digital até prova em
+  ○ PENDÊNCIA — não confirmado.** Assumir integração via portal + certificado digital até prova em
   contrário.
 - **Crédito do Trabalhador (consignado):** o FGTS Digital passou também a operar a **declaração e o
   recolhimento das prestações de empréstimo consignado (Lei nº 10.820/2003)**, com cobrança ativa do
@@ -238,7 +238,7 @@ também alimenta a DCTFWeb.
 | **R-4020** | **Retenções na fonte — pessoa jurídica** ✅ (mesma fonte) | ✅ |
 | **R-4080** | **Retenção no recebimento** ✅ (mesma fonte) | ✅ |
 | **R-4099** | **Fechamento/reabertura dos eventos da série R-4000** ✅ (mesma fonte) | ✅ |
-| Demais (R-2030/2040/2050/2055, R-3010, R-4040, R-9000, R-9005/R-9015) | **❌ PENDÊNCIA — lista completa e finalidade de cada um não confirmada item a item.** Conferir no [Manual da EFD-Reinf v2.1.2.1](http://sped.rfb.gov.br/estatico/28/40FAAC1C636CC110D4C12D2790B43C641C6BCA/Manual%20da%20EFD-Reinf%20vers%C3%A3o%202.1.2.1.pdf) | ❌ |
+| Demais (R-2030/2040/2050/2055, R-3010, R-4040, R-9000, R-9005/R-9015) | **○ PENDÊNCIA — lista completa e finalidade de cada um não confirmada item a item.** Conferir no [Manual da EFD-Reinf v2.1.2.1](http://sped.rfb.gov.br/estatico/28/40FAAC1C636CC110D4C12D2790B43C641C6BCA/Manual%20da%20EFD-Reinf%20vers%C3%A3o%202.1.2.1.pdf) | ○ |
 
 **Obrigatoriedade:** condicionada à **existência de informação a prestar**. Sem movimento, **não se
 envia evento algum — nem o R-1000**.
@@ -270,13 +270,13 @@ Reinf, **a DCTFWeb não fecha**.
 | **GFIP/SEFIP — parte previdenciária** | Substituída por **eSocial + DCTFWeb** (DARF numerado em lugar da GPS, desde o PA 08/2018 para os obrigados) | IN RFB nº 2.005/2021 | [DCTFWeb — RFB](https://www.gov.br/receitafederal/pt-br/assuntos/orientacao-tributaria/declaracoes-e-demonstrativos/DCTFWeb) | ✅ |
 | **DIRF** | **Extinta.** Integralmente substituída por **EFD-Reinf + eSocial** para fatos geradores **a partir de 01/01/2025**. A **DIRF 2025 (ano-calendário 2024) foi a última** | **IN RFB nº 2.096/2022** (previa 2024), prorrogada para 2025 pela **IN RFB nº 2.181/2024** | [Com o fim da DIRF — RFB (jul/2025)](https://www.gov.br/receitafederal/pt-br/assuntos/noticias/2025/julho/a-declaracao-do-imposto-sobre-a-renda-retido-na-fonte-dirf-nao-sera-mais-utilizada) · [Substituição da DIRF PGD — eSocial](https://www.gov.br/esocial/pt-br/noticias/substituicao-da-dirf-pgd-por-eventos-do-esocial-comeca-no-periodo-de-apuracao-01-2025) | ✅ |
 | **DCTF PGD** | **Extinta** para fatos geradores a partir de **01/01/2025**; migrou para **DCTFWeb via MIT** | IN RFB nº 2.237/2024 | [Notícia RFB](https://www.gov.br/receitafederal/pt-br/assuntos/noticias/2024/dezembro/publicada-instrucao-normativa-que-institui-o-modulo-de-inclusao-de-tributos-2013-mit-na-dctfweb-e-substitui-a-dctf) | ✅ |
-| **Livro/Ficha de Registro de Empregados (LRE)** | Registro **eletrônico**; entende-se substituído pelo eSocial na forma da Portaria MTP nº 671/2021 | Portaria MTP nº 671/2021; CLT art. 41 | [Portaria MTP 671/2021 compilada](https://www.gov.br/trabalho-e-emprego/pt-br/assuntos/legislacao/portarias-1/portarias-vigentes-3/portaria-no-671-de-8-de-novembro-de-2021-compilada-20-10-2023.pdf) | ❌ **PENDÊNCIA — artigo específico não lido** |
+| **Livro/Ficha de Registro de Empregados (LRE)** | Registro **eletrônico**; entende-se substituído pelo eSocial na forma da Portaria MTP nº 671/2021 | Portaria MTP nº 671/2021; CLT art. 41 | [Portaria MTP 671/2021 compilada](https://www.gov.br/trabalho-e-emprego/pt-br/assuntos/legislacao/portarias-1/portarias-vigentes-3/portaria-no-671-de-8-de-novembro-de-2021-compilada-20-10-2023.pdf) | ○ **PENDÊNCIA — artigo específico não lido** |
 
 ### O que **ainda existe** hoje (30/08/2026)
 
 **Vivas e obrigatórias:** eSocial · EFD-Reinf · **DCTFWeb (com MIT)** · **FGTS Digital** ·
 registro eletrônico de ponto (quando aplicável) · **comprovante de rendimentos ao empregado**
-(base normativa ❌ pendente) · CCT/ACT · guias: **DARF numerado** (previdenciário + Terceiros) e
+(base normativa ○ pendente) · CCT/ACT · guias: **DARF numerado** (previdenciário + Terceiros) e
 **guia FGTS via Pix**.
 
 **Mortas:** DCTF PGD · DIRF · GFIP/SEFIP (para fatos novos) · GPS para empresas obrigadas · CAGED e
@@ -291,7 +291,7 @@ RAIS **como sistemas próprios de digitação** (as bases seguem vivas, alimenta
 | Obrigação existe? | **Sim** — o empregador (fonte pagadora) continua obrigado a entregar ao beneficiário PF o Comprovante de Rendimentos Pagos e de Imposto sobre a Renda Retido na Fonte. A extinção da DIRF **não extinguiu o comprovante** | ⚠️ |
 | Quem gera | A **fonte pagadora** (empregador). O sistema de folha deve emitir | ⚠️ |
 | Prazo | Historicamente **até o último dia útil de fevereiro** do ano seguinte ao do pagamento | ⚠️ referência histórica: [RFB — prazo Dirf 2021 e comprovante](https://www.gov.br/economia/pt-br/assuntos/noticias/2021/fevereiro/termina-o-prazo-de-entrega-da-dirf-2021-e-do-comprovante-de-rendimentos-pagos-e-de-imposto-retido-na-fonte) |
-| **Base normativa vigente em 2026** | **❌ PENDÊNCIA — NÃO CONFIRMADO.** A IN que disciplinava o comprovante era referenciada pela IN da DIRF, hoje extinta. Não foi possível confirmar qual norma rege o comprovante para o ano-calendário 2025/2026, nem se o prazo permanece o último dia útil de fevereiro | ❌ |
+| **Base normativa vigente em 2026** | **○ PENDÊNCIA — NÃO CONFIRMADO.** A IN que disciplinava o comprovante era referenciada pela IN da DIRF, hoje extinta. Não foi possível confirmar qual norma rege o comprovante para o ano-calendário 2025/2026, nem se o prazo permanece o último dia útil de fevereiro | ○ |
 | Apoio oficial ao contribuinte | A RFB disponibiliza no Portal de Serviços o **Demonstrativo Consolidado do IRRF**, montado a partir do eSocial/EFD-Reinf — **é apoio ao empregado, não substitui a obrigação do empregador** | ⚠️ [Demonstrativo Consolidado do IRRF](https://www.gov.br/esocial/pt-br/noticias/receita-federal/demonstrativo-consolidado-do-imposto-de-renda-retido-na-fonte-esta-disponivel-no-portal-de-servicos-da-receita-federal) |
 
 > **Não codificar o prazo do informe de rendimentos no Lior enquanto a PENDÊNCIA acima não for
@@ -312,15 +312,15 @@ Referência: competência **M**; obrigações no mês **M+1**. Ajuste de data va
 | 1 | Dia 26–31 de M (parametrizável) | **Fechamento do ponto** — coleta do AFD, tratamento de marcações, horas extras, adicional noturno, faltas, DSR | REP-C/REP-A/REP-P → AFD | Definido em contrato/CCT | Portaria MTP 671/2021 | ⚠️ (não há data legal federal) |
 | 2 | Após o ponto | **Lançamentos variáveis**: afastamentos, férias, rescisões, benefícios, pensões, consignados | Lior | — | — | — |
 | 3 | Após lançamentos | **Cálculo da folha** — aplicar **piso e regras da CCT vigente** (seção 12) | Lior | — | — | — |
-| 4 | Até o **5º dia útil de M+1** | **Pagamento dos salários** | Banco (CNAB 240) | Regra própria do art. 459 §1º da CLT | CLT art. 459, §1º | ❌ **não reverificado nesta pesquisa** |
+| 4 | Até o **5º dia útil de M+1** | **Pagamento dos salários** | Banco (CNAB 240) | Regra própria do art. 459 §1º da CLT | CLT art. 459, §1º | ○ **não reverificado nesta pesquisa** |
 | 5 | Até o **dia 15 de M+1** | **Envio dos eventos periódicos** S-1200/S-1202/S-1207/S-1260/S-1270/S-1280 e **S-1210** (pagamentos) | eSocial | **ANTECIPA** para o dia útil imediatamente anterior | [S-1299 — eSocial](https://www.gov.br/esocial/pt-br/canais_atendimento/formularios/empresas/S-1299-Fechamento-dos-Eventos-Periodicos) | ✅ |
 | 6 | Até o **dia 15 de M+1** | **Fechamento S-1299** — trava a competência | eSocial | **ANTECIPA** | mesma fonte | ✅ |
 | 7 | Até o **dia 15 de M+1** | **EFD-Reinf**: eventos R-2010/R-2020 e R-4010/R-4020/R-4080 + **fechamento R-2099 / R-4099** | EFD-Reinf | **POSTERGA** para o 1º dia útil seguinte | IN RFB 2043/2021, art. 6º | ⚠️ |
 | 8 | Após 6 e 7 | **MIT** — o fiscal inclui IRPJ/CSLL/PIS/COFINS e demais tributos na DCTFWeb | MIT | — | [IN RFB 2237/2024](https://www.gov.br/receitafederal/pt-br/assuntos/noticias/2024/dezembro/publicada-instrucao-normativa-que-institui-o-modulo-de-inclusao-de-tributos-2013-mit-na-dctfweb-e-substitui-a-dctf) | ✅ |
 | 9 | **Antes do dia 20** (prazo operacional) | **Transmitir a DCTFWeb** e **emitir o DARF numerado** | DCTFWeb | — | [DCTFWeb — RFB](https://www.gov.br/receitafederal/pt-br/assuntos/orientacao-tributaria/declaracoes-e-demonstrativos/DCTFWeb) | ✅ |
 | 10 | Até o **dia 20 de M+1** | **Pagar o DARF** — contribuições previdenciárias + Terceiros | DARF numerado | **ANTECIPA** para o dia útil anterior quando não há expediente bancário | [PGFN — contribuição patronal](https://www.gov.br/pgfn/pt-br/cidadania-tributaria/por-assunto/tributacao-sobre-a-folhas-de-salarios-e-outras/contribuicoes-previdenciarias-1/patronal-ou-dos-empregadores) · [INSS — prazos de recolhimento](https://www.gov.br/inss/pt-br/saiba-mais/seus-direitos-e-deveres/calculo-da-guia-da-previdencia-social-gps/prazos-de-recolhimento) | ✅ |
-| 11 | Até o **dia 20 de M+1** | **Pagar o FGTS mensal** (guia FGTS Digital, via **Pix**) | FGTS Digital | ❌ regra de ajuste **não confirmada** | [Novo prazo dia 20 — MTE](https://www.gov.br/trabalho-e-emprego/pt-br/servicos/empregador/fgtsdigital/videos-e-tutoriais/novo-prazo-para-recolhimento-do-fgts-mensal-dia-20) | ✅ prazo / ❌ ajuste |
-| 12 | Até o **dia 20 de M+1** | **IRRF sobre rendimentos do trabalho** — recolhimento | DARF | ❌ **PENDÊNCIA — prazo e base legal não confirmados nesta pesquisa** | — | ❌ |
+| 11 | Até o **dia 20 de M+1** | **Pagar o FGTS mensal** (guia FGTS Digital, via **Pix**) | FGTS Digital | ○ regra de ajuste **não confirmada** | [Novo prazo dia 20 — MTE](https://www.gov.br/trabalho-e-emprego/pt-br/servicos/empregador/fgtsdigital/videos-e-tutoriais/novo-prazo-para-recolhimento-do-fgts-mensal-dia-20) | ✅ prazo / ○ ajuste |
+| 12 | Até o **dia 20 de M+1** | **IRRF sobre rendimentos do trabalho** — recolhimento | DARF | ○ **PENDÊNCIA — prazo e base legal não confirmados nesta pesquisa** | — | ○ |
 | 13 | Até o **último dia útil de M+1** | **Entrega formal da DCTFWeb** (prazo legal) | DCTFWeb | **POSTERGA** (último dia **útil**) | [IN RFB 2248/2025 — notícia RFB](https://www.gov.br/receitafederal/pt-br/assuntos/noticias/2025/fevereiro/contribuintes-ganham-mais-tempo-para-entregar-a-dctfweb) | ✅ |
 | 14 | Contínuo no mês | **Eventos não periódicos**: S-2200/S-2190 (**até o dia anterior ao início**), S-2299 (**até o 10º dia** do desligamento), S-2206, S-2230, S-2500 | eSocial | por evento | [MOS S-1.3](https://www.gov.br/esocial/pt-br/documentacao-tecnica/manuais/mos-s-1-3-consolidada-ate-a-no-s-1-3-07-2026.pdf) | ⚠️ |
 
@@ -344,14 +344,14 @@ Referência: competência **M**; obrigações no mês **M+1**. Ajuste de data va
 
 | Quando | Obrigação | Detalhe | Fonte | Status |
 |---|---|---|---|---|
-| **Até o último dia útil de fevereiro** | **Comprovante de rendimentos** ao empregado | ❌ base normativa e prazo vigentes **não confirmados** — ver seção 7 | — | ❌ |
+| **Até o último dia útil de fevereiro** | **Comprovante de rendimentos** ao empregado | ○ base normativa e prazo vigentes **não confirmados** — ver seção 7 | — | ○ |
 | **De 1º de fevereiro a 30 de novembro** | **1ª parcela do 13º** (adiantamento, metade do salário). Pode ser paga em qualquer mês da janela | [13º salário — MTE](https://www.gov.br/trabalho-e-emprego/pt-br/noticias-e-conteudo/2025/novembro/decimo-terceiro-salario-entenda-o-direito-regras-e-prazos-de-pagamento) · [Lei 4.749/1965](https://www.planalto.gov.br/ccivil_03/leis/l4749.htm) | ✅ prazo / ⚠️ texto literal |
 | **Até 30 de novembro** | **Prazo final da 1ª parcela do 13º** | mesma fonte | ✅ |
 | **1º a 20 de dezembro** | **Eventos da competência ANUAL no eSocial** (S-1200 e S-1299 do 13º) | [S-1299 — eSocial](https://www.gov.br/esocial/pt-br/canais_atendimento/formularios/empresas/S-1299-Fechamento-dos-Eventos-Periodicos) | ✅ |
 | **Até 20 de dezembro** | **DCTFWeb Anual (13º salário)** — transmissão + DARF | [Manual DCTFWeb](https://www.gov.br/receitafederal/pt-br/centrais-de-conteudo/publicacoes/manuais/manual-dctfweb/manual-dctfweb-atualizacao-janeiro2025_versao_final.pdf) | ⚠️ |
 | **Até 20 de dezembro** | **2ª parcela do 13º** ao empregado. Se o dia 20 cair em fim de semana/feriado, **antecipa** | [13º salário — MTE](https://www.gov.br/trabalho-e-emprego/pt-br/noticias-e-conteudo/2025/novembro/decimo-terceiro-salario-entenda-o-direito-regras-e-prazos-de-pagamento) | ✅ |
 | **15 dias antes do início** | **Férias coletivas**: comunicar ao órgão local do MTE as datas de início/fim e os setores abrangidos; **no mesmo prazo**, enviar cópia ao **sindicato** da categoria e **afixar aviso** nos locais de trabalho. **Dispensada para ME e EPP** (LC 123/2006, art. 51, V) | CLT art. 139, §2º | [Comunicar Férias Coletivas — gov.br](https://www.gov.br/pt-br/servicos/comunicar-ferias-coletivas) | ✅ |
-| **Férias individuais** | Aviso prévio de férias e pagamento antecipado — ❌ **prazos não reverificados nesta pesquisa** (CLT arts. 135 e 145) | — | ❌ |
+| **Férias individuais** | Aviso prévio de férias e pagamento antecipado — ○ **prazos não reverificados nesta pesquisa** (CLT arts. 135 e 145) | — | ○ |
 | **Data-base do sindicato** | **Reajuste/piso da CCT** — varia por sindicato e base territorial (seção 12) | [Mediador](https://mediador.trabalho.gov.br/sistemas/mediador/ConsultarInstColetivo) | ✅ |
 
 ---
@@ -363,12 +363,12 @@ Referência: competência **M**; obrigações no mês **M+1**. Ajuste de data va
 | **DCTFWeb** — entrega em atraso, com incorreções ou não entregue (**MAED**) | **2% ao mês-calendário ou fração** sobre o total de contribuições informadas — **ainda que já pagas** — **limitada a 20%**. **Mínimo R$ 200,00** (declaração sem movimento) ou **R$ 500,00** nos demais casos. **Redução de 50%** se entregue antes de qualquer procedimento de ofício; **25%** se entregue no prazo da intimação. Emissão **automática** | **Lei nº 8.212/1991, art. 32-A** | [Multas automáticas DCTFWeb — RFB](https://www.gov.br/receitafederal/pt-br/assuntos/noticias/2022/junho/multas-por-atraso-da-dctfweb-passarao-a-ser-emitidas-automaticamente) | ✅ (texto literal ⚠️) |
 | **eSocial** — informação fora do prazo/forma, ou com inexatidão/omissão | **Mínimo R$ 443,97**, acrescido de **R$ 104,31 por trabalhador** omitido ou declarado incorretamente, com **máximo de R$ 44.396,84**. **Desconto de 40%** para fatos geradores de 01/01/2020 até a véspera da vigência da Portaria | **Portaria MTP nº 667/2021, art. 81**, na redação da **Portaria MTE nº 1.131, de 03/07/2025** | [Portaria MTE 1.131/2025](https://www.gov.br/trabalho-e-emprego/pt-br/assuntos/credito-do-trabalhador/legislacao-do-governo-federal/portaria-mte-no-1-131-de-3-de-julho-de-2025-multas.pdf) · [Portaria MTP 667/2021 compilada](https://www.gov.br/trabalho-e-emprego/pt-br/assuntos/legislacao/portarias-1/portarias-vigentes-3/PDFPortarian667de8novembrode2021compilada21.03.2024.pdf) | ✅ valores / ⚠️ conferir na Portaria compilada |
 | **FGTS em atraso** | Atualização do valor + **juros de mora** + **multa progressiva: 5% no mês do vencimento e 10% a partir do mês seguinte**; sujeição às sanções do Decreto-Lei nº 368/1968 | **Lei nº 8.036/1990, art. 22** | [Lei 8.036/1990 consolidada](https://www.planalto.gov.br/ccivil_03/leis/l8036consol.htm) | ⚠️ **percentual de juros divergente entre fontes — ler o art. 22 §§ literal** |
-| **FGTS — infrações administrativas** (não recolher, omitir, prestar informação falsa) | Multas apuradas pela **Auditoria-Fiscal do Trabalho** | **Lei nº 8.036/1990, art. 23** | [Lei 8.036/1990 consolidada](https://www.planalto.gov.br/ccivil_03/leis/l8036consol.htm) | ❌ **faixa de valores não confirmada** |
-| **Empregado sem registro** | Multa por empregado não registrado, acrescida de igual valor em cada reincidência; valor reduzido para **ME/EPP** | **CLT, art. 47 e §1º** | — | ❌ **valores conflitantes entre fontes (R$ 3.000 × R$ 6.000) — NÃO CONFIRMADO** |
-| **Falta de anotação dos dados do art. 41, parágrafo único, da CLT** | Multa por trabalhador prejudicado | **CLT, art. 47-A** | — | ❌ **valor não confirmado** |
-| **EFD-Reinf** em atraso | ❌ **PENDÊNCIA — não confirmado** (verificar art. da IN RFB 2.043/2021 e a multa do art. 57 da MP 2.158-35/2001) | — | — | ❌ |
+| **FGTS — infrações administrativas** (não recolher, omitir, prestar informação falsa) | Multas apuradas pela **Auditoria-Fiscal do Trabalho** | **Lei nº 8.036/1990, art. 23** | [Lei 8.036/1990 consolidada](https://www.planalto.gov.br/ccivil_03/leis/l8036consol.htm) | ○ **faixa de valores não confirmada** |
+| **Empregado sem registro** | Multa por empregado não registrado, acrescida de igual valor em cada reincidência; valor reduzido para **ME/EPP** | **CLT, art. 47 e §1º** | — | ○ **valores conflitantes entre fontes (R$ 3.000 × R$ 6.000) — NÃO CONFIRMADO** |
+| **Falta de anotação dos dados do art. 41, parágrafo único, da CLT** | Multa por trabalhador prejudicado | **CLT, art. 47-A** | — | ○ **valor não confirmado** |
+| **EFD-Reinf** em atraso | ○ **PENDÊNCIA — não confirmado** (verificar art. da IN RFB 2.043/2021 e a multa do art. 57 da MP 2.158-35/2001) | — | — | ○ |
 | **Ponto** — ausência/irregularidade de controle de jornada | Auto de infração da Inspeção do Trabalho; multa de valor variável na forma da Portaria MTP 667/2021 | Portaria MTP nº 667/2021 | [Portaria MTP 667/2021](https://www.gov.br/trabalho-e-emprego/pt-br/assuntos/legislacao/portarias-1/portarias-vigentes-3/PDFPortarian667de8novembrode2021compilada21.03.2024.pdf) | ⚠️ **faixa específica não confirmada** |
-| **13º fora do prazo** | ❌ **PENDÊNCIA — não confirmado** | — | — | ❌ |
+| **13º fora do prazo** | ○ **PENDÊNCIA — não confirmado** | — | — | ○ |
 | Agravamento geral | As multas administrativas trabalhistas podem ser **dobradas em caso de reincidência, embaraço ou resistência à fiscalização** | Portaria MTP nº 667/2021 | [Portaria MTP 667/2021](https://www.gov.br/trabalho-e-emprego/pt-br/assuntos/legislacao/portarias-1/portarias-vigentes-3/PDFPortarian667de8novembrode2021compilada21.03.2024.pdf) | ⚠️ |
 
 > **O que mais gera multa na prática (ordem de risco):**
@@ -387,7 +387,7 @@ Referência: competência **M**; obrigações no mês **M+1**. Ajuste de data va
 | Onde está | [Layout padrão CNAB240 V10.11 — 21/08/2023](https://cmsarquivos.febraban.org.br/Arquivos/documentos/PDF/Layout%20padrao%20CNAB240%20V%2010%2011%20-%2021_08_2023.pdf) · versões anteriores: [V10.10 (30/08/2022)](https://cmsarquivos.febraban.org.br/Arquivos/documentos/PDF/Layout%20padrao%20CNAB240%20V%2010%2010%20-%2030_08_2022_2.pdf) · [V10.09 (14/10/2021)](https://cmsarquivos.febraban.org.br/Arquivos/documentos/PDF/Layout%20padrao%20CNAB240%20V%2010%2009%20-%2014_10_21.pdf) | ✅ |
 | Escopo | Troca de arquivos **Empresa ↔ Banco** para pagamento de **salários**, fornecedores, dividendos, tributos e títulos — por crédito em conta, cheque, OP, DOC, pagamento autenticado | ✅ |
 | Estrutura | Registro de **240 bytes**; hierarquia **Header de Arquivo → Header de Lote → Segmentos de detalhe → Trailer de Lote → Trailer de Arquivo** | ✅ |
-| Versão mais recente | **❌ PENDÊNCIA** — a V10.11 (2023) é a mais recente encontrada; **não confirmado** se há versão posterior publicada até 08/2026 | ❌ |
+| Versão mais recente | **○ PENDÊNCIA** — a V10.11 (2023) é a mais recente encontrada; **não confirmado** se há versão posterior publicada até 08/2026 | ○ |
 
 ### O que é preciso para gerar a remessa de salários
 
@@ -404,7 +404,7 @@ Referência: competência **M**; obrigações no mês **M+1**. Ajuste de data va
    **o layout FEBRABAN é o esqueleto, não a especificação final do banco**.
 
 > **Alerta de escopo:** pagamento em lote via **Pix** e via **API bancária (Open Finance / API de
-> pagamentos do banco)** é hoje alternativa concorrente ao CNAB. **❌ PENDÊNCIA:** não pesquisado.
+> pagamentos do banco)** é hoje alternativa concorrente ao CNAB. **○ PENDÊNCIA:** não pesquisado.
 
 ---
 
@@ -420,7 +420,7 @@ Referência: competência **M**; obrigações no mês **M+1**. Ajuste de data va
 | **Ponto por exceção** | Permitido mediante **acordo individual escrito**, convenção ou acordo coletivo. **Não é um tipo de REP** — é forma de consignação, aplicável a qualquer meio admitido pelo caput do art. 74 | mesma fonte | ✅ |
 | **Certificado técnico e Termo de Responsabilidade** | Exigidos do fabricante/desenvolvedor do equipamento ou programa | mesma fonte | ✅ |
 | **Arquivos que o REP gera** | **AFD — Arquivo Fonte de Dados** (obrigatório em todos os tipos de REP); o **programa de tratamento** processa o AFD e gera o **Espelho de Ponto Eletrônico** e o **AEJ — Arquivo Eletrônico de Jornada** | mesma fonte | ✅ |
-| Layout exato do AFD/AEJ | **❌ PENDÊNCIA** — especificações estão nos anexos da Portaria 671/2021, não lidos | — | ❌ |
+| Layout exato do AFD/AEJ | **○ PENDÊNCIA** — especificações estão nos anexos da Portaria 671/2021, não lidos | — | ○ |
 
 ### O que a folha precisa consumir do ponto
 
@@ -444,7 +444,7 @@ Referência: competência **M**; obrigações no mês **M+1**. Ajuste de data va
 | Onde ficam oficialmente | **Sistema Mediador** do MTE — sistema de negociação coletiva implantado em 2007; **registro eletrônico obrigatório** dos instrumentos coletivos | [Consultar Instrumentos Coletivos — Mediador](https://mediador.trabalho.gov.br/sistemas/mediador/ConsultarInstColetivo) · [Registro de convenções e ACT — MTE](https://www.gov.br/trabalho-e-emprego/pt-br/servicos/empregador/mediacao/registro-de-convencoes-e-acordo-coletivo-de-trabalho) | ✅ |
 | Tipos | **CCT** (sindicato patronal × sindicato laboral) · **ACT** (empresa × sindicato laboral) · **Termo Aditivo** (altera/complementa instrumento já registrado) | [Registro de convenções e ACT — MTE](https://www.gov.br/trabalho-e-emprego/pt-br/servicos/empregador/mediacao/registro-de-convencoes-e-acordo-coletivo-de-trabalho) | ✅ |
 | Consulta pública | **Sim, aberta a qualquer pessoa**, por filtros, inclusive instrumentos com vigência **já expirada** | [Consultar Instrumento Coletivo — gov.br](https://www.gov.br/pt-br/servicos/consultar-instrumento-coletivo-de-trabalho) | ✅ |
-| **Existe API pública?** | **❌ PENDÊNCIA — NÃO CONFIRMADO.** Nenhuma API, endpoint de dados abertos ou download estruturado do Mediador foi localizado. A consulta oficial é **por formulário web, resultado em PDF** | — | ❌ |
+| **Existe API pública?** | **○ PENDÊNCIA — NÃO CONFIRMADO.** Nenhuma API, endpoint de dados abertos ou download estruturado do Mediador foi localizado. A consulta oficial é **por formulário web, resultado em PDF** | — | ○ |
 | Manual do sistema | [Manual do Sistema Mediador](https://www.gov.br/trabalho-e-emprego/pt-br/pdfs/manual-do-sistema-mediador-srt-digital.pdf) | ✅ |
 
 ### Por que isso é dado vivo e por que o Lior não pode chutar
@@ -622,7 +622,7 @@ humana ANTES de sobrescrever** piso, reajuste ou benefício.
 5. **Retenções de terceiros (EFD-Reinf) fora do escopo do DP, dentro do escopo do fechamento.** O
    painel do mês deve mostrar o **status do fechamento fiscal (R-2099/R-4099 e MIT)**, senão o DP é
    cobrado por um atraso que não é dele.
-6. **Nenhuma multa exibida ao cliente sem norma e URL** — as faixas marcadas ❌ na seção 9 não podem
+6. **Nenhuma multa exibida ao cliente sem norma e URL** — as faixas marcadas ○ na seção 9 não podem
    aparecer na UI enquanto forem pendência.
 
 ---
