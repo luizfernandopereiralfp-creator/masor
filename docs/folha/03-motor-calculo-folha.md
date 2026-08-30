@@ -27,6 +27,22 @@ Decreto 12.797/2025, Portaria Interministerial MPS/MF 13/2026 (Anexo II), Lei 15
 e IN RFB 2.299/2025. Enquanto isso não ocorrer, as tabelas devem estar marcadas no banco
 com `fonte_verificada = false`.
 
+### Selo de evidência deste documento
+
+A auditoria de 30/08/2026 apontou que este era o único dos seis documentos **sem esquema de
+selo declarado** — e é o mais numérico, o que vira código. Vale, portanto, um selo único e
+conservador para o documento inteiro:
+
+| Selo | Significado | Onde se aplica |
+|---|---|---|
+| **AR** | **Coerência aritmética provada** nesta pesquisa: o número fecha com os outros números da própria tabela (soma de faixas, fronteiras nos dois sentidos, reprodução do exemplo). **Não é confirmação de vigência.** | Todas as tabelas de 2026 e os treze testes-âncora |
+| **CV** | **Convergência entre fontes secundárias**, sem leitura do texto normativo | Alíquotas, percentuais e prazos citados no corpo |
+| ○ | **PENDÊNCIA** — não confirmado. Não codificar | Seção 17 |
+
+**Nenhuma afirmação deste documento tem leitura do texto normativo original.** Todo valor
+gravado no banco a partir daqui nasce com `fonte_verificada = false` e todo cálculo que o
+use sai marcado como **PROVISÓRIO**, conforme o manifesto anti-invenção do documento `06`.
+
 ---
 
 ## 1. Salário mínimo e pisos
@@ -248,7 +264,10 @@ IRRF_devido = imposto_apurado − redutor
   (a fórmula zera exatamente no fim da faixa — como tem de ser)
 - Em RBM = 5.000,00 → `978,62 − 665,725 = 312,895 ≈ 312,89` ✔
   e o imposto apurado em R$ 5.000 pelo desconto simplificado é
-  `(5.000 − 607,20) × 27,5% − 908,73 = 988,38 − 908,73 = 312,89` ✔ → **IRRF = 0**.
+  `(5.000 − 607,20) × 22,5% − 675,49 = 988,38 − 675,49 = 312,89` ✔ → **IRRF = 0**.
+  (base de R$ 4.392,80 cai na faixa de 22,5%, cujo teto é ≈ R$ 4.664,67 — a versão
+  anterior desta linha citava a faixa de 27,5% e não fechava; corrigido na auditoria
+  de 30/08/2026, ver `AUDITORIA-anti-invencao.md` item A-01)
   Os dois caminhos batem no centavo. Esse é o teste-âncora do motor.
 
 **Aplicação ao 13º salário:** a redução **também se aplica** ao imposto exclusivo de fonte
@@ -419,7 +438,7 @@ gera FGTS no mês em que é paga; a 2ª, no mês da quitação). Fundamento: Lei
 | **RAT / GILRAT** | **1%, 2% ou 3%** conforme o grau de risco do **CNAE preponderante do estabelecimento** | remunerações de empregados e avulsos (**não** incide sobre CI) | Lei 8.212/1991, art. 22, II; Decreto 3.048/1999, Anexo V |
 | **FAP** (multiplicador do RAT) | **0,5000 a 2,0000** | multiplica a alíquota RAT | Lei 10.666/2003, art. 10; Decreto 6.042/2007 |
 | **Terceiros** (Sistema S + salário-educação + INCRA) | variável por **código FPAS**; nos códigos mais comuns = **5,8%** | remunerações de empregados e avulsos | Lei 11.457/2007, art. 3º, §1º; IN RFB 2.110/2022, Anexos II e III |
-| Adicional de aposentadoria especial (exposição a agente nocivo) | +12%, +9% ou +6% | remuneração do exposto | Lei 8.212/1991, art. 57, §6º c/c art. 22, II |
+| Adicional de aposentadoria especial (exposição a agente nocivo) | +12%, +9% ou +6% | remuneração do exposto | ○ **PENDÊNCIA — citação incorreta.** O art. 57 é da **Lei 8.213/1991**, não da 8.212/1991. Confirmar o dispositivo que institui o adicional antes de codificar |
 
 **FÓRMULA DO RAT AJUSTADO:**
 ```
@@ -608,8 +627,9 @@ Caracterização: **NR-15** do MTE, mediante **laudo de perito** (CLT, art. 195)
 **BASE DE CÁLCULO — a controvérsia, resolvida na prática assim:**
 1. A **Súmula Vinculante nº 4 do STF** proíbe usar o salário mínimo como indexador e
    **proíbe o Judiciário de fixar outra base** por decisão judicial.
-2. O STF (Rcl 6.275, min. Lewandowski) **anulou definitivamente** a parte da **Súmula 228 do
-   TST** que mandava usar o salário-base — a súmula está **suspensa** desde 2008 nesse ponto.
+2. O STF **suspendeu** a parte da **Súmula 228 do TST** que mandava usar o salário-base.
+   ○ **PENDÊNCIA — número e relator da reclamação não confirmados** (a auditoria de
+   30/08/2026 apontou divergência). Não citar o número em material do cliente até verificar.
 3. Resultado: **enquanto não houver lei nova ou norma coletiva dispondo diferente, a base
    continua sendo o SALÁRIO MÍNIMO** (art. 192 da CLT).
 4. **Se houver CCT/ACT ou norma interna da empresa** fixando base maior (salário-base,
@@ -619,9 +639,13 @@ Caracterização: **NR-15** do MTE, mediante **laudo de perito** (CLT, art. 195)
 
 **FÓRMULA:**
 ```
-base_insalubridade = CCT/ACT/norma interna, se houver e for mais benéfica
-                     senão → salário mínimo nacional (R$ 1.621,00 em 2026)
+base_insalubridade = campo OBRIGATÓRIO por cliente, escolhido explicitamente entre
+                     salario_minimo | salario_base | piso_cct | valor_fixo
+                     — NÃO PREENCHIDO ⇒ não calcula, marca PROVISÓRIO e abre pendência
 insalubridade = base_insalubridade × grau (10% / 20% / 40%)
+
+ATENÇÃO AO IMPLEMENTAR: a regra legal supletiva é o salário mínimo (CLT art. 192), mas
+ela NÃO pode virar valor padrão no código. O motor exige a escolha explícita e anotada.
 ```
 
 **Fontes (acesso 30/08/2026):**

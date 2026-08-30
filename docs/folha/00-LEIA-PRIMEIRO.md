@@ -14,6 +14,7 @@
 | `04-obrigacoes-acessorias-e-calendario.md` | DCTFWeb, FGTS Digital, EFD-Reinf, ponto, calendário mensal e anual |
 | `05-construir-x-comprar-e-fornecedores.md` | Cinco categorias de fornecedor, due diligence e a comparação de caminhos |
 | `06-riscos-lgpd-e-dados-vivos.md` | Dados sensíveis, papéis, controles de dia 1 e o catálogo de dados vivos |
+| `AUDITORIA-anti-invencao.md` | **Auditoria cruzada dos seis** — contradições, selos inflacionados, erros de aritmética e veredito por documento |
 | `FONTES-A-BAIXAR.md` | **A checklist que fecha o loop** — o que baixar para converter pesquisa em especificação |
 
 Agentes de revisão do domínio, em `.claude/agents/`: `especialista-folha-dp`,
@@ -31,6 +32,14 @@ limitação na abertura do seu documento.
 Traduzindo para a régua deste projeto: **o processo está entendido; a informação ainda não
 está lastreada.** Restam cerca de 85 pendências numeradas. `FONTES-A-BAIXAR.md` lista os
 ~35 documentos que as fecham.
+
+Uma auditoria cruzada rodou depois, sobre os seis documentos (`AUDITORIA-anti-invencao.md`).
+Ela encontrou o padrão de falha que importa: como cada frente inventou o seu próprio selo de
+confiança, **o mesmo fato aparece confirmado num documento e proibido de reproduzir em
+outro** — valores de multa, por exemplo. A invenção não entraria por afirmação nova; entraria
+por **promoção de selo entre documentos**, bastando o desenvolvedor abrir um arquivo em vez
+do outro. As correções verificáveis já foram aplicadas; as contradições que dependem de
+fonte primária estão marcadas nos dois lados e viraram o bloco F da checklist.
 
 **Nada aqui deve virar código antes dessa checklist.** Uma tabela de INSS errada não gera
 erro de sistema — gera folha errada para todos os empregados de todos os clientes, e o
@@ -72,15 +81,23 @@ licença contaminante.
 
 ## 4. Custo real de construir
 
-| Peça | Esforço |
-|---|---|
-| Núcleo de transporte ao eSocial | 4–7 semanas de um sênior |
-| Paridade mínima confiável (17 eventos de folha CLT + totalizadores) | 4–6 meses |
-| Motor de cálculo | Projeto de porte **igual ou maior**, em paralelo |
-| Manutenção normativa | Perpétua — cerca de uma nota de orientação de leiaute por mês em 2026 |
+Duas frentes estimaram por caminhos diferentes. A auditoria interna pegou a divergência de
+unidade (item F8) — os escopos se sobrepõem parcialmente, então vale registrar as duas, e
+**usar a conservadora na decisão**:
+
+| Peça | Estimativa otimista | Estimativa conservadora |
+|---|---|---|
+| Camada de transmissão ao eSocial | 4–7 **semanas** (só o núcleo: assinatura, SOAP, lote, recibo) | 4–7 **pessoa-mês** (incluindo geração do XML dos eventos, fila, retentativa, tradução de erro) |
+| Motor de cálculo de folha | — | **25–50 pessoa-mês**. "É aqui que mora o passivo, e não termina nunca" |
+| Cadastros, telas, conferência, holerite, CNAB, contábil | — | 10–20 pessoa-mês |
+| **Total até o primeiro cliente sem vergonha** | — | **~40–75 pessoa-mês** — 3 a 5 anos de um dev, ou 1,5 a 2 anos de um time de três |
+| Manutenção normativa | Perpétua — cerca de uma nota de orientação de leiaute por mês em 2026 | idem |
 
 O maior custo escondido não é o SOAP, que são duas operações: é **mapear os eventos à mão**,
 porque não existe gerador de tipos utilizável a partir dos XSD.
+
+**Number a segurar com as duas mãos:** 40–75 pessoa-mês é a ordem de grandeza de construir
+folha por inteiro. É isso que precisa ser comparado com a mensalidade de um fornecedor.
 
 ## 5. Recomendação
 

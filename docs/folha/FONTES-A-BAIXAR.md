@@ -91,6 +91,22 @@
 
 ---
 
+## Bloco F — itens abertos pela auditoria interna
+
+Ver `AUDITORIA-anti-invencao.md`. Estes não são pendências das frentes de pesquisa: são
+**contradições entre os documentos**, que só a fonte primária resolve.
+
+| # | Contradição | Fecha com | Prioridade |
+|---|---|---|---|
+| F1 | **Existe API REST oficial do eSocial?** Um documento afirma que sim, com URL de especificação de recepção de lote no portal; outro conclui que não existe. Muda a arquitetura do transporte e o esforço de construção | A especificação de recepção de lote citada + o MOD (item A5) | **BLOQUEADOR da decisão** |
+| F2 | **Valores das multas do eSocial e da DCTFWeb** — publicados como confirmados num documento, proibidos de reproduzir em outro | Itens C2 e B-art. 32-A | **BLOQUEADOR** de proposta comercial e de tela |
+| F3 | **Qual consolidação do MOS está vigente** — dois documentos citam notas de orientação com quatro versões de diferença | Item A1 | Alta |
+| F4 | **Qual nota técnica do leiaute está vigente** — um documento usa NT de 2025, cinco usam a de 2026 | Item A3 | Alta |
+| F5 | **Versão do Manual do FGTS Digital** — duas versões diferentes citadas | Item C1 | Média |
+| F6 | **Número de eventos do S-1.3** — 50 (conferido contra XSD), 44 e 48 aparecem nos documentos | Item A2 | Média |
+| F7 | **Licença da biblioteca `sped-esocial`** — um documento diz ter lido o LICENSE, outro diz que o GitHub reporta licença indefinida | Abrir o LICENSE e registrar o hash | Média (jurídico) |
+| F8 | **Esforço da camada de transmissão** — 4 a 7 semanas num documento, 4 a 7 pessoa-mês em outro, para escopos que se sobrepõem | Reconciliar os escopos antes de usar o número em decisão | **Alta para a decisão** |
+
 ## Estado do lastro, por área
 
 | Área | Situação após esta pesquisa |

@@ -583,7 +583,7 @@ Isso corta talvez **30–40%** do risco de um projeto eSocial começado do zero.
 | **Assinatura XMLDSig no dialeto do eSocial** | `xml-crypto` existe, mas o default é a C14N **errada** e não emite `X509Data` sozinho | **3–5 dias** | **Alto** — falha silenciosa: assina e é rejeitado. Só valida contra o ambiente real |
 | **Cliente SOAP 1.1 Document/Literal** | `soap`/`strong-soap` existem, mas dependem de baixar o WSDL — que **exige mTLS** e é frágil. São só **2 operações** no fluxo principal (+4 no BX) | **3–5 dias** montando o envelope à mão | Médio — recomendação: **não** usar cliente WSDL dinâmico; envelope literal + `undici`/`https.Agent` |
 | **Validação XSD local** | Sem validador puro-JS consagrado. `xmllint-wasm`/`libxml2-wasm` (MIT) ou `libxmljs2` (nativo) | **3–5 dias** + spike | **Alto** — os XSDs do eSocial usam `import`; suporte a multi-schema em wasm é o ponto a provar. **Sem isso, todo erro de schema só aparece em produção como `402`** |
-| **Tipos TS a partir dos XSD** | **Não existe gerador utilizável** (`cxsd` morto, `xsd2ts` UNLICENSED) | **10–20 dias** para escrever o gerador, ou mapear à mão | **Alto** — é o maior custo escondido. S-1.3 tem **44 eventos** e centenas de campos condicionais |
+| **Tipos TS a partir dos XSD** | **Não existe gerador utilizável** (`cxsd` morto, `xsd2ts` UNLICENSED) | **10–20 dias** para escrever o gerador, ou mapear à mão | **Alto** — é o maior custo escondido. O S-1.3 tem **50 eventos** (contagem conferida contra o XSD em `01-esocial-eventos-e-obrigatoriedade.md`, incluindo os 8 de retorno; a cifra de 44 usada antes nesta linha era órfã) e centenas de campos condicionais |
 | **Motor de lote + protocolo + recibo** | Nada pronto | **5–8 dias** | Médio — fila, particionamento por `(empregador, grupo)`, blocos de 50, polling com backoff, reenvio idempotente |
 | **Grafo de precedência de eventos** | Nada pronto | **4–6 dias** | Médio-alto — regra de "empilhamento" é de negócio, não de schema |
 | **Catálogo de ocorrências + UX de correção** | Importar o *Mensagens do Sistema v2.5* como dado | **3–5 dias** | Médio — sem isso o usuário recebe código cru |
@@ -606,7 +606,7 @@ Isso corta talvez **30–40%** do risco de um projeto eSocial começado do zero.
 ### 12.4 Onde eu desafiaria a decisão
 
 1. **O gargalo não é o transporte, é o leiaute.** O transporte tem 2 operações e cabe em uma
-   sprint. Os **44 eventos com regras condicionais** e o **cálculo da folha** é que consomem meses.
+   sprint. Os **eventos com regras condicionais** (50 no S-1.3, dos quais 42 de envio) e o **cálculo da folha** é que consomem meses.
    Se a decisão for "construir", construir **transporte próprio** e ser cirúrgico no escopo de eventos.
 2. **Considerar seriamente comprar o transporte.** Existem APIs comerciais brasileiras que expõem
    REST sobre o SOAP do eSocial. Isso reduziria semanas a dias no transporte — ao custo de
