@@ -123,6 +123,37 @@ rodada de pesquisa não pôde ler (egress `*.gov.br` bloqueado).
 | G6 | **MOS S-1.3** — capítulo de **eventos extemporâneos e retificação** | Se e como se retifica competência anterior à data de corte quando o declarante era outro sistema; se o `S-1010` precisa ser reenviado na troca de sistema | Alta (M-02, M-03) — já sob **A1**, com pergunta específica de migração |
 | G7 | **Súmula 60 do TST, item II** | Prorrogação do adicional noturno após o fim da faixa. Muda o resultado da jornada noturna em ~1,14 h por turno | Média (T-09) |
 
+## Bloco H — itens abertos por `12-modulo-contabil-escopo.md`
+
+Aberto em 30/08/2026 pelo levantamento do **módulo contábil** (núcleo, ECD/ECF, integração
+entre os três módulos e normas do CFC). Mesmo bloqueio de rede dos outros blocos: nesta
+rodada, `sped.rfb.gov.br`, `*.gov.br` e **também `cfc.org.br`** responderam 403 no proxy.
+As 21 pendências numeradas `C-01` a `C-21` estão no documento; abaixo, o que as fecha.
+
+| # | Documento | Fecha | Prioridade |
+|---|---|---|---|
+| H1 | **Manual de Orientação do Leiaute da ECD**, versão vigente para o AC 2025/2026 | C-04, C-05, C-07, C-10, **C-11** (existe API de transmissão ou o desfecho é sempre PVA + Receitanet?) | **BLOQUEADOR do gerador de ECD** |
+| H2 | **Manual de Orientação do Leiaute 12 da ECF** + tabelas dinâmicas | C-08, C-09 | **BLOQUEADOR do gerador de ECF** |
+| H3 | **IN RFB 2.003/2021** (com a redação da **IN RFB 2.142/2023**) e **IN RFB 2.004/2021** | C-01, **C-06** (prazo da ECD: maio ou junho?), C-18 | **BLOQUEADOR** de calendário e de tela |
+| H4 | **ITG 2000 (R1)**, **NBC TG 1000**, **NBC TG 1001**, **NBC TG 1002** e a resolução que revoga a ITG 1000 | C-02, C-03, C-16, C-17 | **BLOQUEADOR** do seletor de perfil por porte |
+| H5 | **NBC TG 33 / CPC 33 (R1)** — Benefícios a Empregados | C-12 | Alta |
+| H6 | **NBC TG 25** — Provisões, Passivos Contingentes e Ativos Contingentes | C-12 | Média |
+| H7 | **Leiaute CNAB 240 FEBRABAN** vigente + especificação **OFX** | C-14, C-15 | Alta |
+| H8 | Documentação da **NFS-e de padrão nacional** e municípios aderentes | C-19 | Média |
+| H9 | **Plano de contas referencial da RFB** — tabelas dinâmicas por ano-calendário e tipo de entidade | Popular `ctb_conta_referencial`; sem ele não há de-para | **BLOQUEADOR do de-para** |
+| H10 | **CC arts. 1.179–1.195**, **DL 9.295/1946**, **MP 2.158-35 art. 57**, **DL 1.598/77 art. 8º-A**, **Lei 8.981/95 art. 45** | Fundamento normativo e valores de multa | Alta |
+| H11 | **Decreto 9.555/2018** e **IN DREI 11/2020** | Autenticação da ECD e Termo de Verificação para Substituição | Alta |
+
+> **Contradição a resolver neste bloco:** **prazo da ECD — "último dia útil de maio"
+> (redação original da IN 2.003/2021) ou "de junho" (IN 2.142/2023)?** O documento `12`
+> adotou junho por convergência. Fecha com H3. Até fechar, **nenhuma tela ou comunicado da
+> G41 deve exibir a data**.
+>
+> **Fora do Bloco H, mas do mesmo documento:** `C-13` (leiaute campo a campo do arquivo de
+> integração contábil do Domínio Folha) fecha com as URLs de `11-dominio-incumbente-e-integracao.md`
+> §9.1 — é o portão do *parser* de folha→contábil. `C-20` (esforço de gerar EFD ICMS/IPI e
+> EFD-Contribuições) e `C-21` (bibliotecas open source de SPED) são levantamento interno.
+
 ## Estado do lastro, por área
 
 | Área | Situação após esta pesquisa |
@@ -133,6 +164,7 @@ rodada de pesquisa não pôde ler (egress `*.gov.br` bloqueado).
 | Obrigações e calendário | Ciclo mensal montado. Vários prazos **não confirmados** no texto original. |
 | Construir x comprar | Categorias e fornecedores mapeados. **Nenhum preço** — o mercado não publica. |
 | LGPD e dados vivos | Um único item verificado direto no texto normativo. |
+| **Contábil (ECD, ECF, núcleo e integração)** | Escopo dimensionado e sequenciado. **Nenhuma afirmação lida na origem** — `sped.rfb.gov.br` e `cfc.org.br` bloqueados. 21 pendências. |
 
 **Conclusão honesta:** o processo está entendido e mapeado. A informação **ainda não está
 verificada no padrão que este projeto exige**. Executar esta checklist é o que fecha o loop.

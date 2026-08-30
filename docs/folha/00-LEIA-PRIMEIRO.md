@@ -43,6 +43,7 @@ inteiro rodando no Lior".
 | `09-rubricas-e-reconciliacao.md` | **Tabela de rubricas (S-1010), o de-para de incidências e o plano de reconciliação contra os totalizadores** — fecha a lacuna apontada pela auditoria |
 | `10-migracao-ponto-e-holerite.md` | **Carga inicial na troca de sistema, ponto eletrônico do arquivo às horas, e o holerite** — as outras três lacunas apontadas pela auditoria |
 | `11-dominio-incumbente-e-integracao.md` | **O Domínio (Thomson Reuters) como sistema incumbente** — mapa da linha de produtos, caminhos de integração confirmados (API só de documento fiscal; arquivo é o caminho real da folha), o risco de duplicidade no eSocial, os quatro cenários e a due diligence com o fornecedor. **Reformula a decisão de construir x contratar** |
+| `12-modulo-contabil-escopo.md` | **O módulo contábil — a terceira perna, nunca estudada antes** — núcleo (plano de contas, lançamento, razão, balancete, Diário, encerramento), ECD e ECF (blocos, prazos, assinatura, substituição e o tamanho real do trabalho), a costura entre folha, fiscal e contábil, normas do CFC por porte e regime, estimativa de esforço, **a unidade segura de migração** e os riscos da troca de sistema |
 | `AUDITORIA-anti-invencao.md` | **Auditoria cruzada dos seis** — contradições, selos inflacionados, erros de aritmética e veredito por documento |
 | `FONTES-A-BAIXAR.md` | **A checklist que fecha o loop** — o que baixar para converter pesquisa em especificação |
 
