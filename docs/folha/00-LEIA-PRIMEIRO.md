@@ -14,6 +14,7 @@
 | `04-obrigacoes-acessorias-e-calendario.md` | DCTFWeb, FGTS Digital, EFD-Reinf, ponto, calendário mensal e anual |
 | `05-construir-x-comprar-e-fornecedores.md` | Cinco categorias de fornecedor, due diligence e a comparação de caminhos |
 | `06-riscos-lgpd-e-dados-vivos.md` | Dados sensíveis, papéis, controles de dia 1 e o catálogo de dados vivos |
+| `07-arquitetura-modulo-lior.md` | Proposta de desenho: onde o módulo mora, schema, segurança, faseamento e o que ainda não tem especificação |
 | `AUDITORIA-anti-invencao.md` | **Auditoria cruzada dos seis** — contradições, selos inflacionados, erros de aritmética e veredito por documento |
 | `FONTES-A-BAIXAR.md` | **A checklist que fecha o loop** — o que baixar para converter pesquisa em especificação |
 
@@ -151,3 +152,6 @@ Executar `FONTES-A-BAIXAR.md` numa máquina com acesso aberto, arquivar em
 `docs/folha/fontes/` com data e hash, e reprocessar os seis documentos elevando o selo das
 afirmações que o texto original confirmar. **Sem isso, este material é mapa — não é
 especificação.**
+
+O desenho proposto para quando esse portão abrir está em `07-arquitetura-modulo-lior.md`,
+que começa pela decisão que precede tudo: **em qual aplicação o módulo mora.**
