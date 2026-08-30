@@ -51,6 +51,33 @@ Todo cálculo novo/alterado deve passar na massa de teste oficial (xlsx). Casos-
 
 Navy `#0B1740`, âmbar `#E9A74A`, branco. **ZERO vermelho** (alertas/erros em âmbar). Valores fiscais e códigos em fonte mono (IBM Plex Mono); texto em Archivo. Painel de resultado no estilo "canhoto de nota fiscal". Tagline em fechos: "Insights Impulsionam".
 
+## Onde este sistema roda de verdade (estado em 30/08/2026)
+
+**O Masor NÃO tem banco próprio.** Ele roda sobre o Supabase do **Lior**
+(`igzhwzgtxjgeaommatls`), com todas as tabelas prefixadas `masor_`. As migrações válidas
+são as de `supabase/migrations/lior/` (0006 em diante); a pasta `supabase/migrations/`
+(0001–0005) é a fase standalone, **morta**.
+
+Consequências que valem para qualquer alteração aqui:
+
+- **Identidade é do Lior.** Não existem `tenants` nem `profiles` do Masor. Papel vem de
+  `user_roles`/`organizacao_membros`; "empresa" é `public.clientes`.
+- **O certificado A1 é do cofre do Lior** (`clientes_certificados`), decifrado por
+  `src/lib/fiscal/cofre-lior.ts`. `masor_certificados_digitais` é órfã, sem leitor.
+- **Liberação é por produto.** `login_sistemas` + `pode_usar_sistema(uid, 'masor')`. A porta
+  do app checa isso em `src/components/Protegido.tsx` — fail-closed.
+- **`masor_is_staff()` vive em DOIS repositórios**: aqui, em `lior/0006` (autocorretiva), e
+  no repositório do Lior, em `20260827000916`. **Mudar uma exige mudar a outra.** A versão
+  antiga era insegura e deixava cliente escrever regra tributária compartilhada.
+- **`masor_tax_states` e `masor_ncm_rules` são escritas pelos DOIS sistemas.** O Lior assumiu
+  a curadoria das 27 UFs em 27/08/2026. Não tratar como tabela exclusiva do Masor.
+
+**O Masor está sendo consolidado para dentro do Lior.** O estado real, as armadilhas e a
+ordem sugerida para retomar estão em `docs/consolidacao-masor.md` **no repositório do Lior**
+(`luizfernandopereiralfp-creator/g41-kanban-quest`) — leia antes de mexer em qualquer coisa
+`masor_*`. A pesquisa do módulo de folha em `docs/folha/` também é para o Lior, e mora aqui
+só porque foi onde a pesquisa aconteceu.
+
 ## Infraestrutura do ecossistema G41
 
 - Kanban: `tarefas.g41.com.br` (Lovable + Supabase) — endpoint público de tarefas acima.
@@ -58,7 +85,11 @@ Navy `#0B1740`, âmbar `#E9A74A`, branco. **ZERO vermelho** (alertas/erros em â
 - n8n: `n8n.ferpereira.com` (ATENÇÃO: config do n8n-mcp no Claude Desktop aponta para instância errada `sparoyoutube.app.n8n.cloud` — corrigir antes de automatizar via MCP).
 - Evolution API (WhatsApp): `evo.ferpereira.com`, instância `g41-principal`.
 
-## Pendências herdadas (estado em 16/07/2026)
+## Pendências herdadas (estado em 16/07/2026 — LISTA HISTÓRICA, não reflete hoje)
+
+> Esta lista é de 16/07/2026 e nunca foi atualizada. O sistema já saiu do Lovable, já roda no
+> banco do Lior e já está em produção. Ver a seção "Onde este sistema roda de verdade" acima.
+
 
 - [ ] Aguardar build do Lovable concluir + checkpoint antes de implantar no sistema existente (migração Supabase isolada).
 - [ ] Complementar tarefa em `sistema.g41.com.br/admin/implantacao` com a spec.

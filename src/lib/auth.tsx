@@ -21,8 +21,14 @@ type AuthValue = {
   session: Session | null;
   user: User | null;
   perfil: Perfil | null;
+  /** Este login pode usar o MASOR? null = ainda carregando. false = barrado. */
+  liberado: boolean | null;
   entrar: (email: string, senha: string) => Promise<{ erro?: string }>;
-  cadastrar: (email: string, senha: string, nome: string) => Promise<{ erro?: string; confirmar?: boolean }>;
+  cadastrar: (
+    email: string,
+    senha: string,
+    nome: string,
+  ) => Promise<{ erro?: string; confirmar?: boolean }>;
   sair: () => Promise<void>;
 };
 
@@ -32,14 +38,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [carregando, setCarregando] = useState(true);
   const [session, setSession] = useState<Session | null>(null);
   const [perfil, setPerfil] = useState<Perfil | null>(null);
+  // null = ainda não sabemos; false = sessão válida, mas sem direito a este produto.
+  const [liberado, setLiberado] = useState<boolean | null>(null);
 
-  async function carregarPerfil(_userId: string) {
+  async function carregarPerfil(userId: string) {
     if (!supabase) return;
     // Identidade unificada com o Lior: RPC sintetiza role (admin/staff/cliente)
     // a partir de user_roles/has_role e o cliente atual (portal) do Lior.
     const { data } = await supabase.rpc("masor_meu_perfil");
     const row = Array.isArray(data) ? data[0] : data;
     setPerfil((row as Perfil) ?? null);
+
+    /* Liberação POR PRODUTO. O Masor e o Lior dividem o mesmo Supabase, então
+       ter sessão válida NÃO quer dizer ter direito de entrar aqui — um login
+       que só existe para o Lior chegava até esta tela. O Lior fecha essa porta
+       no `beforeLoad` dele desde 26/08/2026 (mig 20260826225502); esta é a
+       porta equivalente do Masor.
+       Fail-closed: erro na RPC = não liberado. */
+    const { data: ok, error } = await supabase.rpc("pode_usar_sistema", {
+      _user_id: userId,
+      _sistema: "masor",
+    });
+    setLiberado(error ? false : ok === true);
   }
 
   useEffect(() => {
@@ -55,7 +75,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: sub } = supabase.auth.onAuthStateChange(async (_e, s) => {
       setSession(s);
       if (s?.user) await carregarPerfil(s.user.id);
-      else setPerfil(null);
+      else {
+        setPerfil(null);
+        setLiberado(null);
+      }
     });
     return () => sub.subscription.unsubscribe();
   }, []);
@@ -85,7 +108,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ carregando, session, user: session?.user ?? null, perfil, entrar, cadastrar, sair }}
+      value={{
+        carregando,
+        session,
+        user: session?.user ?? null,
+        perfil,
+        liberado,
+        entrar,
+        cadastrar,
+        sair,
+      }}
     >
       {children}
     </AuthContext.Provider>

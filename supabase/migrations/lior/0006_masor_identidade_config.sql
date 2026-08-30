@@ -9,15 +9,67 @@
 --   public.clientes (empresa/cliente), public.portal_clientes (login-cliente).
 -- O Masor deixa de ter tenants/profiles próprios: papel vem de user_roles;
 -- "empresa" = public.clientes; config fiscal extra = masor_cliente_config.
+--
+-- ------------------------------------------------------------
+-- ATENÇÃO — ARQUIVO HISTÓRICO, JÁ APLICADO EM PRODUÇÃO
+-- ------------------------------------------------------------
+-- `scripts/apply-migration.mjs` aplica UM arquivo por caminho, sem histórico
+-- de versão. Ou seja: nada impede alguém de reaplicar este arquivo.
+--
+-- A definição original de `masor_is_staff()` aqui era insegura — "tem linha em
+-- user_roles" —, o que fazia os logins de cliente do Masor contarem como STAFF
+-- e poderem ESCREVER regra tributária compartilhada entre clientes. Isso foi
+-- corrigido do lado do Lior em 27/08/2026, pela migração
+-- `20260827000916_masor_staff_e_acesso_por_produto.sql`.
+--
+-- Como este arquivo usa `CREATE OR REPLACE`, reaplicá-lo reverteria aquela
+-- correção EM SILÊNCIO. Por isso a definição abaixo passou a ser
+-- AUTOCORRETIVA (30/08/2026): ela detecta em que mundo está e escreve a versão
+-- certa para aquele mundo. Reaplicar este arquivo hoje é inofensivo.
+--
+-- Não reescrever o bloco de `masor_is_staff()` para um `create or replace`
+-- simples. A vulnerabilidade volta junto.
 -- ============================================================
 
 -- ---------- Helpers de identidade (namespaced, não colidem com o Lior) ----------
 
--- Equipe (G41): qualquer usuário com papel em user_roles (admin OU member).
-create or replace function public.masor_is_staff()
-returns boolean language sql stable security definer set search_path = public as $$
-  select exists (select 1 from public.user_roles where user_id = auth.uid())
-$$;
+-- Equipe (G41). Definição AUTOCORRETIVA — ver o aviso no cabeçalho.
+--
+-- Mundo novo (o de hoje): existe `pode_usar_sistema` e existe
+-- `organizacao_membros`, então staff do Masor é pessoa da EQUIPE liberada para
+-- o produto. É a definição canônica, idêntica à de
+-- `20260827000916_masor_staff_e_acesso_por_produto.sql` no repositório do Lior.
+--
+-- Mundo antigo (banco anterior a 26/08/2026, sem `pode_usar_sistema`): cai na
+-- definição de origem, porque a nova não teria como ser resolvida ali.
+do $$
+begin
+  if to_regprocedure('public.pode_usar_sistema(uuid, text)') is not null
+     and to_regclass('public.organizacao_membros') is not null then
+    execute $fn$
+      create or replace function public.masor_is_staff()
+      returns boolean language sql stable security definer set search_path = public as $inner$
+        select exists (
+                 select 1 from public.organizacao_membros m
+                  where m.user_id = auth.uid() and m.is_staff = true
+               )
+           and public.pode_usar_sistema(auth.uid(), 'masor')
+      $inner$;
+    $fn$;
+  else
+    execute $fn$
+      create or replace function public.masor_is_staff()
+      returns boolean language sql stable security definer set search_path = public as $inner$
+        select exists (select 1 from public.user_roles where user_id = auth.uid())
+      $inner$;
+    $fn$;
+  end if;
+end $$;
+
+comment on function public.masor_is_staff() is
+  'Equipe da G41 liberada para o Masor. A definição vive em dois lugares: aqui '
+  '(autocorretiva) e em 20260827000916 no repositório do Lior. Mudar uma exige '
+  'mudar a outra.';
 
 -- Cliente atual de um login-cliente do portal (supermercado).
 -- Rollout STAFF-FIRST: o Masor hoje é usado pela equipe G41 (staff escolhe o
