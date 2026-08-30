@@ -4,6 +4,30 @@
 > Objetivo: entender o processo por inteiro e sustentar a decisão de **construir x contratar**.
 > Leia este arquivo primeiro; ele diz o que decidir e onde está cada coisa.
 
+## Atualização de 30/08/2026 — contexto que reformula a decisão
+
+Depois que este documento foi escrito, dois fatos entraram na conversa e mudam a régua:
+
+1. **O escritório já usa o Domínio (Thomson Reuters) para folha, fiscal E contábil.** Não é
+   um sistema de folha a ser escolhido — é o incumbente que roda a operação inteira, e que
+   **já transmite eSocial, DCTFWeb e FGTS Digital**.
+2. **O Lior já tem controle de ponto em produção**, e ele **não alimenta o Domínio hoje**.
+3. **O objetivo declarado do dono é substituir o Domínio por completo com o tempo**, com o
+   Lior assumindo também a rotina contábil.
+
+**A recomendação da seção 5 está SUPERADA.** Ela propunha comprar (BPO, depois um sistema
+tradicional) — o que, para quem quer sair do Domínio, é trocar um aprisionamento por outro.
+Ver `11-dominio-incumbente-e-integracao.md` e `12-modulo-contabil-escopo.md`; a seção 5 será
+reescrita quando as duas fecharem.
+
+**A restrição que passa a organizar o roteiro:** só pode existir **uma fonte da verdade do
+eSocial por empregador**. Não dá para deixar a folha de um cliente no Lior e o resto dele no
+Domínio. Como a contabilização amarra do mesmo modo, **a unidade segura de migração é o
+cliente, não o módulo** — o primeiro marco não é "folha pronta", é "um cliente pequeno
+inteiro rodando no Lior".
+
+---
+
 ## Índice
 
 | Arquivo | Conteúdo |
@@ -18,6 +42,7 @@
 | `08-massa-de-teste-completa.md` | **Massa de teste de férias, 13º, rescisão, frequência e folha complementar** — 5 tipos de rescisão, 4 casos de férias, 3 de 13º, com memória de cálculo e 186 conferências aritméticas; preenche a lacuna da seção D da auditoria. Herda o selo do `03` |
 | `09-rubricas-e-reconciliacao.md` | **Tabela de rubricas (S-1010), o de-para de incidências e o plano de reconciliação contra os totalizadores** — fecha a lacuna apontada pela auditoria |
 | `10-migracao-ponto-e-holerite.md` | **Carga inicial na troca de sistema, ponto eletrônico do arquivo às horas, e o holerite** — as outras três lacunas apontadas pela auditoria |
+| `11-dominio-incumbente-e-integracao.md` | **O Domínio (Thomson Reuters) como sistema incumbente** — mapa da linha de produtos, caminhos de integração confirmados (API só de documento fiscal; arquivo é o caminho real da folha), o risco de duplicidade no eSocial, os quatro cenários e a due diligence com o fornecedor. **Reformula a decisão de construir x contratar** |
 | `AUDITORIA-anti-invencao.md` | **Auditoria cruzada dos seis** — contradições, selos inflacionados, erros de aritmética e veredito por documento |
 | `FONTES-A-BAIXAR.md` | **A checklist que fecha o loop** — o que baixar para converter pesquisa em especificação |
 
@@ -58,10 +83,12 @@ pesquisa desmonta isso por três lados:
 transmite já calculou. O transporte é 10–15% do problema e **0% do risco**. Comprar só o
 canudo é comprar a peça mais barata e trocável, e ficar com a mais cara e arriscada.
 
-**Segundo — o produto imaginado não está à venda.** Não foi confirmado, em fonte pública,
-**nenhum** fornecedor de folha white label para escritório contábil, nem **nenhum** motor de
-folha como serviço no Brasil. Isso não é lacuna de pesquisa; é sinal de mercado: ninguém
-quer assumir passivo trabalhista de terceiro.
+**Segundo — o produto imaginado não foi encontrado à venda.** Nenhum fornecedor de folha
+white label para escritório contábil, e nenhum motor de folha como serviço, apareceu na
+pesquisa. **Ressalva de método, acrescentada em 30/08/2026:** o proxy deste ambiente bloqueou
+a leitura direta dos sites dos fornecedores, então essa é uma **ausência no índice de busca,
+não uma varredura do mercado**. É indício, não prova. Tratar como hipótese a confirmar por
+contato comercial, não como fato de mercado.
 
 **Terceiro — contratar não transfere o risco.** Na LGPD, o operador responde por falha de
 segurança. Perante o cliente, quem assina a folha é a G41. O white label transfere a marca
