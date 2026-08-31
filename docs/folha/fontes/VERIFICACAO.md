@@ -146,6 +146,32 @@ estava errada nesse item.
 Fica a lição para o motor: **valor-dia e valor-hora do salário mínimo são parâmetros
 próprios, lidos do decreto — não podem ser calculados a partir do mensal.**
 
+### A1 — prazos de envio dos eventos: **lidos, e o documento 04 estava invertido**
+
+O MOS S-1.3 (NO 11/2026 retificada, 426 páginas) foi lido. Os prazos de **35 eventos** estão
+agora na seção 7-A do documento `01`, fechando a pendência P1 — a de maior impacto daquele
+documento.
+
+**A correção mais importante desta rodada.** O documento `04` afirmava que o eSocial
+**antecipa** o prazo para o dia útil anterior, e listava isso como a primeira das "armadilhas
+de data". O MOS diz o contrário, literalmente:
+
+> "…será **postergada** para o dia útil imediatamente posterior, **exceto em relação ao
+> segurado especial, cujo prazo deve ser antecipado para o dia útil anterior**."
+
+Portanto: **o eSocial posterga por padrão.** As exceções que antecipam são nominadas — o
+segurado especial, e o prazo de dez dias após o desligamento no caso do diretor não empregado
+com FGTS. A recomendação de não usar uma função única de dia útil continua de pé, mas por
+outro motivo: a exceção mora **dentro** do eSocial, não entre ele e as demais obrigações.
+
+**O prazo que mais gera multa e não é dia 15:** o **S-2200**. Admissão vai **até o dia
+imediatamente anterior ao início da prestação de serviços**. Só vira dia 15 em admissão por
+transferência ou quando se usa o S-2190 (admissão preliminar) — que existe exatamente para
+isso. Tratar admissão como evento mensal multa o cliente em toda contratação.
+
+Outros prazos fora do dia 15: **S-2210 (CAT)** no primeiro dia útil seguinte, e **de imediato
+em caso de morte**; **S-2300** em 5 dias úteis; **S-8200/S-8299** conforme a decisão judicial.
+
 ## O que ainda falta baixar
 
 `sped.rfb.gov.br` não conectou nesta rodada. Os itens dos blocos B, C, D e E da

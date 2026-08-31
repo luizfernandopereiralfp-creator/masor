@@ -356,6 +356,28 @@ Referência: competência **M**; obrigações no mês **M+1**. Ajuste de data va
 
 ---
 
+## 8-A. CORREÇÃO — o eSocial POSTERGA, não antecipa
+
+Verificado no MOS S-1.3 (NO 11/2026 retificada) em 30/08/2026. Este documento afirmava que o
+eSocial **antecipa** o prazo para o dia útil anterior enquanto a EFD-Reinf e a DCTFWeb
+postergam, e listava isso como a primeira das "armadilhas de data". **Está errado.**
+
+O MOS diz: o prazo "será **postergada** para o dia útil imediatamente posterior, **exceto em
+relação ao segurado especial**, cujo prazo deve ser antecipado para o dia útil anterior".
+
+| | Regra |
+|---|---|
+| eSocial, caso geral | **Posterga** para o dia útil seguinte |
+| eSocial, **segurado especial** | **Antecipa** para o dia útil anterior |
+| eSocial, prazo de 10 dias após desligamento (diretor não empregado com FGTS) | **Antecipa** |
+| EFD-Reinf e DCTFWeb | Postergam |
+
+A recomendação de não usar uma função única de dia útil **continua válida**, mas por outro
+motivo: a exceção não está entre o eSocial e as demais obrigações — está **dentro do próprio
+eSocial**. O ajuste tem que ser parâmetro do evento, não do sistema.
+
+---
+
 ## 9. MULTAS E PENALIDADES
 
 | Obrigação | Penalidade | Norma | Fonte | Status |
