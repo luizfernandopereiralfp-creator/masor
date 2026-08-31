@@ -8,11 +8,14 @@
 
 | Arquivo | Bytes | SHA-256 |
 |---|---:|---|
+| `Decreto-12797-2025-salario-minimo.html` | 10.327 | `07750ecb547dfa58dd0a30a2387c553760273fbf59f41aa087b0af1116b6d68c` |
 | `IN-RFB-2299-2025.html` | 2.640 | `f6a0f3dadca1d47ead9a4a25e1bc2e298f9fe804bd44891a4cb786ef26384204` |
 | `Lei-15270-2025.html` | 74.348 | `2ec45edfc7abac45db2118feb219c94d2310600fb43b8a1054cfd2278ece16b9` |
 | `MOD-v1.15.pdf` | 1.427.873 | `02ff1f782ec8e316204909f3175199e6344a1407bfacc31618720154e97cbc10` |
 | `MOS-S-1.3-NO-11-2026-retificada.pdf` | 3.556.967 | `86286efa156fc293e32cbba9653d4750bb570b01705485695bd4648db3caccfd` |
 | `NT-S-1.3-06-2026-rev.pdf` | 262.107 | `5e155584dda8eed29e65ae0a6c89e5ce179f384849b6fe0f6bb8654465f17498` |
+| `Portaria-MTE-1131-2025-multas.pdf` | 126.395 | `4bad482db9d495a78c4086e6a438f37af30228a1421e0aede8f344ede1cb1d7f` |
+| `Portaria-MTP-667-2021-compilada.pdf` | 1.086.243 | `e706f444b32c5fe3e729feb88078c2aaf964af28ff5174a25e1363d75eef32c1` |
 | `esquemas-xsd-2026-07-01.zip` | 237.080 | `32535dba33d0470cf44afce410840af450028fd32d3ddf9123f601c45cf9af8e` |
 
 Origens: portal do eSocial, seção Documentação Técnica
@@ -100,6 +103,48 @@ ano-calendário 2026, que não estava mapeada em documento nenhum.
 **Não obtida:** a IN RFB 2.299/2025 — o portal de normas da Receita é aplicação de página
 única e a leitura pelo servidor devolve só o esqueleto. Não é impeditivo: a lei é fonte
 primária e hierarquicamente superior.
+
+### C2 — valores das multas do eSocial: **confirmados, e eu tinha errado ao rebaixá-los**
+
+A **Portaria MTE 1.131/2025** foi baixada e lida. O art. 81 que ela dá à Portaria MTP
+667/2021 traz, literalmente:
+
+> "ficará sujeito à multa no valor **mínimo de R$ 443,97** (…), acrescida de **R$ 104,31**
+> (…) **por trabalhador** cuja (…) § 1º O valor **máximo** das multas previstas neste artigo
+> é de **R$ 44.396,84**"
+
+São exatamente os valores que o documento `04` publicava. **Eu os havia rebaixado a
+pendência por excesso de cautela** — a auditoria interna apontou o conflito com o documento
+`01`, que proibia reproduzir número de multa sem abrir a portaria, e eu resolvi o conflito
+para o lado errado. Restaurados como confirmados.
+
+A mesma portaria também fecha pendências que estavam abertas no documento `04`:
+
+| Infração | Valor | Base |
+|---|---|---|
+| **13º salário fora do prazo** | R$ 176,03 por trabalhador, dobrado na reincidência | Lei 4.090/1962 c/c Lei 4.749/1965 |
+| Atraso no pagamento de salário | R$ 176,03 por trabalhador prejudicado | CLT art. 459, §1º |
+| Verbas rescisórias fora do prazo | R$ 176,03 por empregado prejudicado | CLT art. 477, §§ 6º e 8º |
+| Trabalho do menor e do aprendiz | R$ 416,18 por menor, teto R$ 2.080,90 | CLT arts. 402 a 441 |
+| Contrato individual de trabalho | R$ 416,18, dobrado na reincidência | CLT arts. 442 a 508 |
+
+A multa do **13º fora do prazo** era a pendência P-23 do documento `04`, sem resposta até
+aqui. As multas dos arts. 47 e 47-A da CLT (empregado sem registro) **não** aparecem nesta
+portaria — os valores divergentes entre os documentos `04` e `06` continuam por confirmar.
+
+### D1 — salário mínimo: **e a auditoria interna errou**
+
+O **Decreto 12.797/2025** foi baixado e lido. O art. 1º fixa **R$ 1.621,00** a partir de
+1º/01/2026, e o parágrafo único fixa **expressamente** o valor **diário em R$ 54,04** e o
+**horário em R$ 7,37**.
+
+Isso corrige um apontamento da auditoria interna, que classificou o R$ 54,04 do documento
+`03` como erro de arredondamento, porque 1.621,00 ÷ 30 = 54,0333 e a regra half-up daria
+54,03. **O valor não é derivado: é decretado.** O documento `03` estava certo; a auditoria
+estava errada nesse item.
+
+Fica a lição para o motor: **valor-dia e valor-hora do salário mínimo são parâmetros
+próprios, lidos do decreto — não podem ser calculados a partir do mensal.**
 
 ## O que ainda falta baixar
 
