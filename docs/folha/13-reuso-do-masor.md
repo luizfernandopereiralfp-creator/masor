@@ -27,7 +27,7 @@ XMLDSig**.
 
 | Arquivo | Adaptação | Situação |
 |---|---|---|
-| `src/lib/fiscal/mtls.ts` | **O fiscal fixa SOAP 1.2** (`application/soap+xml`); o **eSocial é SOAP 1.1** (`text/xml` + cabeçalho `SOAPAction`). Era o único ponto de acoplamento | **FEITO.** O transporte virou `src/lib/transporte/mtls.ts`, genérico e com opções; `fiscal/mtls.ts` continua sendo a porta do fiscal e fixa o 1.2. Comportamento do fiscal inalterado |
+| `src/lib/fiscal/mtls.ts` | ~~O fiscal fixa SOAP 1.2; o eSocial é SOAP 1.1 com `SOAPAction`~~ — **premissa errada, corrigida em 30/08/2026 contra o MOD v1.15: os dois são SOAP 1.2, e o manual não menciona `SOAPAction` em nenhuma das 125 páginas** | **FEITO, mas por um motivo que não se sustenta.** O transporte virou `src/lib/transporte/mtls.ts`, parametrizado; `fiscal/mtls.ts` segue como porta do fiscal, comportamento inalterado. Na prática o `soapPost` original já serviria ao eSocial sem alteração |
 | `src/lib/export/pdf-analise.ts` · `relatorio.ts` · `planilha.ts` | Trocar o conteúdo, manter a mecânica e a marca | Holerite em PDF, informe de rendimentos, relatórios de folha em XLSX com cabeçalho pintado |
 | `src/lib/planilha/parse-xlsx.ts` | Trocar o mapeamento de colunas | Importação de variáveis do mês e de bases na migração |
 | `src/lib/ia/contrato.ts` | Trocar o domínio, manter o **princípio** | Ver seção 4 — é a peça mais valiosa do repositório para a folha |

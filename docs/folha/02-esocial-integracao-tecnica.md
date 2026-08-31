@@ -10,6 +10,30 @@
 
 ---
 
+## VERIFICADO EM FONTE PRIMÁRIA — 30/08/2026
+
+O Manual de Orientação do Desenvolvedor v1.15 foi **baixado e lido** (hash em
+`fontes/VERIFICACAO.md`). Resultado para este documento:
+
+| O que este documento dizia | Veredito |
+|---|---|
+| Não existe canal REST oficial (P-01) | **CONFIRMADO.** Zero menções a `REST`, `JSON` ou `Bearer` nas 125 páginas |
+| Lote de 1 a 50 eventos | **CONFIRMADO.** Rejeição 607 se exceder |
+| Canonicalização **inclusiva** (`REC-xml-c14n-20010315`) | **CONFIRMADO** |
+| O eSocial é **SOAP 1.1** com `SOAPAction` | **ERRADO.** O envelope é `2003/05/soap-envelope`, ou seja **SOAP 1.2**, e `SOAPAction` não aparece no manual |
+
+Novo, que não estava aqui: **tamanho máximo da mensagem SOAP é 5 MB** (rejeição 11), e a
+consulta devolve **só os 50 primeiros** eventos, paginando por `dhUltimoEvtRetornado`.
+
+Endpoints confirmados: envio em `webservices.envio.esocial.gov.br/servicos/empregador/`,
+consulta em `webservices.consulta.esocial.gov.br/servicos/empregador/`, download em
+`webservices.download.esocial.gov.br/`, restrita em
+`webservices.producaorestrita.esocial.gov.br/servicos/empregador/`.
+
+Os selos abaixo são anteriores a esta verificação. Onde houver conflito, **vale esta seção**.
+
+---
+
 ## 0. Método, e uma limitação honesta desta pesquisa
 
 O ambiente de execução desta pesquisa tem **egress bloqueado para `*.gov.br`**
