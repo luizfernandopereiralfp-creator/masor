@@ -27,6 +27,52 @@ Decreto 12.797/2025, Portaria Interministerial MPS/MF 13/2026 (Anexo II), Lei 15
 e IN RFB 2.299/2025. Enquanto isso não ocorrer, as tabelas devem estar marcadas no banco
 com `fonte_verificada = false`.
 
+### VERIFICADO EM FONTE PRIMÁRIA — 30/08/2026: o redutor do IRRF
+
+A **Lei 15.270/2025 foi baixada do Planalto e lida** (`fontes/Lei-15270-2025.html`). Ela
+resolve a pendência **P02**, que era a de maior risco deste documento — e resolve **a favor
+do que a massa de teste já implementou**.
+
+**O termo da lei não é "RBM".** O art. 3º-A que ela insere na Lei 9.250/1995 diz, literalmente:
+
+> "será concedida redução do imposto sobre os **rendimentos tributáveis sujeitos à incidência
+> mensal** (…) R$ 978,62 − (0,133145 × **rendimentos tributáveis sujeitos à incidência
+> mensal**)"
+
+Ou seja: a variável é o **rendimento tributável do mês**, não a base de cálculo depois do
+INSS e dos dependentes. A lei diz "rendimentos tributáveis", e "base de cálculo" é outro
+termo, que ela não usa aqui.
+
+**A prova aritmética fecha a leitura.** A tabela promete imposto zero até R$ 5.000,00. Com
+R$ 5.000 de rendimento tributável, o imposto pela simplificada é
+`(5.000 − 607,20) × 22,5% − 675,49 = 312,89`, e o redutor é
+`978,62 − 0,133145 × 5.000 = 312,895`, limitado ao imposto pelo §1º → **IRRF zero**. Os dois
+lados batem no centavo exatamente em R$ 5.000. Se a variável fosse a base após o INSS, quem
+ganha R$ 5.000 teria base de cerca de R$ 4.500 e a isenção prometida cairia sobre outra
+faixa de gente — a promessa da lei não fecharia.
+
+**Consequência para a massa de teste: nenhuma mudança.** O documento `08` usou o salário
+bruto como variável, que é a leitura correta. Os dezesseis holerites permanecem válidos.
+
+Outros três pontos que a lei confirma:
+
+| Dispositivo | O que fixa |
+|---|---|
+| art. 3º-A, §1º | A redução é **limitada ao imposto** apurado pela tabela progressiva — nunca gera restituição |
+| art. 3º-A, §2º | Acima de R$ 7.350,00 de rendimento tributável mensal, **não há redução** |
+| art. 3º-A, §3º | A redução **também se aplica ao 13º salário**, no imposto exclusivo de fonte — confirma o que este documento já dizia |
+
+A lei também institui, no art. 11-A, a **redução anual** a partir do exercício de 2027
+(ano-calendário 2026): até R$ 60.000,00 → até R$ 2.694,15; de R$ 60.000,01 a R$ 88.200,00 →
+`8.429,73 − (0,095575 × rendimentos tributáveis anuais)`. Isso não estava neste documento e
+interessa ao informe de rendimentos.
+
+**Não obtida:** a IN RFB 2.299/2025. O portal de normas da Receita é aplicação de página
+única e a leitura pelo servidor devolve só o esqueleto. Não é impeditivo — a lei é fonte
+primária e hierarquicamente superior; a IN seria confirmação operacional.
+
+---
+
 ### Selo de evidência deste documento
 
 A auditoria de 30/08/2026 apontou que este era o único dos seis documentos **sem esquema de
@@ -1349,7 +1395,7 @@ diferença. **Documentar o critério escolhido no contrato com o cliente.**
 | # | Pendência | Criticidade | Norma a consultar | Efeito enquanto aberta |
 |---|---|---|---|---|
 | P01 | Ler o **texto oficial** do Decreto 12.797/2025, da Portaria Interministerial MPS/MF 13/2026 (Anexo II), da Lei 15.270/2025 e da IN RFB 2.299/2025 — o proxy bloqueou Planalto/DOU/gov.br nesta sessão | **ALTA** | Planalto + DOU | tabelas com `fonte_verificada = false` |
-| P02 | **Definição de RBM** para o redutor do IRRF: bruto do mês ou tributável após INSS? Tratamento em férias pagas em separado e em múltiplas fontes pagadoras | **ALTA** | Lei 15.270/2025 + IN RFB 2.299/2025 | resultado **PROVISÓRIO** em toda folha com RBM entre 5.000,01 e 7.350,00 |
+| ~~P02~~ **RESOLVIDO 30/08/2026** | A lei não usa "RBM": a variável é **rendimentos tributáveis sujeitos à incidência mensal** — o tributável do mês, antes das deduções. Ver a seção de verificação no topo. Continua aberto só o recorte de **férias pagas em separado** e **múltiplas fontes pagadoras** | Baixa | Lei 15.270/2025 + IN RFB 2.299/2025 | resultado **PROVISÓRIO** em toda folha com RBM entre 5.000,01 e 7.350,00 |
 | P03 | **Base da pensão alimentícia** ("líquido" definido caso a caso pela sentença) | **ALTA** | título judicial de cada empregado | desconto não calculado sem `pensao_base` cadastrado |
 | P04 | **Pisos regionais 2026** (PR, RJ, RS, SC, SP) e **pisos de CCT** de cada cliente | **ALTA** | leis estaduais + Mediador/MTE | `piso_regional`/`piso_cct` = `null`; motor usa só o SM e alerta |
 | P05 | **Adicional de HE por CCT** (50% ou mais) e definição de "dia útil" para o DSR | **ALTA** | CCT/ACT do cliente | não assumir 50%; abrir pendência por cliente |

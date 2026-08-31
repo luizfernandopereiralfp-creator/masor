@@ -3,8 +3,11 @@
 
    O transporte foi extraído para `@/lib/transporte/mtls` quando o
    módulo de FOLHA passou a precisar do mesmo handshake para o
-   eSocial. Este arquivo permanece como a porta do módulo fiscal e
-   fixa o que é específico dele: SOAP 1.2.
+   eSocial. Este arquivo permanece como a porta do módulo fiscal.
+
+   Nota (30/08/2026): a extração foi motivada por uma diferença de versão
+   de SOAP entre os dois serviços que NÃO existe — ambos são SOAP 1.2.
+   Ver o cabeçalho de `transporte/mtls.ts`.
 
    O NFeDistribuicaoDFe NÃO exige assinatura XML do pedido: a
    autenticação é o próprio handshake TLS com o certificado.

@@ -568,6 +568,65 @@ Fonte: `https://www.gov.br/esocial/pt-br/noticias/nota-orientativa-04-2021-traz-
 
 ---
 
+## 7-A. PRAZOS DE ENVIO — lidos no MOS em 30/08/2026
+
+Extraídos do **MOS S-1.3 consolidado até a NO 11/2026 retificada** (426 páginas, baixado e
+com hash em `fontes/VERIFICACAO.md`). Fecha a pendência **P1**, que era a de maior impacto
+deste documento.
+
+### A regra geral de dia não útil — e o documento 04 estava errado
+
+O MOS diz, com todas as letras:
+
+> "Caso a data do término do prazo de envio do evento caia em dia não útil para fins fiscais,
+> será **postergada** para o dia útil imediatamente posterior, **exceto em relação ao segurado
+> especial, cujo prazo deve ser antecipado para o dia útil anterior**."
+
+Ou seja: **o eSocial POSTERGA por padrão.** O documento `04` afirmava o contrário — que o
+eSocial antecipa e só a EFD-Reinf e a DCTFWeb postergam — e isso é falso.
+
+Há **exceções que antecipam**, e são nominadas: o **segurado especial**, e o prazo especial de
+dez dias após o desligamento (caso do diretor não empregado com FGTS, com pagamento entre o
+1º e o 4º dia do mês). Fora delas, posterga.
+
+A recomendação de engenharia continua valendo, mas por outro motivo: não é que o eSocial
+difere das outras obrigações — é que **o eSocial difere de si mesmo**. A função de ajuste
+precisa receber a exceção como parâmetro do evento, não do sistema.
+
+### Prazos por evento
+
+| Evento | Prazo |
+|---|---|
+| **S-2200** admissão | **Dia imediatamente anterior ao início da prestação de serviços.** Exceção: admissão por transferência, ou uso do S-2190 → dia 15 do mês seguinte |
+| **S-2190** admissão preliminar | Até o dia imediatamente anterior ao início. É a válvula que empurra o S-2200 para o dia 15 |
+| S-1000 tabela do empregador | No início da utilização; alteração, quando ocorrer |
+| S-1010 rubricas | **Antes** dos eventos de remuneração (S-1200, S-1202, S-1207) e antes de S-2299 e S-2399 |
+| S-1020 lotações | Antes dos eventos que a utilizem |
+| S-1200 remuneração | Dia 15 do mês seguinte |
+| S-1202 · S-1207 · S-1210 · S-1260 · S-1270 · S-1280 | Dia 15 do mês seguinte |
+| **S-1299** fechamento | Dia 15 do mês seguinte, depois dos eventos do período |
+| **S-2299** desligamento | Dia 15 do mês seguinte |
+| S-2206 alteração contratual | Dia 15 do mês seguinte, **ou até o envio da folha** da competência em que ocorreu |
+| **S-2210** CAT | **Primeiro dia útil seguinte** ao acidente; **em caso de morte, de imediato** |
+| S-2220 monitoramento da saúde | Dia 15 do mês seguinte ao ASO; ASO **admissional** tem prazo próprio |
+| S-2221 exame toxicológico | Dia 15 do mês seguinte; o pré-admissional tem prazo próprio |
+| S-2230 afastamento | Prazo escalonado por motivo; acidente ou doença do trabalho de até 15 dias tem regra própria |
+| S-2240 condições ambientais | Dia 15 do mês seguinte ao início da obrigatoriedade de SST ou à admissão |
+| S-2298 reintegração | Dia 15 do mês seguinte à reintegração |
+| S-2300 trabalhador sem vínculo | **5 dias úteis** após o início das atividades (contrato temporário, Lei 6.019/1974) |
+| S-2400 · S-2410 benefício | Dia 15 do mês seguinte à concessão, **ou antes de qualquer outro evento** daquele beneficiário |
+| S-2405 · S-2416 · S-2418 | Dia 15 do mês seguinte |
+| S-2500 · S-2501 · S-2555 processo trabalhista | Dia 15 do mês seguinte ao trânsito em julgado, homologação ou pagamento |
+| S-8200 · S-8299 | **De acordo com a decisão judicial** |
+| S-3000 exclusão | Evento de retorno; não depende de solicitação |
+
+**O prazo que mais gera multa e não é dia 15:** o **S-2200**. Admissão tem que ser enviada
+**antes de a pessoa começar a trabalhar** — não no mês seguinte. Quem tratar admissão como
+evento mensal vai multar o cliente em toda contratação. O S-2190 existe justamente para
+quem não consegue fechar o cadastro completo a tempo.
+
+---
+
 ## 8. Ambientes: produção e produção restrita
 
 | Aspecto | Produção | Produção Restrita | Nível |
@@ -634,7 +693,7 @@ Ordenadas por impacto no desenvolvimento. **Nenhuma pode virar código antes de 
 
 | # | Pendência | O que falta | Onde checar | Impacto |
 |---|---|---|---|---|
-| P1 | **Prazos de envio de 25 eventos** (S-1000, S-1005, S-1010, S-1020, S-1070, S-1210, S-2205, S-2206, S-2210, S-2220, S-2221, S-2230, S-2231, S-2240, S-2298, S-2300, S-2306, S-2399, S-2400–S-2420, S-2555, S-3000, S-3500, S-8200, S-8299) | Ler o campo "Prazo de envio" de cada evento | MOS S-1.3 cons. até NO 11/2026 | **Alto** — alertas e SLA do módulo |
+| ~~P1~~ **RESOLVIDO 30/08/2026 — ver seção 7-A** | ~~Prazos de envio de 25 eventos~~ (S-1000, S-1005, S-1010, S-1020, S-1070, S-1210, S-2205, S-2206, S-2210, S-2220, S-2221, S-2230, S-2231, S-2240, S-2298, S-2300, S-2306, S-2399, S-2400–S-2420, S-2555, S-3000, S-3500, S-8200, S-8299) | Ler o campo "Prazo de envio" de cada evento | MOS S-1.3 cons. até NO 11/2026 | **Alto** — alertas e SLA do módulo |
 | P2 | **Valores e artigos das multas** (Portaria MTE 1.131/2025 + Portaria MTP 667/2021 art. 81; Lei 8.212 art. 32-A; CLT 41/47/47-A; Lei 8.036/1990; Lei 8.213/1991 art. 22) | Transcrever a tabela com artigo e valor | PDFs das portarias e Planalto | **Alto** — material comercial e telas de risco |
 | P3 | **URLs de webservice de PRODUÇÃO** e **limite de eventos por lote** | Lista canônica de endpoints e limites | MOD v1.15 + notícia "Divulgadas novas URL…" | **Alto** — integração |
 | P4 | **Nome/URL exata do ZIP de XSD S-1.3 vigente** (pós NT 06/2026) | Link vivo na página de Documentação Técnica | Documentação Técnica | **Alto** — build |

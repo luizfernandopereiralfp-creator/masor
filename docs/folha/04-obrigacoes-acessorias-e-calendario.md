@@ -356,12 +356,34 @@ Referência: competência **M**; obrigações no mês **M+1**. Ajuste de data va
 
 ---
 
+## 8-A. CORREÇÃO — o eSocial POSTERGA, não antecipa
+
+Verificado no MOS S-1.3 (NO 11/2026 retificada) em 30/08/2026. Este documento afirmava que o
+eSocial **antecipa** o prazo para o dia útil anterior enquanto a EFD-Reinf e a DCTFWeb
+postergam, e listava isso como a primeira das "armadilhas de data". **Está errado.**
+
+O MOS diz: o prazo "será **postergada** para o dia útil imediatamente posterior, **exceto em
+relação ao segurado especial**, cujo prazo deve ser antecipado para o dia útil anterior".
+
+| | Regra |
+|---|---|
+| eSocial, caso geral | **Posterga** para o dia útil seguinte |
+| eSocial, **segurado especial** | **Antecipa** para o dia útil anterior |
+| eSocial, prazo de 10 dias após desligamento (diretor não empregado com FGTS) | **Antecipa** |
+| EFD-Reinf e DCTFWeb | Postergam |
+
+A recomendação de não usar uma função única de dia útil **continua válida**, mas por outro
+motivo: a exceção não está entre o eSocial e as demais obrigações — está **dentro do próprio
+eSocial**. O ajuste tem que ser parâmetro do evento, não do sistema.
+
+---
+
 ## 9. MULTAS E PENALIDADES
 
 | Obrigação | Penalidade | Norma | Fonte | Status |
 |---|---|---|---|---|
 | **DCTFWeb** — entrega em atraso, com incorreções ou não entregue (**MAED**) | **2% ao mês-calendário ou fração** sobre o total de contribuições informadas — **ainda que já pagas** — **limitada a 20%**. **Mínimo R$ 200,00** (declaração sem movimento) ou **R$ 500,00** nos demais casos. **Redução de 50%** se entregue antes de qualquer procedimento de ofício; **25%** se entregue no prazo da intimação. Emissão **automática** | **Lei nº 8.212/1991, art. 32-A** | [Multas automáticas DCTFWeb — RFB](https://www.gov.br/receitafederal/pt-br/assuntos/noticias/2022/junho/multas-por-atraso-da-dctfweb-passarao-a-ser-emitidas-automaticamente) | ○ **NÃO CONFIRMADO** — rebaixado na auditoria de 30/08/2026 (C-03): o art. 32-A não foi lido. Não exibir estes valores ao cliente |
-| **eSocial** — informação fora do prazo/forma, ou com inexatidão/omissão | **Mínimo R$ 443,97**, acrescido de **R$ 104,31 por trabalhador** omitido ou declarado incorretamente, com **máximo de R$ 44.396,84**. **Desconto de 40%** para fatos geradores de 01/01/2020 até a véspera da vigência da Portaria | **Portaria MTP nº 667/2021, art. 81**, na redação da **Portaria MTE nº 1.131, de 03/07/2025** | [Portaria MTE 1.131/2025](https://www.gov.br/trabalho-e-emprego/pt-br/assuntos/credito-do-trabalhador/legislacao-do-governo-federal/portaria-mte-no-1-131-de-3-de-julho-de-2025-multas.pdf) · [Portaria MTP 667/2021 compilada](https://www.gov.br/trabalho-e-emprego/pt-br/assuntos/legislacao/portarias-1/portarias-vigentes-3/PDFPortarian667de8novembrode2021compilada21.03.2024.pdf) | ○ **NÃO CONFIRMADO** — rebaixado na auditoria de 30/08/2026 (C-02): a Portaria não foi aberta e o documento `01` proíbe reproduzir estes valores. **Não usar em proposta comercial nem em tela** |
+| **eSocial** — informação fora do prazo/forma, ou com inexatidão/omissão | **Mínimo R$ 443,97**, acrescido de **R$ 104,31 por trabalhador** omitido ou declarado incorretamente, com **máximo de R$ 44.396,84**. **Desconto de 40%** para fatos geradores de 01/01/2020 até a véspera da vigência da Portaria | **Portaria MTP nº 667/2021, art. 81**, na redação da **Portaria MTE nº 1.131, de 03/07/2025** | [Portaria MTE 1.131/2025](https://www.gov.br/trabalho-e-emprego/pt-br/assuntos/credito-do-trabalhador/legislacao-do-governo-federal/portaria-mte-no-1-131-de-3-de-julho-de-2025-multas.pdf) · [Portaria MTP 667/2021 compilada](https://www.gov.br/trabalho-e-emprego/pt-br/assuntos/legislacao/portarias-1/portarias-vigentes-3/PDFPortarian667de8novembrode2021compilada21.03.2024.pdf) | ✅ **CONFIRMADO NA ORIGEM em 30/08/2026.** A Portaria MTE 1.131/2025 foi baixada e lida (`fontes/Portaria-MTE-1131-2025-multas.pdf`): o art. 81 que ela dá à Portaria MTP 667/2021 traz exatamente **mínimo R$ 443,97**, **acrescido de R$ 104,31 por trabalhador** e **máximo R$ 44.396,84**. Estes valores estavam certos desde o início; eu os havia rebaixado a pendência por excesso de cautela, e o rebaixamento foi desfeito |
 | **FGTS em atraso** | Atualização do valor + **juros de mora** + **multa progressiva: 5% no mês do vencimento e 10% a partir do mês seguinte**; sujeição às sanções do Decreto-Lei nº 368/1968 | **Lei nº 8.036/1990, art. 22** | [Lei 8.036/1990 consolidada](https://www.planalto.gov.br/ccivil_03/leis/l8036consol.htm) | ⚠️ **percentual de juros divergente entre fontes — ler o art. 22 §§ literal** |
 | **FGTS — infrações administrativas** (não recolher, omitir, prestar informação falsa) | Multas apuradas pela **Auditoria-Fiscal do Trabalho** | **Lei nº 8.036/1990, art. 23** | [Lei 8.036/1990 consolidada](https://www.planalto.gov.br/ccivil_03/leis/l8036consol.htm) | ○ **faixa de valores não confirmada** |
 | **Empregado sem registro** | Multa por empregado não registrado, acrescida de igual valor em cada reincidência; valor reduzido para **ME/EPP** | **CLT, art. 47 e §1º** | — | ○ **valores conflitantes entre fontes (R$ 3.000 × R$ 6.000) — NÃO CONFIRMADO** |

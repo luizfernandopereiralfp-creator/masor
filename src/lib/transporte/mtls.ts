@@ -4,9 +4,19 @@ import https from "node:https";
    Transporte SOAP com mTLS (certificado A1 do cliente).
 
    Extraído de `fiscal/mtls.ts` para ser compartilhado entre o
-   módulo FISCAL (NFeDistribuiçãoDFe, SOAP 1.2) e o módulo de
-   FOLHA (eSocial, SOAP 1.1). A mecânica de handshake é a mesma;
-   o que muda entre os dois é só o cabeçalho.
+   módulo FISCAL (NFeDistribuiçãoDFe) e o módulo de FOLHA (eSocial).
+
+   CORREÇÃO DE 30/08/2026. A extração foi feita sob a premissa de que o
+   eSocial falava SOAP 1.1 com cabeçalho `SOAPAction`. Está errado: o
+   Manual de Orientação do Desenvolvedor v1.15 declara o envelope como
+   `http://www.w3.org/2003/05/soap-envelope`, que é **SOAP 1.2**, e não
+   menciona `SOAPAction` em nenhuma das suas 125 páginas. Os DOIS serviços
+   são SOAP 1.2 — o `soapPost` do fiscal serviria ao eSocial sem alteração.
+
+   O arquivo continua aqui porque a parametrização é barata e útil (o dia
+   em que um terceiro serviço exigir 1.1, já está pronto), mas ninguém deve
+   repetir que "o eSocial é 1.1". Fonte arquivada em
+   docs/folha/fontes/MOD-v1.15.pdf, com hash em fontes/VERIFICACAO.md.
 
    ⚠ TRAVADO EM `node:https` DE PROPÓSITO.
    O fetch global do Node (undici) NÃO aceita https.Agent — trocar

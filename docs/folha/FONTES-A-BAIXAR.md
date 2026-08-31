@@ -91,6 +91,22 @@
 
 ---
 
+## RESOLVIDOS EM 30/08/2026 (ver `fontes/VERIFICACAO.md`)
+
+Baixados da origem, com hash arquivado: **MOD v1.15**, **MOS S-1.3 consolidado até a NO
+11/2026 retificada**, **NT S-1.3 06/2026 rev.** e o **pacote de XSD de 01/07/2026**.
+
+| Item | Situação |
+|---|---|
+| **F1** — existe API REST oficial? | **FECHADO: não existe.** O documento 05 estava errado |
+| **F3** — qual MOS está vigente | **FECHADO: NO 11/2026 retificada.** Os documentos 04, 05 e 06 estavam desatualizados |
+| **F4** — qual NT do leiaute | **FECHADO: NT 06/2026 rev. 09/04/2026.** O documento 03 estava desatualizado |
+| **F6** — eventos por lote | **FECHADO: 50** |
+| **A5** — endpoints e limites | **FECHADO.** Quatro hosts e o teto de 5 MB registrados |
+| **P09-1** — snapshot de XSD do catálogo de rubricas | **Continua aberto.** O pacote vigente é de 01/07/2026; o catálogo foi montado sobre um de 13/02/2026 e precisa ser reconferido |
+
+---
+
 ## Bloco F — itens abertos pela auditoria interna
 
 Ver `AUDITORIA-anti-invencao.md`. Estes não são pendências das frentes de pesquisa: são

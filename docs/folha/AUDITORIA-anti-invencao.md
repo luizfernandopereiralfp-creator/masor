@@ -84,7 +84,7 @@ e a regra de que **um mesmo fato carrega o mesmo selo em todos os documentos**.
 | # | Arquivo:linha | Problema |
 |---|---|---|
 | A-01 | `03:251` | A cadeia de cálculo do teste-âncora do redutor usa a faixa e a parcela a deduzir erradas. O resultado final está certo, mas por outra faixa — a conta escrita não fecha |
-| A-02 | `03:249`, `03:39` | Arredondamento contra a regra half-up que o próprio documento define, em dois valores |
+| ~~A-02~~ **PARCIALMENTE ERRADO — corrigido em 30/08/2026** | `03:39` | O apontamento dizia que R$ 54,04 contrariava o arredondamento half-up, porque 1.621,00 ÷ 30 = 54,0333. **O valor não é derivado: é decretado.** O Decreto 12.797/2025, art. 1º, parágrafo único, fixa expressamente o salário mínimo diário em **R$ 54,04** e o horário em **R$ 7,37**. O documento 03 estava certo e a auditoria estava errada neste item. Segue válido o apontamento sobre `03:249` (o arredondamento do redutor) |
 | A-03 | `03:110-113` vs `03:119` | O laço de apuração e as parcelas a deduzir foram construídos sobre limites de faixa ligeiramente diferentes — divergência capaz de virar um centavo na fronteira |
 
 ## D. Cobertura — o que falta nos seis documentos
