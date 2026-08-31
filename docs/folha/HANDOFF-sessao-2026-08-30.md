@@ -225,9 +225,15 @@ deveriam migrar para `g41-kanban-quest/docs/`. Está registrado em aberto no `07
 - **Não existe base open source em TypeScript.** 3 pacotes no npm com "esocial", nenhum de
   integração; 63 repositórios TS/JS no GitHub, todos com zero estrelas.
 
-**Datas e prazos:**
-- **O eSocial antecipa para o dia útil anterior; a EFD-Reinf e a DCTFWeb postergam.** Uma
-  função única de "ajustar para dia útil" erra metade dos prazos.
+**Datas e prazos** *(corrigido em 30/08 contra o MOS — ver seção 10)*:
+- **O eSocial POSTERGA para o dia útil seguinte, por padrão.** O documento `04` afirmava o
+  contrário e estava invertido. As exceções que antecipam são nominadas no MOS: o segurado
+  especial, e o diretor não empregado com FGTS. A recomendação de não usar uma função única
+  de dia útil continua de pé, mas por outro motivo: **a exceção mora dentro do próprio
+  eSocial**, não entre ele e as demais obrigações.
+- **O prazo que mais gera multa não é o dia 15: é o `S-2200`.** Admissão vai até o dia
+  imediatamente anterior ao início da prestação de serviços. Tratar admissão como evento
+  mensal multa o cliente em toda contratação.
 - **DCTFWeb atrasada incide mesmo com o tributo pago.**
 - **O FGTS mudou do dia 7 para o dia 20** — parametrizar por competência.
 
@@ -330,60 +336,87 @@ repositórios, e o Lior não tem equivalente.
 
 ---
 
-## 10. As correções que a sessão local fez contra fonte oficial
+## 10. O que a fonte primária confirmou, corrigiu e desmentiu
 
-**Isto é o mais importante deste arquivo.** Uma sessão local, no PC do Fernando, com acesso à
-rede liberado, começou a conferir a pesquisa contra as fontes oficiais. Resultado parcial:
-**seis itens conferidos, com três erros de documento e três erros da sessão ou da auditoria.**
+**Esta é a seção mais importante deste arquivo.** Em 30/08 uma sessão com acesso à rede
+baixou as fontes oficiais e conferiu a pesquisa. Os arquivos estão em
+**`docs/folha/fontes/`**, com nome, tamanho e SHA-256 registrados em
+`docs/folha/fontes/VERIFICACAO.md`. **Leia esse arquivo — ele é o lastro.**
 
-Cinco linhas visíveis na tela, transcritas fielmente:
+O saldo é honesto: **a fonte corrigiu nos dois sentidos.** Documentos erraram, e a auditoria
+interna e as correções desta sessão também.
 
-| Item | Veredito |
+### Resolvido — os dois bloqueadores que travavam tudo
+
+**F1 — não existe API REST oficial do eSocial.** O Manual do Desenvolvedor v1.15, 125
+páginas, não menciona `REST`, `JSON` nem `Bearer` uma única vez. Tudo é SOAP. **O documento
+`02` estava certo; o `05` estava errado.**
+
+**B1 — a variável do redutor do IRRF é o rendimento TRIBUTÁVEL DO MÊS**, antes das deduções
+de INSS e dependentes. A Lei 15.270/2025 não usa o termo "RBM". **Consequência: a massa de
+teste do documento `08` não muda** — ela já usava o bruto, que é a leitura correta. Era a
+pendência de maior risco do projeto e se resolveu sem retrabalho.
+
+### Corrigido — erros de documento
+
+| Item | O que estava errado |
 |---|---|
-| **Versão do SOAP** | Documento 02 **errado** — e o erro foi repetido no código |
-| **Redutor do IRRF** | Documento 03 **certo**, massa de teste preservada |
-| **Multas do eSocial** | Documento 04 **certo** — tinham sido rebaixadas por engano |
-| **Salário mínimo diário** | Documento 03 **certo** — a auditoria interna errou |
-| **Prazo de dia não útil** | Documento 04 **errado** — e o erro foi amplificado |
+| **Versão do SOAP** | O documento `02` dizia SOAP 1.1 com `SOAPAction`. **É SOAP 1.2** (`xmlns:soap="http://www.w3.org/2003/05/soap-envelope"`), e não há `SOAPAction` no manual. **Consequência: o `soapPost` que já existia no módulo fiscal serviria ao eSocial sem alteração.** A extração para `transporte/mtls.ts` segue válida como organização de código, mas a justificativa registrada estava errada — já corrigida no código e no documento `13` |
+| **Prazo de dia não útil** | O documento `04` dizia que o eSocial antecipa. **Ele posterga** |
+| **Versões vigentes** | MOS é a **NO 11/2026 retificada** (documentos `04`, `05` e `06` diziam 07/2026); leiaute é **NT 06/2026 rev. 09/04/2026** (o `03` dizia NT 04/2025) |
 
-> **A sexta linha estava cortada na tela e não foi lida.** Não a invente — confirme na sessão
-> local ou refaça a conferência.
+### Desmentido — correções desta sessão que estavam erradas
 
-**O que isso implica, concretamente:**
+| Item | O que aconteceu |
+|---|---|
+| **Multas do eSocial** | Eu as rebaixei de "confirmado" para "pendência" por excesso de cautela, resolvendo para o lado errado um conflito que a auditoria apontou. A Portaria MTE 1.131/2025 confirma literalmente: **mínimo R$ 443,97, acréscimo de R$ 104,31 por trabalhador, teto R$ 44.396,84**. Restaurados |
+| **Salário mínimo diário** | A auditoria interna classificou o R$ 54,04 do documento `03` como erro de arredondamento (1.621,00 ÷ 30 = 54,0333). **O valor não é derivado: é decretado.** O Decreto 12.797/2025 fixa expressamente o diário em R$ 54,04 e o horário em R$ 7,37. O documento estava certo; a auditoria errou. **Lição para o motor: valor-dia e valor-hora são parâmetros próprios, lidos do decreto — nunca calculados a partir do mensal** |
 
-1. **`src/lib/transporte/mtls.ts` está errado.** As linhas 7-8 e 20-23 afirmam que o eSocial
-   é **SOAP 1.1 com `SOAPAction`**. Veio do documento 02. **Precisa corrigir os comentários e
-   o `contentType` do módulo `esocial`.** Provavelmente ligado ao item **F1** da checklist —
-   a especificação de recepção de lote, que decide se existe API REST oficial.
-2. **As multas do eSocial devem voltar a "confirmado"** no documento 04. O rebaixamento feito
-   nesta sessão, com base na auditoria interna, estava errado.
-3. **O salário mínimo diário do documento 03 estava certo** — o apontamento aritmético da
-   auditoria (54,04 × 54,03) era falso alarme.
-4. **O prazo de dia não útil precisa ser refeito** — errado no documento e amplificado depois.
+### Confirmado — o que se sustentou
 
-**Fila que a sessão local ainda não tinha executado:** tabela do INSS 2026, Manual do FGTS
-Digital (prazo do dia 20 e o ajuste quando não é dia útil) e as multas dos arts. 47 e 47-A da
-CLT.
+- **Assinatura:** canonicalização **inclusiva**, enveloped, SHA-256, cadeia ICP-Brasil. A
+  diferença em relação à NF-e que o documento `02` apontava se confirma.
+- **Limites:** **50 eventos por lote** (rejeição 607 se exceder), **5 MB** por mensagem SOAP
+  (rejeição 11), retorno de consulta paginado de 50 em 50.
+- **Endpoints:** envio, consulta, download e produção restrita — as quatro URLs estão em
+  `VERIFICACAO.md`.
+- **Prazos de 35 eventos** lidos no MOS e registrados na seção 7-A do documento `01`,
+  fechando a pendência P1.
+- **Multas novas** que estavam em aberto: 13º fora do prazo (R$ 176,03 por trabalhador,
+  dobrado na reincidência — era a pendência P-23), atraso de salário, verbas rescisórias fora
+  do prazo, trabalho do menor e do aprendiz, contrato individual.
 
-**A lição, e ela é a premissa do projeto se provando:** nenhuma quantidade de revisão cruzada
-substituiu a fonte. A auditoria interna, o script de conferência aritmética e a convergência
-entre fontes ajudaram — **e ainda assim erraram**, nos dois sentidos.
+### Ainda aberto
+
+- **As multas dos arts. 47 e 47-A da CLT** (empregado sem registro) não estão na Portaria
+  1.131/2025. Os valores divergentes entre os documentos `04` e `06` continuam por confirmar.
+- **A IN RFB 2.299/2025** não foi obtida — o portal de normas da Receita é aplicação de página
+  única. Não é impeditivo: a lei é fonte primária e hierarquicamente superior.
+- **`sped.rfb.gov.br` não conectou** nessa rodada. Os blocos B, C, D e E da
+  `FONTES-A-BAIXAR.md` seguem pendentes.
+- **P09-1 continua bloqueadora:** o pacote de XSD vigente é de **01/07/2026**, mais novo que o
+  snapshot de 13/02/2026 usado para montar o catálogo de rubricas do documento `09`. O
+  catálogo precisa ser reconferido contra o pacote novo.
+
+### A lição, e ela é a premissa do projeto se provando
+
+Nenhuma quantidade de revisão cruzada substituiu a fonte. A auditoria interna, o script de
+conferência aritmética e a convergência entre fontes ajudaram — **e ainda assim erraram, nos
+dois sentidos**. Documento certo foi rebaixado; documento errado passou. Só a norma resolveu.
 
 ---
 
 ## 11. O que fazer a seguir — em ordem
 
-**Bloqueador de tudo:** executar `FONTES-A-BAIXAR.md`. Arquivar em `docs/folha/fontes/` com
-data e hash. Ordem dos bloqueadores:
-1. **F1** — especificação de recepção de lote do eSocial (decide a arquitetura do transporte
-   e provavelmente explica o erro do SOAP).
-2. **B1** — definição de "RBM" do redutor do IRRF. **Se mudar, muda a massa de teste inteira**,
-   os 16 holerites.
-3. A1–A5 (MOS, leiautes, NT, XSD, MOD), C1–C2 (FGTS Digital, portarias de multa).
+**F1, B1, A1, C2 e D1 já foram fechados** — ver seção 10. O que resta da checklist:
+
+1. **P09-1 (bloqueadora)** — reconferir o catálogo de 42 rubricas do documento `09` contra o
+   pacote de XSD de 01/07/2026, que é mais novo que o snapshot usado.
+2. **Blocos B, C, D e E** da `FONTES-A-BAIXAR.md` — `sped.rfb.gov.br`, Manual do FGTS Digital,
+   tabela do INSS 2026, CLT arts. 47 e 47-A, resoluções da ANPD, CNAB 240.
 
 **Depois, na ordem de valor:**
-1. **Corrigir o SOAP no código** e reprocessar os documentos elevando/corrigindo os selos.
-2. **A trava de importação do lote de holerites** — o maior risco do módulo, ainda não
+1. **A trava de importação do lote de holerites** — o maior risco do módulo, ainda não
    escrito. Os holerites vêm num PDF em lote que precisa ser dividido por pessoa. **Casar por
    ordem de página é inaceitável** (um holerite de duas páginas desalinha todo mundo dali
    para baixo, em cascata e em silêncio); **casar por nome é frágil** (homônimo, acento, nome
